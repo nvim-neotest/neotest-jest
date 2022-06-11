@@ -30,17 +30,17 @@ function adapter.discover_positions(path)
   local query = [[
   ((call_expression
       function: (identifier) @func_name (#match? @func_name "^describe")
-      arguments: (arguments (_) @namespace.name (arrow_function))
+      arguments: (arguments (string) @namespace.name (arrow_function))
   )) @namespace.definition
 
 
   ((call_expression
-      function: (identifier) @func_name (#match? @func_name "^it")
-      arguments: (arguments (_) @test.name (arrow_function))
+      function: (identifier) @func_name (#match? @func_name "^(it|test)")
+      arguments: (arguments (string) @test.name (arrow_function))
   ) ) @test.definition
   ((call_expression
-      function: (member_expression) @func_name (#match? @func_name "^it")
-      arguments: (arguments (_) @test.name (arrow_function))
+      function: (member_expression) @func_name (#match? @func_name "^(it|test)")
+      arguments: (arguments (string) @test.name (arrow_function))
   ) ) @test.definition
     ]]
   return lib.treesitter.parse_positions(path, query, { nested_tests = true })
