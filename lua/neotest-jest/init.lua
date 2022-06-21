@@ -91,7 +91,6 @@ function adapter.build_spec(args)
   }) do
     table.insert(command, value)
   end
-  vim.pretty_print(command)
   return {
     command = command,
     context = {
