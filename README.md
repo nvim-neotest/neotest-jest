@@ -18,7 +18,9 @@ use({
     require('neotest').setup({
       ...,
       adapters = {
-        require('neotest-jest'),
+        require('neotest-jest')({
+          jestCommand = "npm test --"
+        }),
       }
     })
   end
@@ -32,7 +34,7 @@ See neotest's documentation for more information on how to run tests.
 ## Feature requests
 
 Please do note that _I do not intend to implement feature requests_, this repo is an initial starting point for the nvim js/ts/jest community.
-Hopefully once it is more stable users will be able to contribute to the project_. For my own part I only intend to implement functionality that
+Hopefully once it is more stable users will be able to contribute to the project\_. For my own part I only intend to implement functionality that
 I use in daily workflow.
 
 ## Bug Reports

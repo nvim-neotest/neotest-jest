@@ -46,6 +46,13 @@ function adapter.discover_positions(path)
   return lib.treesitter.parse_positions(path, query, { nested_tests = true })
 end
 
+local function getJestCommand()
+  if vim.fn.filereadable('node_modules/.bin/jest') then
+    return 'node_modules/.bin/jest'
+  end
+  return 'jest'
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -65,13 +72,14 @@ function adapter.build_spec(args)
     testNamePattern = pos.name
   end
 
-  local binary = 'jest'
-  if vim.fn.filereadable('node_modules/.bin/jest') then
-    binary = 'node_modules/.bin/jest'
-  end
+  local binary = getJestCommand() or 'jest'
 
-  local command = vim.tbl_flatten({
-    binary,
+  local command = {}
+  -- split by whitespace
+  for w in binary:gmatch('%S+') do
+    table.insert(command, w)
+  end
+  for _, value in ipairs({
     '--no-coverage',
     '--testLocationInResults',
     '--verbose',
@@ -80,7 +88,10 @@ function adapter.build_spec(args)
     '--testNamePattern=' .. testNamePattern,
     '--runTestsByPath',
     pos.path,
-  })
+  }) do
+    table.insert(command, value)
+  end
+  vim.pretty_print(command)
   return {
     command = command,
     context = {
@@ -184,8 +195,19 @@ function adapter.results(spec, _, tree)
   return results
 end
 
+local is_callable = function(obj)
+  return type(obj) == 'function' or (type(obj) == 'table' and obj.__call)
+end
+
 setmetatable(adapter, {
-  __call = function()
+  __call = function(_, opts)
+    if is_callable(opts.jestCommand) then
+      getJestCommand = opts.jestCommand
+    elseif opts.jestCommand then
+      getJestCommand = function()
+        return opts.jestCommand
+      end
+    end
     return adapter
   end,
 })
