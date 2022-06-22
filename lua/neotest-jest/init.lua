@@ -179,7 +179,7 @@ function adapter.results(spec, _, tree)
 
   local results, failed = parsed_json_to_results(parsed, output_file)
   for _, value in tree:iter() do
-    if value.type ~= 'file' or value.type ~= 'namespace' then
+    if value.type ~= 'file' and value.type ~= 'namespace' then
       logger.error('Failed to find test result ', value)
       return results
     end
