@@ -29,18 +29,18 @@ end
 function adapter.discover_positions(path)
   local query = [[
   ((call_expression
-      function: (identifier) @func_name (#match? @func_name "^describe")
-      arguments: (arguments (string) @namespace.name (arrow_function))
+      function: (identifier) @func_name (#eq? @func_name "describe")
+      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
   )) @namespace.definition
 
 
   ((call_expression
-      function: (identifier) @func_name (#match? @func_name "^(it|test)")
-      arguments: (arguments (string) @test.name (arrow_function))
+      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
   ) ) @test.definition
   ((call_expression
-      function: (member_expression) @func_name (#match? @func_name "^(it|test)")
-      arguments: (arguments (string) @test.name (arrow_function))
+      function: (member_expression) @func_name (#any-of? @func_name "it" "test")
+      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
   ) ) @test.definition
     ]]
   return lib.treesitter.parse_positions(path, query, { nested_tests = true })
@@ -130,9 +130,9 @@ local function parsed_json_to_results(data, output_file)
     end
     local keyid = testFn
     for _, value in ipairs(result.ancestorTitles) do
-      keyid = keyid .. "::" .. '"' .. value .. '"'
+      keyid = keyid .. "::" .. value
     end
-    keyid = keyid .. "::" .. '"' .. name .. '"'
+    keyid = keyid .. "::" .. name
     if status == "pending" then
       status = "skipped"
     end
