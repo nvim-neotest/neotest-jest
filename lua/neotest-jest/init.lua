@@ -112,6 +112,21 @@ local function getJestConfig(path)
   return jestJs
 end
 
+local function escapeTestPattern(s)
+  return (s:gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub('%*', '%\\*')
+      :gsub('%+', '%\\+')
+      :gsub('%-', '%\\-')
+      :gsub('%?', '%\\?')
+      :gsub('%$', '%\\$')
+      :gsub('%^', '%\\^')
+      :gsub('%/', '%\\/')
+      )
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -126,7 +141,7 @@ function adapter.build_spec(args)
   local testNamePattern = "'.*'"
 
   if pos.type == "test" then
-    testNamePattern = "'" .. pos.name:gsub("'", "") .. "$'"
+    testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
   end
 
   local binary = getJestCommand(pos.path) or "jest"
@@ -162,11 +177,11 @@ end
 
 local function cleanAnsi(s)
   return s
-    :gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
