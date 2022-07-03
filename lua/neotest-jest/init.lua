@@ -112,6 +112,23 @@ local function getJestConfig(path)
   return jestJs
 end
 
+local function escapeTestPattern(s)
+  return (
+    s
+      :gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+  )
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -126,7 +143,7 @@ function adapter.build_spec(args)
   local testNamePattern = "'.*'"
 
   if pos.type == "test" then
-    testNamePattern = "'" .. pos.name:gsub("'", "") .. "$'"
+    testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
   end
 
   local binary = getJestCommand(pos.path) or "jest"
