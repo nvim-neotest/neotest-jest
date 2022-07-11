@@ -1,4 +1,4 @@
-name: lint
+name: ci
 on:
   push:
     branches:
@@ -19,7 +19,7 @@ jobs:
       - uses: JohnnyMorganz/stylua-action@1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --check --config-path=stylua.toml lua/
+          args: --check --config-path=stylua.toml */**.lua
   unit_tests:
     name: unit tests
     runs-on: ${{ matrix.os }}
