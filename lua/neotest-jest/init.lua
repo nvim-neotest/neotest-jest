@@ -129,6 +129,25 @@ local function escapeTestPattern(s)
   )
 end
 
+local function get_strategy_config(strategy, command)
+  local config = {
+    dap = function()
+      return {
+        name = "Debug Jest Tests",
+        type = "pwa-node",
+        request = "launch",
+        args = { unpack(command, 2) },
+        runtimeExecutable = command[1],
+        console = "integratedTerminal",
+        internalConsoleOptions = "neverOpen",
+      }
+    end,
+  }
+  if config[strategy] then
+    return config[strategy]()
+  end
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -177,6 +196,7 @@ function adapter.build_spec(args)
       results_path = results_path,
       file = pos.path,
     },
+    strategy = get_strategy_config(args.strategy, command),
   }
 end
 
