@@ -115,6 +115,51 @@ describe("discover_positions", function()
       assert.equals(value.type, position.type)
     end
   end)
+
+  async.it("provides meaningful names for array driven tests", function()
+    local positions = plugin.discover_positions("./spec/array.format.test.ts"):to_list()
+
+    local expected_output = {
+      {
+        name = "array.format.test.ts",
+        type = "file",
+      },
+      {
+        {
+          name = "formatted array test",
+          type = "namespace",
+        },
+        {
+          {
+            name = "test 1, idx: 0, %",
+            type = "test",
+          },
+          {
+            name = "test 2, idx: 1, %",
+            type = "test",
+          },
+          {
+            name = "test 3, idx: 2, %",
+            type = "test",
+          },
+        },
+      },
+    }
+
+    assert.equals(expected_output[1].name, positions[1].name)
+    assert.equals(expected_output[1].type, positions[1].type)
+    assert.equals(expected_output[2][1].name, positions[2][1].name)
+    assert.equals(expected_output[2][1].type, positions[2][1].type)
+    -- TODO
+    -- assert.equals(4, #positions[2])
+    for i, value in ipairs(expected_output[2][2]) do
+      assert.is.truthy(value)
+      local position = positions[2][i + 1][1]
+      assert.is.truthy(position)
+      assert.equals(value.name, position.name)
+      assert.equals(value.type, position.type)
+    end
+  end)
 end)
 
 describe("build_spec", function()
