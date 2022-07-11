@@ -1,5 +1,7 @@
 local async = require("plenary.async.tests")
-local plugin = require("neotest-jest")
+local plugin = require("neotest-jest")({
+  jestCommand = "jest",
+})
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
 A = function(...)
@@ -126,7 +128,7 @@ describe("build_spec", function()
     assert.is.truthy(spec)
     local command = spec.command
     assert.is.truthy(command)
-    assert.contains(command, "./spec/node_modules/.bin/jest")
+    assert.contains(command, "jest")
     assert.contains(command, "--json")
     assert.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='.*'")
