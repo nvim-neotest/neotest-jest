@@ -1,25 +1,25 @@
 ---@diagnostic disable: undefined-field
-local lib = require('neotest.lib')
-local logger = require('neotest.logging')
-local util = require('lspconfig').util
+local lib = require("neotest.lib")
+local logger = require("neotest.logging")
+local util = require("lspconfig").util
 
 ---@type neotest.Adapter
-local adapter = { name = 'neotest-jest' }
+local adapter = { name = "neotest-jest" }
 
-adapter.root = lib.files.match_root_pattern('package.json')
+adapter.root = lib.files.match_root_pattern("package.json")
 
 function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
   end
 
-  if string.match(file_path, '__tests__') then
+  if string.match(file_path, "__tests__") then
     return true
   end
 
-  for _, x in ipairs({ 'spec', 'test' }) do
-    for _, ext in ipairs({ 'js', 'jsx', 'coffee', 'ts', 'tsx' }) do
-      if string.match(file_path, x .. '%.' .. ext .. '$') then
+  for _, x in ipairs({ "spec", "test" }) do
+    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+      if string.match(file_path, x .. "%." .. ext .. "$") then
         return true
       end
     end
@@ -84,16 +84,16 @@ end
 
 local function getJestCommand(path)
   local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, 'node_modules', '.bin', 'jest')
+  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
 
   if util.path.exists(jestBinary) then
     return jestBinary
   end
 
-  return 'jest'
+  return "jest"
 end
 
-local jestConfigPattern = util.root_pattern('jest.config.{js,ts}')
+local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 local function getJestConfig(path)
   local rootPath = jestConfigPattern(path)
@@ -102,8 +102,8 @@ local function getJestConfig(path)
     return nil
   end
 
-  local jestJs = util.path.join(rootPath, 'jest.config.js')
-  local jestTs = util.path.join(rootPath, 'jest.config.ts')
+  local jestJs = util.path.join(rootPath, "jest.config.js")
+  local jestTs = util.path.join(rootPath, "jest.config.ts")
 
   if util.path.exists(jestTs) then
     return jestTs
@@ -115,24 +115,24 @@ end
 local function escapeTestPattern(s)
   return (
     s
-      :gsub('%(', '%\\(')
-      :gsub('%)', '%\\)')
-      :gsub('%]', '%\\]')
-      :gsub('%[', '%\\[')
-      :gsub('%*', '%\\*')
-      :gsub('%+', '%\\+')
-      :gsub('%-', '%\\-')
-      :gsub('%?', '%\\?')
-      :gsub('%$', '%\\$')
-      :gsub('%^', '%\\^')
-      :gsub('%/', '%\\/')
+      :gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
   )
 end
 
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
-  local results_path = vim.fn.tempname() .. '.json'
+  local results_path = vim.fn.tempname() .. ".json"
   local tree = args.tree
 
   if not tree then
@@ -142,27 +142,27 @@ function adapter.build_spec(args)
   local pos = args.tree:data()
   local testNamePattern = "'.*'"
 
-  if pos.type == 'test' then
-    testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", '')) .. "$'"
+  if pos.type == "test" then
+    testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
   end
 
-  local binary = getJestCommand(pos.path) or 'jest'
-  local config = getJestConfig(pos.path) or 'jest.config.js'
+  local binary = getJestCommand(pos.path) or "jest"
+  local config = getJestConfig(pos.path) or "jest.config.js"
   local command = {}
 
   -- split by whitespace
-  for w in binary:gmatch('%S+') do
+  for w in binary:gmatch("%S+") do
     table.insert(command, w)
   end
 
   for _, value in ipairs({
-    '--no-coverage',
-    '--testLocationInResults',
-    '--verbose',
-    '--json',
-    '--outputFile=' .. results_path,
-    '--config=' .. config,
-    '--testNamePattern=' .. testNamePattern,
+    "--no-coverage",
+    "--testLocationInResults",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. results_path,
+    "--config=" .. config,
+    "--testNamePattern=" .. testNamePattern,
     pos.path,
   }) do
     table.insert(command, value)
@@ -178,17 +178,16 @@ function adapter.build_spec(args)
 end
 
 local function cleanAnsi(s)
-  return s
-    :gsub('\x1b%[%d+;%d+;%d+;%d+;%d+m', '')
-    :gsub('\x1b%[%d+;%d+;%d+;%d+m', '')
-    :gsub('\x1b%[%d+;%d+;%d+m', '')
-    :gsub('\x1b%[%d+;%d+m', '')
-    :gsub('\x1b%[%d+m', '')
+  return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
-  local regexp = file:gsub('([^%w])', '%%%1') .. '%:(%d+)%:(%d+)'
+  local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
   local _, _, errLine, errColumn = string.find(errStr, regexp)
 
   return errLine, errColumn
@@ -204,25 +203,25 @@ local function parsed_json_to_results(data, output_file)
       local status, name = assertionResult.status, assertionResult.title
 
       if name == nil then
-        logger.error('Failed to find parsed test result ', assertionResult)
+        logger.error("Failed to find parsed test result ", assertionResult)
         return {}
       end
 
       local keyid = testFn
 
       for _, value in ipairs(assertionResult.ancestorTitles) do
-        keyid = keyid .. '::' .. value
+        keyid = keyid .. "::" .. value
       end
 
-      keyid = keyid .. '::' .. name
+      keyid = keyid .. "::" .. name
 
-      if status == 'pending' then
-        status = 'skipped'
+      if status == "pending" then
+        status = "skipped"
       end
 
       tests[keyid] = {
         status = status,
-        short = name .. ': ' .. status,
+        short = name .. ": " .. status,
         output = output_file,
         location = assertionResult.location,
       }
@@ -240,7 +239,7 @@ local function parsed_json_to_results(data, output_file)
             message = msg,
           }
 
-          tests[keyid].short = tests[keyid].short .. '\n' .. msg
+          tests[keyid].short = tests[keyid].short .. "\n" .. msg
         end
 
         tests[keyid].errors = errors
@@ -259,14 +258,14 @@ function adapter.results(spec, _, tree)
   local success, data = pcall(lib.files.read, output_file)
 
   if not success then
-    logger.error('No test output file found ', output_file)
+    logger.error("No test output file found ", output_file)
     return {}
   end
 
   local ok, parsed = pcall(vim.json.decode, data, { luanil = { object = true } })
 
   if not ok then
-    logger.error('Failed to parse test output json ', output_file)
+    logger.error("Failed to parse test output json ", output_file)
     return {}
   end
 
@@ -276,7 +275,7 @@ function adapter.results(spec, _, tree)
 end
 
 local is_callable = function(obj)
-  return type(obj) == 'function' or (type(obj) == 'table' and obj.__call)
+  return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
 
 setmetatable(adapter, {
