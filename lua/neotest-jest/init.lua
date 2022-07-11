@@ -154,6 +154,10 @@ function adapter.build_spec(args)
   for w in binary:gmatch("%S+") do
     table.insert(command, w)
   end
+  if util.path.exists(config) then
+    -- only use config if available
+    table.insert(command, "--config=" .. config)
+  end
 
   for _, value in ipairs({
     "--no-coverage",
@@ -161,7 +165,6 @@ function adapter.build_spec(args)
     "--verbose",
     "--json",
     "--outputFile=" .. results_path,
-    "--config=" .. config,
     "--testNamePattern=" .. testNamePattern,
     pos.path,
   }) do

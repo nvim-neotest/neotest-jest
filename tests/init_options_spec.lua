@@ -9,7 +9,7 @@ local binary_override = function()
   return "mybinaryoverride"
 end
 local config_override = function()
-  return "myconfigoverride"
+  return "./spec/jest.config.ts"
 end
 
 describe("build_spec with override", function()
@@ -26,6 +26,7 @@ describe("build_spec with override", function()
     local spec = plugin.build_spec({ tree = tree })
 
     assert.is.truthy(spec)
+
     local command = spec.command
     assert.is.truthy(command)
     assert.contains(command, binary_override())
