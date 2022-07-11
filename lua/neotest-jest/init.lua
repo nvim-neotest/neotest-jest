@@ -196,7 +196,7 @@ local function findErrorPosition(file, errStr)
   return errLine, errColumn
 end
 
-local function parsed_json_to_results(data, output_file)
+local function parsed_json_to_results(data, output_file, consoleOut)
   local tests = {}
 
   for _, testResult in pairs(data.testResults) do
@@ -225,7 +225,7 @@ local function parsed_json_to_results(data, output_file)
       tests[keyid] = {
         status = status,
         short = name .. ": " .. status,
-        output = output_file,
+        output = consoleOut,
         location = assertionResult.location,
       }
 
@@ -256,8 +256,9 @@ end
 ---@async
 ---@param spec neotest.RunSpec
 ---@return neotest.Result[]
-function adapter.results(spec, _, tree)
+function adapter.results(spec, b, tree)
   local output_file = spec.context.results_path
+
   local success, data = pcall(lib.files.read, output_file)
 
   if not success then
@@ -272,7 +273,7 @@ function adapter.results(spec, _, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file)
+  local results = parsed_json_to_results(parsed, output_file, b.output)
 
   return results
 end
