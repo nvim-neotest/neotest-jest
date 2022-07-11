@@ -19,7 +19,8 @@ use({
       ...,
       adapters = {
         require('neotest-jest')({
-          jestCommand = "npm test --"
+          jestCommand = "npm test --",
+          getJestConfig = "custom.jest.config.ts",
         }),
       }
     })

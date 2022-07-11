@@ -288,6 +288,13 @@ setmetatable(adapter, {
         return opts.jestCommand
       end
     end
+    if is_callable(opts.jestConfigFile) then
+      getJestConfig = opts.jestConfigFile
+    elseif opts.jestConfigFile then
+      getJestConfig = function()
+        return opts.jestConfigFile
+      end
+    end
     return adapter
   end,
 })
