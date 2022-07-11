@@ -1,4 +1,4 @@
-name: lint
+name: ci
 on:
   push:
     branches:
@@ -11,15 +11,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  style:
-    name: style
+  stylua:
+    name: stylua
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: JohnnyMorganz/stylua-action@1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --check --config-path=stylua.toml lua/
+          # CLI arguments
+          args: --color always --check .
   unit_tests:
     name: unit tests
     runs-on: ${{ matrix.os }}
