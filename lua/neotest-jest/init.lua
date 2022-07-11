@@ -178,8 +178,7 @@ function adapter.build_spec(args)
 end
 
 local function cleanAnsi(s)
-  return s
-    :gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
+  return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+m", "")
@@ -286,6 +285,13 @@ setmetatable(adapter, {
     elseif opts.jestCommand then
       getJestCommand = function()
         return opts.jestCommand
+      end
+    end
+    if is_callable(opts.jestConfigFile) then
+      getJestConfig = opts.jestConfigFile
+    elseif opts.jestConfigFile then
+      getJestConfig = function()
+        return opts.jestConfigFile
       end
     end
     return adapter
