@@ -173,6 +173,7 @@ function adapter.build_spec(args)
 
   return {
     command = command,
+    cwd = adapter.root(pos.path),
     context = {
       results_path = results_path,
       file = pos.path,
