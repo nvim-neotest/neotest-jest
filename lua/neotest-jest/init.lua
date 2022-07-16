@@ -9,6 +9,8 @@ local adapter = { name = "neotest-jest" }
 
 adapter.root = lib.files.match_root_pattern("package.json")
 
+---@param file_path? string
+---@return boolean
 function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
@@ -83,6 +85,8 @@ function adapter.discover_positions(path)
   return lib.treesitter.parse_positions(path, query, { nested_tests = true })
 end
 
+---@param path string
+---@return string
 local function getJestCommand(path)
   local rootPath = util.find_node_modules_ancestor(path)
   local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
@@ -96,6 +100,8 @@ end
 
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
+---@param path string
+---@return string|nil
 local function getJestConfig(path)
   local rootPath = jestConfigPattern(path)
 
@@ -147,20 +153,15 @@ function adapter.build_spec(args)
     testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
   end
 
-  local binary = getJestCommand(pos.path) or "jest"
+  local binary = getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
-  local command = {}
-
-  -- split by whitespace
-  for w in binary:gmatch("%S+") do
-    table.insert(command, w)
-  end
+  local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
     -- only use config if available
     table.insert(command, "--config=" .. config)
   end
 
-  for _, value in ipairs({
+  vim.list_extend(command, {
     "--no-coverage",
     "--testLocationInResults",
     "--verbose",
@@ -168,9 +169,7 @@ function adapter.build_spec(args)
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     pos.path,
-  }) do
-    table.insert(command, value)
-  end
+  })
 
   return {
     command = command,
