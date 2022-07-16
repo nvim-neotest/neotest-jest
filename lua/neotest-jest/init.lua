@@ -1,4 +1,5 @@
 ---@diagnostic disable: undefined-field
+local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("lspconfig").util
@@ -132,7 +133,7 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
-  local results_path = vim.fn.tempname() .. ".json"
+  local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
   if not tree then
