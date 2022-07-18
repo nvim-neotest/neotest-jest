@@ -1,7 +1,7 @@
 ---@diagnostic disable: undefined-field
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
-local util = require("lspconfig").util
+local util = require("neotest-jest.util")
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
