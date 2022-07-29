@@ -202,7 +202,7 @@ function adapter.build_spec(args)
       file = pos.path,
     },
     strategy = get_strategy_config(args.strategy, command),
-    env = getEnv(args[2] and args[2].env or {})
+    env = getEnv(args[2] and args[2].env or {}),
   }
 end
 
