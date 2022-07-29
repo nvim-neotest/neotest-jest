@@ -23,6 +23,7 @@ use({
         require('neotest-jest')({
           jestCommand = "npm test --",
           jestConfigFile = "custom.jest.config.ts",
+          env = { CI = true },
         }),
       }
     })

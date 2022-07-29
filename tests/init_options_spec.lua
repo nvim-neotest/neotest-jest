@@ -17,13 +17,14 @@ describe("build_spec with override", function()
     local plugin = require("neotest-jest")({
       jestCommand = binary_override,
       jestConfigFile = config_override,
+      env = { override = "override", adapter_override = true },
     })
 
     local positions = plugin.discover_positions("./spec/basic.test.ts"):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
-    local spec = plugin.build_spec({ tree = tree })
+    local spec = plugin.build_spec({ nil, { env = { spec_override = true } }, tree = tree })
 
     assert.is.truthy(spec)
 
@@ -36,5 +37,9 @@ describe("build_spec with override", function()
     assert.contains(command, "./spec/basic.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
+    assert.is.same(
+      spec.env,
+      { override = "override", adapter_override = true, spec_override = true }
+    )
   end)
 end)
