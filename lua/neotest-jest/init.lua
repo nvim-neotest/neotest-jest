@@ -176,6 +176,10 @@ function adapter.build_spec(args)
     testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
   end
 
+  if pos.type == "namespace" then
+    testNamePattern = "'^" .. escapeTestPattern(pos.name:gsub("'", "")) .. "'"
+  end
+
   local binary = getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
