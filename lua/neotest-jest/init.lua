@@ -4,6 +4,12 @@ local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
 
+---@class neotest.JestOptions
+---@field jestCommand? string|fun(): string
+---@field jestConfigFile? string|fun(): string
+---@field env? table<string, string>|fun(): table<string, string>
+---@field cwd? string|fun(): string
+
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
@@ -159,6 +165,12 @@ local function getEnv(specEnv)
   return specEnv
 end
 
+---@param path string
+---@return string|nil
+local function getCwd(path)
+  return nil
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -200,7 +212,7 @@ function adapter.build_spec(args)
 
   return {
     command = command,
-    cwd = adapter.root(pos.path),
+    cwd = getCwd(pos.path),
     context = {
       results_path = results_path,
       file = pos.path,
@@ -313,6 +325,7 @@ local is_callable = function(obj)
 end
 
 setmetatable(adapter, {
+  ---@param opts neotest.JestOptions
   __call = function(_, opts)
     if is_callable(opts.jestCommand) then
       getJestCommand = opts.jestCommand
@@ -333,6 +346,13 @@ setmetatable(adapter, {
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
+      end
+    end
+    if is_callable(opts.cwd) then
+      getCwd = opts.cwd
+    elseif opts.cwd then
+      getCwd = function()
+        return opts.cwd
       end
     end
     return adapter
