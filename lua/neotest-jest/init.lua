@@ -185,11 +185,11 @@ function adapter.build_spec(args)
   local testNamePattern = "'.*'"
 
   if pos.type == "test" then
-    testNamePattern = "'" .. escapeTestPattern(pos.name:gsub("'", "")) .. "$'"
+    testNamePattern = "'" .. escapeTestPattern(pos.name) .. "$'"
   end
 
   if pos.type == "namespace" then
-    testNamePattern = "'^" .. escapeTestPattern(pos.name:gsub("'", "")) .. "'"
+    testNamePattern = "'^" .. escapeTestPattern(pos.name) .. "'"
   end
 
   local binary = getJestCommand(pos.path)
