@@ -11,7 +11,7 @@ Using packer:
 
 ```lua
 use({
-  'rcarriga/neotest',
+  'nvim-neotest/neotest',
   requires = {
     ...,
     'haydenmeade/neotest-jest',
