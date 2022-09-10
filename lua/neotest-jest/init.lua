@@ -13,8 +13,50 @@ local util = require("neotest-jest.util")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
-adapter.root = lib.files.match_root_pattern("package.json")
+---@param path string
+---@return boolean
+local function hasJestDependency(path)
+  local rootPath = util.find_package_json_ancestor(path)
 
+  if not lib.files.exists(rootPath .. "/package.json") then
+    print("package.json not found")
+    return false
+  end
+
+  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+adapter.root = function(path)
+  if not hasJestDependency(path) then
+    return
+  end
+
+  return lib.files.match_root_pattern("package.json")(path)
+end
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
@@ -127,8 +169,7 @@ end
 
 local function escapeTestPattern(s)
   return (
-    s
-      :gsub("%(", "%\\(")
+    s:gsub("%(", "%\\(")
       :gsub("%)", "%\\)")
       :gsub("%]", "%\\]")
       :gsub("%[", "%\\[")
