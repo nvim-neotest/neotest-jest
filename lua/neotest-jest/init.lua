@@ -37,6 +37,10 @@ function adapter.is_test_file(file_path)
   return false
 end
 
+function adapter.filter_dir(name)
+  return name ~= "node_modules"
+end
+
 ---@async
 ---@return neotest.Tree | nil
 function adapter.discover_positions(path)
