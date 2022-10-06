@@ -146,7 +146,7 @@ local function escapeTestPattern(s)
   )
 end
 
-local function get_strategy_config(strategy, command)
+local function get_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
       return {
@@ -157,6 +157,8 @@ local function get_strategy_config(strategy, command)
         runtimeExecutable = command[1],
         console = "integratedTerminal",
         internalConsoleOptions = "neverOpen",
+        rootPath = "${workspaceFolder}",
+        cwd = cwd or "${workspaceFolder}",
       }
     end,
   }
@@ -214,9 +216,10 @@ function adapter.build_spec(args)
     pos.path,
   })
 
+  local cwd = getCwd(pos.path)
   return {
     command = command,
-    cwd = getCwd(pos.path),
+    cwd = cwd,
     context = {
       results_path = results_path,
       file = pos.path,
