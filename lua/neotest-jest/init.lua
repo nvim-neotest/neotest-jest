@@ -9,6 +9,7 @@ local util = require("neotest-jest.util")
 ---@field jestConfigFile? string|fun(): string
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
+---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -146,7 +147,7 @@ local function escapeTestPattern(s)
   )
 end
 
-local function get_strategy_config(strategy, command)
+local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
       return {
@@ -157,6 +158,8 @@ local function get_strategy_config(strategy, command)
         runtimeExecutable = command[1],
         console = "integratedTerminal",
         internalConsoleOptions = "neverOpen",
+        rootPath = "${workspaceFolder}",
+        cwd = cwd or "${workspaceFolder}",
       }
     end,
   }
@@ -173,6 +176,10 @@ end
 ---@return string|nil
 local function getCwd(path)
   return nil
+end
+
+local function getStrategyConfig(default_strategy_config, args)
+  return default_strategy_config
 end
 
 ---@param args neotest.RunArgs
@@ -214,14 +221,18 @@ function adapter.build_spec(args)
     pos.path,
   })
 
+  local cwd = getCwd(pos.path)
   return {
     command = command,
-    cwd = getCwd(pos.path),
+    cwd = cwd,
     context = {
       results_path = results_path,
       file = pos.path,
     },
-    strategy = get_strategy_config(args.strategy, command),
+    strategy = getStrategyConfig(
+      get_default_strategy_config(args.strategy, command, cwd) or {},
+      args
+    ),
     env = getEnv(args[2] and args[2].env or {}),
   }
 end
@@ -357,6 +368,13 @@ setmetatable(adapter, {
     elseif opts.cwd then
       getCwd = function()
         return opts.cwd
+      end
+    end
+    if is_callable(opts.strategy_config) then
+      getStrategyConfig = opts.strategy_config
+    elseif opts.strategy_config then
+      getStrategyConfig = function()
+        return opts.strategy_config
       end
     end
     return adapter
