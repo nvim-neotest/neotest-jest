@@ -144,6 +144,7 @@ local function escapeTestPattern(s)
       :gsub("%$", "%\\$")
       :gsub("%^", "%\\^")
       :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
   )
 end
 
