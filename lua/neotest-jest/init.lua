@@ -132,20 +132,20 @@ end
 
 local function escapeTestPattern(s)
   return (
-    s
-      :gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
-  )
+      s
+          :gsub("%(", "%\\(")
+          :gsub("%)", "%\\)")
+          :gsub("%]", "%\\]")
+          :gsub("%[", "%\\[")
+          :gsub("%*", "%\\*")
+          :gsub("%+", "%\\+")
+          :gsub("%-", "%\\-")
+          :gsub("%?", "%\\?")
+          :gsub("%$", "%\\$")
+          :gsub("%^", "%\\^")
+          :gsub("%/", "%\\/")
+          :gsub("%'", "%\\'")
+      )
 end
 
 local function get_default_strategy_config(strategy, command, cwd)
@@ -200,7 +200,12 @@ function adapter.build_spec(args)
     -- pos.id in form "path/to/file::Describe text::test text"
     local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
     testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = "'^" ..escapeTestPattern(testName) .. "'"
+    testNamePattern = "'^" .. escapeTestPattern(testName)
+    if pos.type == "test" then
+      testNamePattern = testNamePattern .. "$'"
+    else
+      testNamePattern = testNamePattern .. "'"
+    end
   end
 
   local binary = getJestCommand(pos.path)
@@ -239,10 +244,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
