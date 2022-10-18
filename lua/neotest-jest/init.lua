@@ -196,12 +196,11 @@ function adapter.build_spec(args)
   local pos = args.tree:data()
   local testNamePattern = "'.*'"
 
-  if pos.type == "test" then
-    testNamePattern = "'" .. escapeTestPattern(pos.name) .. "$'"
-  end
-
-  if pos.type == "namespace" then
-    testNamePattern = "'^" .. escapeTestPattern(pos.name) .. "'"
+  if pos.type == "test" or pos.type == "namespace" then
+    -- pos.id in form "path/to/file::Describe text::test text"
+    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
+    testName, _ = string.gsub(testName, "::", " ")
+    testNamePattern = "'^" ..escapeTestPattern(testName) .. "'"
   end
 
   local binary = getJestCommand(pos.path)
