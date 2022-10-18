@@ -132,20 +132,19 @@ end
 
 local function escapeTestPattern(s)
   return (
-      s
-          :gsub("%(", "%\\(")
-          :gsub("%)", "%\\)")
-          :gsub("%]", "%\\]")
-          :gsub("%[", "%\\[")
-          :gsub("%*", "%\\*")
-          :gsub("%+", "%\\+")
-          :gsub("%-", "%\\-")
-          :gsub("%?", "%\\?")
-          :gsub("%$", "%\\$")
-          :gsub("%^", "%\\^")
-          :gsub("%/", "%\\/")
-          :gsub("%'", "%\\'")
-      )
+    s:gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
+  )
 end
 
 local function get_default_strategy_config(strategy, command, cwd)
@@ -244,10 +243,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+m", "")
-      :gsub("\x1b%[%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
