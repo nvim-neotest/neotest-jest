@@ -158,7 +158,7 @@ describe("build_spec", function()
     assert.is.truthy(spec.context.results_path)
   end)
 
-  async.it('builds command for nested namespace', function()
+  async.it("builds command for nested namespace", function()
     local positions = plugin.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -179,7 +179,7 @@ describe("build_spec", function()
     assert.is.truthy(spec.context.results_path)
   end)
 
-  async.it('builds correct command for test name with \' ', function()
+  async.it("builds correct command for test name with ' ", function()
     local positions = plugin.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -197,6 +197,5 @@ describe("build_spec", function()
     assert.contains(command, "./spec/nestedDescribe.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
-
   end)
 end)
