@@ -132,8 +132,7 @@ end
 
 local function escapeTestPattern(s)
   return (
-    s
-      :gsub("%(", "%\\(")
+    s:gsub("%(", "%\\(")
       :gsub("%)", "%\\)")
       :gsub("%]", "%\\]")
       :gsub("%[", "%\\[")
@@ -144,6 +143,7 @@ local function escapeTestPattern(s)
       :gsub("%$", "%\\$")
       :gsub("%^", "%\\^")
       :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
   )
 end
 
@@ -195,12 +195,16 @@ function adapter.build_spec(args)
   local pos = args.tree:data()
   local testNamePattern = "'.*'"
 
-  if pos.type == "test" then
-    testNamePattern = "'" .. escapeTestPattern(pos.name) .. "$'"
-  end
-
-  if pos.type == "namespace" then
-    testNamePattern = "'^" .. escapeTestPattern(pos.name) .. "'"
+  if pos.type == "test" or pos.type == "namespace" then
+    -- pos.id in form "path/to/file::Describe text::test text"
+    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
+    testName, _ = string.gsub(testName, "::", " ")
+    testNamePattern = "'^" .. escapeTestPattern(testName)
+    if pos.type == "test" then
+      testNamePattern = testNamePattern .. "$'"
+    else
+      testNamePattern = testNamePattern .. "'"
+    end
   end
 
   local binary = getJestCommand(pos.path)
