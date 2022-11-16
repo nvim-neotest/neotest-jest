@@ -99,15 +99,27 @@ end
 ---@param path string
 ---@return string
 local function getJestCommand(path)
-  if vim.g.neotest_jest_cmd then
-    return vim.g.neotest_jest_cmd
+  local gitAncestor = util.find_git_ancestor(path)
+
+  local function findBinary(p)
+    local rootPath = util.find_node_modules_ancestor(p)
+    local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+
+    if util.path.exists(jestBinary) then
+      return jestBinary
+    end
+
+    -- If no binary found and the current directory isn't the parent
+    -- git ancestor, let's traverse up the tree again
+    if rootPath ~= gitAncestor then
+      return findBinary(util.path.dirname(rootPath))
+    end
   end
 
-  local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+  local foundBinary = findBinary(path)
 
-  if util.path.exists(jestBinary) then
-    return jestBinary
+  if foundBinary then
+    return foundBinary
   end
 
   return "jest"
