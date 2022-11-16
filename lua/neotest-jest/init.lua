@@ -47,6 +47,9 @@ function adapter.discover_positions(path)
 end
 
 local function getJestCommand()
+  if vim.g.neotest_jest_cmd then
+    return vim.g.neotest_jest_cmd
+  end
   if vim.fn.filereadable("node_modules/.bin/jest") then
     return "node_modules/.bin/jest"
   end
