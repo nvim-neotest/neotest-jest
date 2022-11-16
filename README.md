@@ -1,5 +1,7 @@
 # neotest-jest
 
+[![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml)
+
 This plugin provides a jest adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
 **It is currently a work in progress**. It will be transferred to the official neotest organisation (once it's been created).
 
@@ -9,7 +11,7 @@ Using packer:
 
 ```lua
 use({
-  'rcarriga/neotest',
+  'nvim-neotest/neotest',
   requires = {
     ...,
     'haydenmeade/neotest-jest',
@@ -19,7 +21,12 @@ use({
       ...,
       adapters = {
         require('neotest-jest')({
-          jestCommand = "npm test --"
+          jestCommand = "npm test --",
+          jestConfigFile = "custom.jest.config.ts",
+          env = { CI = true },
+          cwd = function(path)
+            return vim.fn.getcwd()
+          end,
         }),
       }
     })
@@ -31,11 +38,15 @@ use({
 
 See neotest's documentation for more information on how to run tests.
 
-## Feature requests
+## :gift: Contributing
 
-Please do note that _I do not intend to implement feature requests_, this repo is an initial starting point for the nvim js/ts/jest community.
-Hopefully once it is more stable users will be able to contribute to the project\_. For my own part I only intend to implement functionality that
-I use in daily workflow.
+Please raise a PR if you are interested in adding new functionality or fixing any bugs. When submitting a bug, please include an example spec that can be tested.
+
+To trigger the tests for the adapter, run:
+
+```sh
+./scripts/test
+```
 
 ## Bug Reports
 
