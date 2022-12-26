@@ -3,6 +3,9 @@ local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
+local jest_util = require("modified-plugins.neotest-jest.lua.neotest-jest.jest-util")
+local parameterized_tests =
+  require("modified-plugins.neotest-jest.lua.neotest-jest.parameterized-tests")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string|fun(): string
@@ -40,6 +43,47 @@ end
 
 function adapter.filter_dir(name)
   return name ~= "node_modules"
+end
+
+local function get_match_type(captured_nodes)
+  if captured_nodes["test.name"] then
+    return "test"
+  end
+  if captured_nodes["namespace.name"] then
+    return "namespace"
+  end
+end
+
+-- Enrich `it.each` tests with metadata about TS node position
+function adapter.build_position(file_path, source, captured_nodes)
+  local match_type = get_match_type(captured_nodes)
+  if not match_type then
+    return
+  end
+
+  ---@type string
+  local name = vim.treesitter.get_node_text(captured_nodes[match_type .. ".name"], source)
+  local definition = captured_nodes[match_type .. ".definition"]
+
+  if captured_nodes["each_name"] then
+    local range = { definition:range() }
+    return {
+      type = match_type,
+      path = file_path,
+      name = name,
+      range = range,
+      each_test_meta = {
+        jest_test_position = { definition:named_child(1):range() },
+      },
+    }
+  end
+
+  return {
+    type = match_type,
+    path = file_path,
+    name = name,
+    range = { definition:range() },
+  }
 end
 
 ---@async
@@ -86,48 +130,25 @@ function adapter.discover_positions(path)
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          object: (identifier) @func_name (#any-of? @func_name "it" "test") 
+          property: (property_identifier) @each_name (#eq? @each_name "each")
         )
+        arguments: (arguments (array) @array_parameters)? (template_string)? @template_string_parameters
       )
       arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
     )) @test.definition
   ]]
 
-  return lib.treesitter.parse_positions(path, query, { nested_tests = true })
-end
+  local positions = lib.treesitter.parse_positions(path, query, {
+    nested_tests = false,
+    build_position = 'require("modified-plugins.neotest-jest.lua.neotest-jest").build_position',
+  })
 
----@param path string
----@return string
-local function getJestCommand(path)
-  local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
-
-  if util.path.exists(jestBinary) then
-    return jestBinary
+  if true then
+    parameterized_tests.enrich_positions_with_parameterized_tests(positions)
   end
 
-  return "jest"
-end
-
-local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
-
----@param path string
----@return string|nil
-local function getJestConfig(path)
-  local rootPath = jestConfigPattern(path)
-
-  if not rootPath then
-    return nil
-  end
-
-  local jestJs = util.path.join(rootPath, "jest.config.js")
-  local jestTs = util.path.join(rootPath, "jest.config.ts")
-
-  if util.path.exists(jestTs) then
-    return jestTs
-  end
-
-  return jestJs
+  return positions
 end
 
 local function escapeTestPattern(s)
@@ -207,8 +228,8 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = getJestCommand(pos.path)
-  local config = getJestConfig(pos.path) or "jest.config.js"
+  local binary = jest_util.getJestCommand(pos.path)
+  local config = jest_util.getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
     -- only use config if available
@@ -271,13 +292,7 @@ local function parsed_json_to_results(data, output_file, consoleOut)
         return {}
       end
 
-      local keyid = testFn
-
-      for _, value in ipairs(assertionResult.ancestorTitles) do
-        keyid = keyid .. "::" .. value
-      end
-
-      keyid = keyid .. "::" .. name
+      local keyid = jest_util.get_test_full_id_from_test_result(testFn, assertionResult)
 
       if status == "pending" then
         status = "skipped"
