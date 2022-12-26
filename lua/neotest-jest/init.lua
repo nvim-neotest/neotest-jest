@@ -66,14 +66,13 @@ function adapter.build_position(file_path, source, captured_nodes)
   local definition = captured_nodes[match_type .. ".definition"]
 
   if captured_nodes["each_name"] then
-    local range = { definition:range() }
     return {
       type = match_type,
       path = file_path,
       name = name,
-      range = range,
+      range = { definition:range() },
       each_test_meta = {
-        jest_test_position = { definition:named_child(1):range() },
+        jest_test_position = { definition:range() },
       },
     }
   end
@@ -143,8 +142,15 @@ function adapter.discover_positions(path)
     build_position = 'require("modified-plugins.neotest-jest.lua.neotest-jest").build_position',
   })
 
-  if true then
-    parameterized_tests.enrich_positions_with_parameterized_tests(positions)
+  local parameterized_tests_positions =
+    parameterized_tests.get_parameterized_tests_positions(positions)
+
+  -- put config value here instead of true
+  if true and #parameterized_tests_positions > 0 then
+    parameterized_tests.enrich_positions_with_parameterized_tests(
+      positions:data().path,
+      parameterized_tests_positions
+    )
   end
 
   return positions
