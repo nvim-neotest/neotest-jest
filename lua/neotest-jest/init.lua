@@ -133,7 +133,6 @@ function adapter.discover_positions(path)
           object: (identifier) @func_name (#any-of? @func_name "it" "test") 
           property: (property_identifier) @each_name (#eq? @each_name "each")
         )
-        arguments: (arguments (array) @array_parameters)? (template_string)? @template_string_parameters
       )
       arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
     )) @test.definition
