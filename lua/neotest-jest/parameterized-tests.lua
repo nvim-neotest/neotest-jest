@@ -4,13 +4,17 @@ local jest_util = require("modified-plugins.neotest-jest.lua.neotest-jest.jest-u
 
 local M = {}
 
+-- Traverses through whole Tree and returns all parameterized tests positions.
+-- All parameterized test positions should have `is_parameterized` property on it.
+-- @param positions neotest.Tree
+-- @return neotest.Tree[]
 function M.get_parameterized_tests_positions(positions)
   local parameterized_tests_positions = {}
 
   for _, value in positions:iter_nodes() do
     local data = value:data()
 
-    if data.type == "test" and data.each_test_meta then
+    if data.type == "test" and data.is_parameterized == true then
       parameterized_tests_positions[#parameterized_tests_positions + 1] = value
     end
   end
@@ -18,8 +22,11 @@ function M.get_parameterized_tests_positions(positions)
   return parameterized_tests_positions
 end
 
--- Runs `jest` in `positins` directory skipping all tests. It skips all tests by adding
+-- Synchronously runs `jest` in `file_path` directory skipping all tests and returns `jest` output.
+-- Output have all of the test names inside it. It skips all tests by adding
 -- extra `--testPathPattern` parameter to jest command with placeholder string that should never exist.
+-- @param file_path string - path to file to search for tests
+-- @return table - parsed jest test results
 local function run_jest_test_discovery(file_path)
   local binary = jest_util.getJestCommand(file_path)
   local config = jest_util.getJestConfig(file_path) or "jest.config.js"
@@ -54,6 +61,10 @@ local function run_jest_test_discovery(file_path)
   return vim.json.decode(jest_json_string, { luanil = { object = true } })
 end
 
+-- Searches through whole `jest` command output and returns array of all tests at given `position`.
+-- @param jest_output table
+-- @param position number[]
+-- @return { keyid: string, name: string }[]
 local function get_tests_ids_at_position(jest_output, position)
   local test_ids_at_position = {}
   for _, testResult in pairs(jest_output.testResults) do
@@ -73,6 +84,11 @@ local function get_tests_ids_at_position(jest_output, position)
   return test_ids_at_position
 end
 
+-- First runs `jest` in `file_path` to get all of the tests in the file. Then it takes all of
+-- the parameterized tests and finds tests that were in the same position as parameterized test
+-- and adds new tests (with range=nil) to the parameterized test.
+-- @param file_path string
+-- @param each_tests_positions neotest.Tree[]
 function M.enrich_positions_with_parameterized_tests(file_path, each_tests_positions)
   local jest_test_discovery_output = run_jest_test_discovery(file_path)
 
@@ -83,8 +99,7 @@ function M.enrich_positions_with_parameterized_tests(file_path, each_tests_posit
   for _, value in pairs(each_tests_positions) do
     local data = value:data()
 
-    local each_test_results =
-      get_tests_ids_at_position(jest_test_discovery_output, data.each_test_meta.jest_test_position)
+    local each_test_results = get_tests_ids_at_position(jest_test_discovery_output, data.range)
 
     for _, each_test_result in ipairs(each_test_results) do
       local new_data = {

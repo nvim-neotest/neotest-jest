@@ -65,23 +65,12 @@ function adapter.build_position(file_path, source, captured_nodes)
   local name = vim.treesitter.get_node_text(captured_nodes[match_type .. ".name"], source)
   local definition = captured_nodes[match_type .. ".definition"]
 
-  if captured_nodes["each_name"] then
-    return {
-      type = match_type,
-      path = file_path,
-      name = name,
-      range = { definition:range() },
-      each_test_meta = {
-        jest_test_position = { definition:range() },
-      },
-    }
-  end
-
   return {
     type = match_type,
     path = file_path,
     name = name,
     range = { definition:range() },
+    is_parameterized = captured_nodes["each_property"] and true or false,
   }
 end
 
@@ -130,7 +119,7 @@ function adapter.discover_positions(path)
       function: (call_expression
         function: (member_expression
           object: (identifier) @func_name (#any-of? @func_name "it" "test") 
-          property: (property_identifier) @each_name (#eq? @each_name "each")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
       arguments: (arguments (string (string_fragment) @test.name) (arrow_function))

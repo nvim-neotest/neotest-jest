@@ -2,6 +2,7 @@ local util = require("neotest-jest.util")
 
 local M = {}
 
+-- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
 ---@return string
 function M.getJestCommand(path)
@@ -17,6 +18,7 @@ end
 
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
+-- Returns jest config file path if it exists.
 ---@param path string
 ---@return string|nil
 function M.getJestConfig(path)
@@ -36,6 +38,10 @@ function M.getJestConfig(path)
   return jestJs
 end
 
+-- Returns neotest test id from jest test result.
+-- @param testFile string
+-- @param assertionResult table
+-- @return string
 function M.get_test_full_id_from_test_result(testFile, assertionResult)
   local keyid = testFile
   local name = assertionResult.title
