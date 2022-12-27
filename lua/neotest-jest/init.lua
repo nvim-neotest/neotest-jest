@@ -3,9 +3,8 @@ local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
-local jest_util = require("modified-plugins.neotest-jest.lua.neotest-jest.jest-util")
-local parameterized_tests =
-  require("modified-plugins.neotest-jest.lua.neotest-jest.parameterized-tests")
+local jest_util = require("neotest-jest.jest-util")
+local parameterized_tests = require("neotest-jest.parameterized-tests")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string|fun(): string
@@ -128,7 +127,7 @@ function adapter.discover_positions(path)
 
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
-    build_position = 'require("modified-plugins.neotest-jest.lua.neotest-jest").build_position',
+    build_position = 'require("neotest-jest.lua.neotest-jest").build_position',
   })
 
   local parameterized_tests_positions =

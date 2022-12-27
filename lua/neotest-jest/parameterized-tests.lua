@@ -1,6 +1,6 @@
 local lib = require("neotest.lib")
 local util = require("neotest-jest.util")
-local jest_util = require("modified-plugins.neotest-jest.lua.neotest-jest.jest-util")
+local jest_util = require("neotest-jest.jest-util")
 
 local M = {}
 
