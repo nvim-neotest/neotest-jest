@@ -293,7 +293,6 @@ function adapter.build_spec(args)
     "--testLocationInResults",
     "--verbose",
     "--json",
-    "--watch",
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     pos.path,

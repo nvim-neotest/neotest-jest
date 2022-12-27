@@ -185,7 +185,7 @@ function M.find_package_json_ancestor(startpath)
   end)
 end
 
--- Node: this function is almost entirely taken from https://github.com/nvim-neotest/neotest/blob/master/lua/neotest/lib/file/init.lua#L93-L144
+-- Note: this function is almost entirely taken from https://github.com/nvim-neotest/neotest/blob/master/lua/neotest/lib/file/init.lua#L93-L144
 -- The only difference is that neotest function reads only new lines and this one reads and returns the whole file
 --- Streams data from a file, watching for new data over time
 --- Each time new data arrives function reads whole file and returns its content
