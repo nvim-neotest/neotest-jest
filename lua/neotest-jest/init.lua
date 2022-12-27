@@ -127,7 +127,7 @@ function adapter.discover_positions(path)
 
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
-    build_position = 'require("neotest-jest.lua.neotest-jest").build_position',
+    build_position = 'require("neotest-jest").build_position',
   })
 
   local parameterized_tests_positions =
