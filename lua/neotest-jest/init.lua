@@ -2,7 +2,7 @@
 local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
-local util = require("modified-plugins.neotest-jest.lua.neotest-jest.util")
+local util = require("neotest-jest.util")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string|fun(): string
@@ -321,7 +321,6 @@ function adapter.build_spec(args)
           return {}
         end
 
-        -- think about nil
         return parsed_json_to_results(parsed, results_path, nil)
       end
     end,
