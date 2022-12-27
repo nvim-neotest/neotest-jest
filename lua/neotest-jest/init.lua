@@ -2,7 +2,7 @@
 local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
-local util = require("neotest-jest.util")
+local util = require("modified-plugins.neotest-jest.lua.neotest-jest.util")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string|fun(): string
@@ -182,65 +182,6 @@ local function getStrategyConfig(default_strategy_config, args)
   return default_strategy_config
 end
 
----@param args neotest.RunArgs
----@return neotest.RunSpec | nil
-function adapter.build_spec(args)
-  local results_path = async.fn.tempname() .. ".json"
-  local tree = args.tree
-
-  if not tree then
-    return
-  end
-
-  local pos = args.tree:data()
-  local testNamePattern = "'.*'"
-
-  if pos.type == "test" or pos.type == "namespace" then
-    -- pos.id in form "path/to/file::Describe text::test text"
-    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
-    testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = "'^" .. escapeTestPattern(testName)
-    if pos.type == "test" then
-      testNamePattern = testNamePattern .. "$'"
-    else
-      testNamePattern = testNamePattern .. "'"
-    end
-  end
-
-  local binary = getJestCommand(pos.path)
-  local config = getJestConfig(pos.path) or "jest.config.js"
-  local command = vim.split(binary, "%s+")
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
-  end
-
-  vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    pos.path,
-  })
-
-  local cwd = getCwd(pos.path)
-  return {
-    command = command,
-    cwd = cwd,
-    context = {
-      results_path = results_path,
-      file = pos.path,
-    },
-    strategy = getStrategyConfig(
-      get_default_strategy_config(args.strategy, command, cwd) or {},
-      args
-    ),
-    env = getEnv(args[2] and args[2].env or {}),
-  }
-end
-
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
@@ -314,10 +255,91 @@ local function parsed_json_to_results(data, output_file, consoleOut)
   return tests
 end
 
+---@param args neotest.RunArgs
+---@return neotest.RunSpec | nil
+function adapter.build_spec(args)
+  local results_path = async.fn.tempname() .. ".json"
+  local tree = args.tree
+
+  if not tree then
+    return
+  end
+
+  local pos = args.tree:data()
+  local testNamePattern = "'.*'"
+
+  if pos.type == "test" or pos.type == "namespace" then
+    -- pos.id in form "path/to/file::Describe text::test text"
+    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
+    testName, _ = string.gsub(testName, "::", " ")
+    testNamePattern = "'^" .. escapeTestPattern(testName)
+    if pos.type == "test" then
+      testNamePattern = testNamePattern .. "$'"
+    else
+      testNamePattern = testNamePattern .. "'"
+    end
+  end
+
+  local binary = getJestCommand(pos.path)
+  local config = getJestConfig(pos.path) or "jest.config.js"
+  local command = vim.split(binary, "%s+")
+  if util.path.exists(config) then
+    -- only use config if available
+    table.insert(command, "--config=" .. config)
+  end
+
+  vim.list_extend(command, {
+    "--no-coverage",
+    "--testLocationInResults",
+    "--verbose",
+    "--json",
+    "--watch",
+    "--outputFile=" .. results_path,
+    "--testNamePattern=" .. testNamePattern,
+    pos.path,
+  })
+
+  local cwd = getCwd(pos.path)
+
+  -- creating empty file for streaming results
+  lib.files.write(results_path, "")
+  local stream_data, stop_stream = util.stream(results_path)
+
+  return {
+    command = command,
+    cwd = cwd,
+    context = {
+      results_path = results_path,
+      file = pos.path,
+      stop_stream = stop_stream,
+    },
+    stream = function()
+      return function()
+        local new_results = stream_data()
+        local ok, parsed = pcall(vim.json.decode, new_results, { luanil = { object = true } })
+
+        if not ok or not parsed.testResults then
+          return {}
+        end
+
+        -- think about nil
+        return parsed_json_to_results(parsed, results_path, nil)
+      end
+    end,
+    strategy = getStrategyConfig(
+      get_default_strategy_config(args.strategy, command, cwd) or {},
+      args
+    ),
+    env = getEnv(args[2] and args[2].env or {}),
+  }
+end
+
 ---@async
 ---@param spec neotest.RunSpec
 ---@return neotest.Result[]
 function adapter.results(spec, b, tree)
+  spec.context.stop_stream()
+
   local output_file = spec.context.results_path
 
   local success, data = pcall(lib.files.read, output_file)
