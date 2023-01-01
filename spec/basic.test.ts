@@ -14,4 +14,8 @@ describe("describe text", () => {
   test("4", async () => {
     console.log("do test");
   });
+
+  test("4", async function() {
+    console.log("do test");
+  });
 });
