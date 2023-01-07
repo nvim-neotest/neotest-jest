@@ -117,7 +117,7 @@ function adapter.discover_positions(path)
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "it" "test") 
+          object: (identifier) @func_name (#any-of? @func_name "it" "test")
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
@@ -196,6 +196,79 @@ local function getStrategyConfig(default_strategy_config, args)
   return default_strategy_config
 end
 
+local function cleanAnsi(s)
+  return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
+end
+
+local function findErrorPosition(file, errStr)
+  -- Look for: /path/to/file.js:123:987
+  local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
+  local _, _, errLine, errColumn = string.find(errStr, regexp)
+
+  return errLine, errColumn
+end
+
+local function parsed_json_to_results(data, output_file, consoleOut)
+  local tests = {}
+
+  for _, testResult in pairs(data.testResults) do
+    local testFn = testResult.name
+
+    for _, assertionResult in pairs(testResult.assertionResults) do
+      local status, name = assertionResult.status, assertionResult.title
+
+      if name == nil then
+        logger.error("Failed to find parsed test result ", assertionResult)
+        return {}
+      end
+
+      local keyid = testFn
+
+      for _, value in ipairs(assertionResult.ancestorTitles) do
+        keyid = keyid .. "::" .. value
+      end
+
+      keyid = keyid .. "::" .. name
+
+      if status == "pending" then
+        status = "skipped"
+      end
+
+      tests[keyid] = {
+        status = status,
+        short = name .. ": " .. status,
+        output = consoleOut,
+        location = assertionResult.location,
+      }
+
+      if not vim.tbl_isempty(assertionResult.failureMessages) then
+        local errors = {}
+
+        for i, failMessage in ipairs(assertionResult.failureMessages) do
+          local msg = cleanAnsi(failMessage)
+          local errorLine, errorColumn = findErrorPosition(testFn, msg)
+
+          errors[i] = {
+            line = (errorLine or assertionResult.location.line) - 1,
+            column = (errorColumn or 1) - 1,
+            message = msg,
+          }
+
+          tests[keyid].short = tests[keyid].short .. "\n" .. msg
+        end
+
+        tests[keyid].errors = errors
+      end
+    end
+  end
+
+  return tests
+end
+
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
@@ -240,13 +313,31 @@ function adapter.build_spec(args)
   })
 
   local cwd = getCwd(pos.path)
+
+  -- creating empty file for streaming results
+  lib.files.write(results_path, "")
+  local stream_data, stop_stream = util.stream(results_path)
+
   return {
     command = command,
     cwd = cwd,
     context = {
       results_path = results_path,
       file = pos.path,
+      stop_stream = stop_stream,
     },
+    stream = function()
+      return function()
+        local new_results = stream_data()
+        local ok, parsed = pcall(vim.json.decode, new_results, { luanil = { object = true } })
+
+        if not ok or not parsed.testResults then
+          return {}
+        end
+
+        return parsed_json_to_results(parsed, results_path, nil)
+      end
+    end,
     strategy = getStrategyConfig(
       get_default_strategy_config(args.strategy, command, cwd) or {},
       args
@@ -255,77 +346,12 @@ function adapter.build_spec(args)
   }
 end
 
-local function cleanAnsi(s)
-  return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
-end
-
-local function findErrorPosition(file, errStr)
-  -- Look for: /path/to/file.js:123:987
-  local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
-  local _, _, errLine, errColumn = string.find(errStr, regexp)
-
-  return errLine, errColumn
-end
-
-local function parsed_json_to_results(data, output_file, consoleOut)
-  local tests = {}
-
-  for _, testResult in pairs(data.testResults) do
-    local testFn = testResult.name
-
-    for _, assertionResult in pairs(testResult.assertionResults) do
-      local status, name = assertionResult.status, assertionResult.title
-
-      if name == nil then
-        logger.error("Failed to find parsed test result ", assertionResult)
-        return {}
-      end
-
-      local keyid = jest_util.get_test_full_id_from_test_result(testFn, assertionResult)
-
-      if status == "pending" then
-        status = "skipped"
-      end
-
-      tests[keyid] = {
-        status = status,
-        short = name .. ": " .. status,
-        output = consoleOut,
-        location = assertionResult.location,
-      }
-
-      if not vim.tbl_isempty(assertionResult.failureMessages) then
-        local errors = {}
-
-        for i, failMessage in ipairs(assertionResult.failureMessages) do
-          local msg = cleanAnsi(failMessage)
-          local errorLine, errorColumn = findErrorPosition(testFn, msg)
-
-          errors[i] = {
-            line = (errorLine or assertionResult.location.line) - 1,
-            column = (errorColumn or 1) - 1,
-            message = msg,
-          }
-
-          tests[keyid].short = tests[keyid].short .. "\n" .. msg
-        end
-
-        tests[keyid].errors = errors
-      end
-    end
-  end
-
-  return tests
-end
-
 ---@async
 ---@param spec neotest.RunSpec
 ---@return neotest.Result[]
 function adapter.results(spec, b, tree)
+  spec.context.stop_stream()
+
   local output_file = spec.context.results_path
 
   local success, data = pcall(lib.files.read, output_file)

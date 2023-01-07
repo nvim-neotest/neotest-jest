@@ -38,6 +38,28 @@ use({
 
 See neotest's documentation for more information on how to run tests.
 
+### Running tests in watch mode
+
+`jest` allows to run your tests in [watch mode](https://jestjs.io/docs/cli#--watch).
+To run test in this mode you either can enable it globally in the setup:
+
+```lua
+require('neotest').setup({
+  ...,
+  adapters = {
+    require('neotest-jest')({
+      jestCommand = "jest --watch ",
+    }),
+  }
+})
+```
+
+or add a specific keymap to run tests with watch mode:
+
+```lua
+vim.api.nvim_set_keymap("n", "<leader>tw", "<cmd>lua require('neotest').run.run({ jestCommand = 'jest --watch ' })<cr>", {})
+```
+
 ## :gift: Contributing
 
 Please raise a PR if you are interested in adding new functionality or fixing any bugs. When submitting a bug, please include an example spec that can be tested.
