@@ -115,4 +115,32 @@ function M.enrich_positions_with_parameterized_tests(file_path, each_tests_posit
   end
 end
 
+local JEST_PARAMETER_TYPES = {
+  "%%p",
+  "%%s",
+  "%%d",
+  "%%i",
+  "%%f",
+  "%%j",
+  "%%o",
+  "%%#",
+  "%%%%",
+}
+
+-- Replaces all of the jest parameters (named and unnamed) with `.*` regex pattern.
+-- It allows to run all of the parameterized tests in a single run. Idea inpired by Webstorm jest plugin.
+-- @param test_name string - test name with escaped characters
+-- @returns string
+function M.replaceTestParametersWithRegex(test_name)
+  -- replace named parameters: named characters can be single word (like $parameterName)
+  -- or field access words (like $parameterName.fieldName)
+  local result = test_name:gsub("\\$[%a%.]+", ".*")
+
+  for _, parameter in ipairs(JEST_PARAMETER_TYPES) do
+    result = result:gsub(parameter, ".*")
+  end
+
+  return result
+end
+
 return M

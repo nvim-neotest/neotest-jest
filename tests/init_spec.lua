@@ -1,3 +1,4 @@
+local stub = require("luassert.stub")
 local async = require("plenary.async.tests")
 local plugin = require("neotest-jest")({
   jestCommand = "jest",
@@ -57,6 +58,7 @@ describe("discover_positions", function()
     assert.equals(expected_output[1].type, positions[1].type)
     assert.equals(expected_output[2][1].name, positions[2][1].name)
     assert.equals(expected_output[2][1].type, positions[2][1].type)
+    assert.equals(positions[2][1].is_parameterized, false)
 
     assert.equals(5, #positions[2])
     for i, value in ipairs(expected_output[2][2]) do
@@ -65,38 +67,46 @@ describe("discover_positions", function()
       assert.is.truthy(position)
       assert.equals(value.name, position.name)
       assert.equals(value.type, position.type)
+      assert.equals(position.is_parameterized, false)
     end
   end)
 
   async.it("provides meaningful names for array driven tests", function()
+    stub(require("neotest.lib").process, "run")
     local positions = plugin.discover_positions("./spec/array.test.ts"):to_list()
 
     local expected_output = {
       {
         name = "array.test.ts",
         type = "file",
+        is_parameterized = false,
       },
       {
         {
           name = "describe text",
           type = "namespace",
+          is_parameterized = false,
         },
         {
           {
             name = "Array1",
             type = "test",
+            is_parameterized = true,
           },
           {
             name = "Array2",
             type = "test",
+            is_parameterized = true,
           },
           {
             name = "Array3",
             type = "test",
+            is_parameterized = true,
           },
           {
             name = "Array4",
             type = "test",
+            is_parameterized = true,
           },
         },
       },
@@ -106,6 +116,7 @@ describe("discover_positions", function()
     assert.equals(expected_output[1].type, positions[1].type)
     assert.equals(expected_output[2][1].name, positions[2][1].name)
     assert.equals(expected_output[2][1].type, positions[2][1].type)
+    assert.equals(expected_output[2][1].is_parameterized, positions[2][1].is_parameterized)
     assert.equals(5, #positions[2])
     for i, value in ipairs(expected_output[2][2]) do
       assert.is.truthy(value)
@@ -113,6 +124,7 @@ describe("discover_positions", function()
       assert.is.truthy(position)
       assert.equals(value.name, position.name)
       assert.equals(value.type, position.type)
+      assert.equals(value.is_parameterized, position.is_parameterized)
     end
   end)
 end)
@@ -197,5 +209,33 @@ describe("build_spec", function()
     assert.contains(command, "./spec/nestedDescribe.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
+  end)
+
+  describe("parameterized test names", function()
+    for _, test_data in ipairs({
+      { index = 1, expected_name = "^describe text test with percent .*$" },
+      {
+        index = 2,
+        expected_name = "^describe text test with all of the parameters .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*$",
+      },
+      { index = 3, expected_name = "^describe text test with .*$" },
+      { index = 4, expected_name = "^describe text test with .* and .*$" },
+      { index = 5, expected_name = "^describe text test with .*$" },
+      { index = 6, expected_name = "^describe text test with .* and \\(parenthesis\\)$" },
+    }) do
+      async.it("builds command with correct test name pattern " .. test_data.index, function()
+        -- mock neotest process run to not run jest test discovery
+        stub(require("neotest.lib").process, "run")
+
+        local positions = plugin.discover_positions("./spec/parameterized.test.ts"):to_list()
+
+        local tree = Tree.from_list(positions, function(pos)
+          return pos.id
+        end)
+
+        local spec = plugin.build_spec({ tree = tree:children()[1]:children()[test_data.index] })
+        assert.contains(spec.command, "--testNamePattern='" .. test_data.expected_name .. "'")
+      end)
+    end
   end)
 end)

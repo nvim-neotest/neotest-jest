@@ -18,6 +18,9 @@ local adapter = { name = "neotest-jest" }
 
 adapter.root = lib.files.match_root_pattern("package.json")
 
+local getJestCommand = jest_util.getJestCommand
+local getJestConfig = jest_util.getJestConfig
+
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
@@ -128,6 +131,7 @@ function adapter.discover_positions(path)
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
     build_position = 'require("neotest-jest").build_position',
+    -- build_position = adapter.build_position,
   })
 
   local parameterized_tests_positions =
@@ -286,7 +290,11 @@ function adapter.build_spec(args)
     -- pos.id in form "path/to/file::Describe text::test text"
     local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
     testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = "'^" .. escapeTestPattern(testName)
+    testNamePattern = escapeTestPattern(testName)
+    testNamePattern = pos.is_parameterized
+        and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
+      or testNamePattern
+    testNamePattern = "'^" .. testNamePattern
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$'"
     else
@@ -294,8 +302,8 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = jest_util.getJestCommand(pos.path)
-  local config = jest_util.getJestConfig(pos.path) or "jest.config.js"
+  local binary = getJestCommand(pos.path)
+  local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
     -- only use config if available
