@@ -278,6 +278,8 @@ function adapter.build_spec(args)
     else
       testNamePattern = testNamePattern .. "'"
     end
+  elseif pos.type == "file" then
+    testNamePattern = pos.name
   end
 
   local binary = getJestCommand(pos.path)
@@ -288,13 +290,15 @@ function adapter.build_spec(args)
     table.insert(command, "--config=" .. config)
   end
 
+  local testPattern = pos.type == "file" and '--testPathPattern=' or '--testNamePattern='
+
   vim.list_extend(command, {
     "--no-coverage",
     "--testLocationInResults",
     "--verbose",
     "--json",
     "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
+    testPattern .. testNamePattern,
     pos.path,
   })
 
