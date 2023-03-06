@@ -184,6 +184,15 @@ function M.find_package_json_ancestor(startpath)
     end
   end)
 end
+function M.find_git_ancestor(startpath)
+  return M.search_ancestors(startpath, function(path)
+    -- .git is a file when the project is a git worktree
+    -- or it's a directory if it's a regular project
+    if M.path.is_file(M.path.join(path, ".git")) or M.path.is_dir(M.path.join(path, ".git")) then
+      return path
+    end
+  end)
+end
 
 -- Note: this function is almost entirely taken from https://github.com/nvim-neotest/neotest/blob/master/lua/neotest/lib/file/init.lua#L93-L144
 -- The only difference is that neotest function reads only new lines and this one reads and returns the whole file
