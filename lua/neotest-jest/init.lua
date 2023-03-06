@@ -137,8 +137,7 @@ function adapter.discover_positions(path)
   local parameterized_tests_positions =
     parameterized_tests.get_parameterized_tests_positions(positions)
 
-  -- put config value here instead of true
-  if true and #parameterized_tests_positions > 0 then
+  if adapter.jest_test_discovery and #parameterized_tests_positions > 0 then
     parameterized_tests.enrich_positions_with_parameterized_tests(
       positions:data().path,
       parameterized_tests_positions
@@ -388,7 +387,7 @@ end
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if util.is_callable(opts.jestCommand) then
+    if is_callable(opts.jestCommand) then
       getJestCommand = opts.jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
@@ -423,6 +422,11 @@ setmetatable(adapter, {
         return opts.strategy_config
       end
     end
+
+    if opts.jest_test_discovery then
+      adapter.jest_test_discovery = true
+    end
+
     return adapter
   end,
 })
