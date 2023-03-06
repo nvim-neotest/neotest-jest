@@ -89,22 +89,26 @@ end
 -- and adds new tests (with range=nil) to the parameterized test.
 -- @param file_path string
 -- @param each_tests_positions neotest.Tree[]
-function M.enrich_positions_with_parameterized_tests(file_path, each_tests_positions)
+function M.enrich_positions_with_parameterized_tests(
+  file_path,
+  parsed_parameterized_tests_positions
+)
   local jest_test_discovery_output = run_jest_test_discovery(file_path)
 
   if jest_test_discovery_output == nil then
     return
   end
 
-  for _, value in pairs(each_tests_positions) do
+  for _, value in pairs(parsed_parameterized_tests_positions) do
     local data = value:data()
 
-    local each_test_results = get_tests_ids_at_position(jest_test_discovery_output, data.range)
+    local parameterized_test_results_for_position =
+      get_tests_ids_at_position(jest_test_discovery_output, data.range)
 
-    for _, each_test_result in ipairs(each_test_results) do
+    for _, test_result in ipairs(parameterized_test_results_for_position) do
       local new_data = {
-        id = each_test_result.keyid,
-        name = each_test_result.name,
+        id = test_result.keyid,
+        name = test_result.name,
         path = data.path,
       }
       new_data.range = nil

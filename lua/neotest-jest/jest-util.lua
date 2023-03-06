@@ -8,17 +8,8 @@ end
 
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
----@param args table - table containing test run arguments
 ---@return string
-function M.getJestCommand(path, args)
-  if args then
-    if M.is_callable(args.jestCommand) then
-      return args.jestCommand()
-    elseif args.jestCommand then
-      return args.jestCommand
-    end
-  end
-
+function M.getJestCommand(path)
   local gitAncestor = util.find_git_ancestor(path)
 
   local function findBinary(p)

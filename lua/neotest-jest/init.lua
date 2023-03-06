@@ -131,7 +131,6 @@ function adapter.discover_positions(path)
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
     build_position = 'require("neotest-jest").build_position',
-    -- build_position = adapter.build_position,
   })
 
   local parameterized_tests_positions =
@@ -380,7 +379,7 @@ function adapter.results(spec, b, tree)
   return results
 end
 
-local function is_callable(obj)
+local is_callable = function(obj)
   return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
 
