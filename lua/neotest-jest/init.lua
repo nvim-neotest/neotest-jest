@@ -302,7 +302,7 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = getJestCommand(pos.path)
+  local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
@@ -381,14 +381,14 @@ function adapter.results(spec, b, tree)
   return results
 end
 
-local is_callable = function(obj)
+local function is_callable(obj)
   return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
 
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if is_callable(opts.jestCommand) then
+    if util.is_callable(opts.jestCommand) then
       getJestCommand = opts.jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
