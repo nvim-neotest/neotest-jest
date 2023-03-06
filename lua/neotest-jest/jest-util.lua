@@ -6,11 +6,27 @@ local M = {}
 ---@param path string
 ---@return string
 function M.getJestCommand(path)
-  local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+  local gitAncestor = util.find_git_ancestor(path)
 
-  if util.path.exists(jestBinary) then
-    return jestBinary
+  local function findBinary(p)
+    local rootPath = util.find_node_modules_ancestor(p)
+    local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+
+    if util.path.exists(jestBinary) then
+      return jestBinary
+    end
+
+    -- If no binary found and the current directory isn't the parent
+    -- git ancestor, let's traverse up the tree again
+    if rootPath ~= gitAncestor then
+      return findBinary(util.path.dirname(rootPath))
+    end
+  end
+
+  local foundBinary = findBinary(path)
+
+  if foundBinary then
+    return foundBinary
   end
 
   return "jest"
