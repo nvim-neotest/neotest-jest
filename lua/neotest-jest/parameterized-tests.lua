@@ -37,10 +37,6 @@ local function run_jest_test_discovery(file_path)
     "--verbose",
     "--json",
     file_path,
-    -- Changing test environment and removing setupFiles to speed up discovery process
-    -- need to test if it can break any tests
-    "--setupFilesAfterEnv=/Users/jaroslaw.glegola/.local/share/nvim/site/pack/packer/start/neotest-jest/lua/neotest-jest/empty.js",
-    "--testEnvironment=node",
     "-t",
     "@______________PLACEHOLDER______________@",
   })
