@@ -14,7 +14,45 @@ local util = require("neotest-jest.util")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
-adapter.root = lib.files.match_root_pattern("package.json")
+---@param path string
+---@return boolean
+local function hasJestDependency(path)
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
+
+  if not rootPath then
+    return false
+  end
+
+  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+adapter.root = function(path)
+  return lib.files.match_root_pattern("package.json")(path)
+end
 
 ---@param file_path? string
 ---@return boolean
@@ -30,7 +68,7 @@ function adapter.is_test_file(file_path)
   for _, x in ipairs({ "spec", "test" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
       if string.match(file_path, x .. "%." .. ext .. "$") then
-        return true
+        return hasJestDependency(file_path)
       end
     end
   end
