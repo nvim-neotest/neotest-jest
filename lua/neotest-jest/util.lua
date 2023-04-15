@@ -1,3 +1,4 @@
+local async = require("neotest.async")
 local vim = vim
 local validate = vim.validate
 local uv = vim.loop
@@ -182,6 +183,60 @@ function M.find_package_json_ancestor(startpath)
       return path
     end
   end)
+end
+function M.find_git_ancestor(startpath)
+  return M.search_ancestors(startpath, function(path)
+    -- .git is a file when the project is a git worktree
+    -- or it's a directory if it's a regular project
+    if M.path.is_file(M.path.join(path, ".git")) or M.path.is_dir(M.path.join(path, ".git")) then
+      return path
+    end
+  end)
+end
+
+-- Note: this function is almost entirely taken from https://github.com/nvim-neotest/neotest/blob/master/lua/neotest/lib/file/init.lua#L93-L144
+-- The only difference is that neotest function reads only new lines and this one reads and returns the whole file
+--- Streams data from a file, watching for new data over time
+--- Each time new data arrives function reads whole file and returns its content
+--- Useful for watching a file which is written to by another process.
+---@async
+---@param file_path string
+---@return (fun(): string, fun()) Iterator and callback to stop streaming
+function M.stream(file_path)
+  local sender, receiver = async.control.channel.mpsc()
+  local read_semaphore = async.control.Semaphore.new(1)
+
+  local open_err, file_fd = async.uv.fs_open(file_path, "r", 438)
+  assert(not open_err, open_err)
+
+  local send_exit, await_exit = async.control.channel.oneshot()
+  local read = function()
+    local permit = read_semaphore:acquire()
+    local stat_err, stat = async.uv.fs_fstat(file_fd)
+    assert(not stat_err, stat_err)
+    local read_err, data = async.uv.fs_read(file_fd, stat.size, 0)
+    assert(not read_err, read_err)
+    permit:forget()
+    sender.send(data)
+  end
+
+  read()
+  local event = vim.loop.new_fs_event()
+  event:start(file_path, {}, function(err, _, _)
+    assert(not err)
+    async.run(read)
+  end)
+
+  local function stop()
+    await_exit()
+    event:stop()
+    local close_err = async.uv.fs_close(file_fd)
+    assert(not close_err, close_err)
+  end
+
+  async.run(stop)
+
+  return receiver.recv, send_exit
 end
 
 return M

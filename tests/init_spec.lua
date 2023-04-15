@@ -163,4 +163,45 @@ describe("build_spec", function()
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
+
+  async.it("builds command for nested namespace", function()
+    local positions = plugin.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
+
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
+    end)
+
+    local spec = plugin.build_spec({ tree = tree:children()[1]:children()[1] })
+
+    assert.is.truthy(spec)
+    local command = spec.command
+    assert.is.truthy(command)
+    assert.contains(command, "jest")
+    assert.contains(command, "--json")
+    assert.is_not.contains(command, "--config=jest.config.js")
+    assert.contains(command, "--testNamePattern='^outer inner'")
+    assert.contains(command, "./spec/nestedDescribe.test.ts")
+    assert.is.truthy(spec.context.file)
+    assert.is.truthy(spec.context.results_path)
+  end)
+
+  async.it("builds correct command for test name with ' ", function()
+    local positions = plugin.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
+
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
+    end)
+
+    local spec = plugin.build_spec({ tree = tree:children()[1]:children()[1]:children()[2] })
+    assert.is.truthy(spec)
+    local command = spec.command
+    assert.is.truthy(command)
+    assert.contains(command, "jest")
+    assert.contains(command, "--json")
+    assert.is_not.contains(command, "--config=jest.config.js")
+    assert.contains(command, "--testNamePattern='^outer inner this has a \\'$'")
+    assert.contains(command, "./spec/nestedDescribe.test.ts")
+    assert.is.truthy(spec.context.file)
+    assert.is.truthy(spec.context.results_path)
+  end)
 end)

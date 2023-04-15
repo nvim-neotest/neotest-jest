@@ -9,6 +9,7 @@ local util = require("neotest-jest.util")
 ---@field jestConfigFile? string|fun(): string
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
+---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -79,6 +80,10 @@ function adapter.is_test_file(file_path)
   return false
 end
 
+function adapter.filter_dir(name)
+  return name ~= "node_modules"
+end
+
 ---@async
 ---@return neotest.Tree | nil
 function adapter.discover_positions(path)
@@ -136,11 +141,27 @@ end
 ---@param path string
 ---@return string
 local function getJestCommand(path)
-  local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+  local gitAncestor = util.find_git_ancestor(path)
 
-  if util.path.exists(jestBinary) then
-    return jestBinary
+  local function findBinary(p)
+    local rootPath = util.find_node_modules_ancestor(p)
+    local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+
+    if util.path.exists(jestBinary) then
+      return jestBinary
+    end
+
+    -- If no binary found and the current directory isn't the parent
+    -- git ancestor, let's traverse up the tree again
+    if rootPath ~= gitAncestor then
+      return findBinary(util.path.dirname(rootPath))
+    end
+  end
+
+  local foundBinary = findBinary(path)
+
+  if foundBinary then
+    return foundBinary
   end
 
   return "jest"
@@ -180,10 +201,11 @@ local function escapeTestPattern(s)
       :gsub("%$", "%\\$")
       :gsub("%^", "%\\^")
       :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
   )
 end
 
-local function get_strategy_config(strategy, command)
+local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
       return {
@@ -194,6 +216,8 @@ local function get_strategy_config(strategy, command)
         runtimeExecutable = command[1],
         console = "integratedTerminal",
         internalConsoleOptions = "neverOpen",
+        rootPath = "${workspaceFolder}",
+        cwd = cwd or "${workspaceFolder}",
       }
     end,
   }
@@ -212,55 +236,8 @@ local function getCwd(path)
   return nil
 end
 
----@param args neotest.RunArgs
----@return neotest.RunSpec | nil
-function adapter.build_spec(args)
-  local results_path = async.fn.tempname() .. ".json"
-  local tree = args.tree
-
-  if not tree then
-    return
-  end
-
-  local pos = args.tree:data()
-  local testNamePattern = "'.*'"
-
-  if pos.type == "test" then
-    testNamePattern = "'" .. escapeTestPattern(pos.name) .. "$'"
-  end
-
-  if pos.type == "namespace" then
-    testNamePattern = "'^" .. escapeTestPattern(pos.name) .. "'"
-  end
-
-  local binary = getJestCommand(pos.path)
-  local config = getJestConfig(pos.path) or "jest.config.js"
-  local command = vim.split(binary, "%s+")
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
-  end
-
-  vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    pos.path,
-  })
-
-  return {
-    command = command,
-    cwd = getCwd(pos.path),
-    context = {
-      results_path = results_path,
-      file = pos.path,
-    },
-    strategy = get_strategy_config(args.strategy, command),
-    env = getEnv(args[2] and args[2].env or {}),
-  }
+local function getStrategyConfig(default_strategy_config, args)
+  return default_strategy_config
 end
 
 local function cleanAnsi(s)
@@ -336,10 +313,89 @@ local function parsed_json_to_results(data, output_file, consoleOut)
   return tests
 end
 
+---@param args neotest.RunArgs
+---@return neotest.RunSpec | nil
+function adapter.build_spec(args)
+  local results_path = async.fn.tempname() .. ".json"
+  local tree = args.tree
+
+  if not tree then
+    return
+  end
+
+  local pos = args.tree:data()
+  local testNamePattern = "'.*'"
+
+  if pos.type == "test" or pos.type == "namespace" then
+    -- pos.id in form "path/to/file::Describe text::test text"
+    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
+    testName, _ = string.gsub(testName, "::", " ")
+    testNamePattern = "'^" .. escapeTestPattern(testName)
+    if pos.type == "test" then
+      testNamePattern = testNamePattern .. "$'"
+    else
+      testNamePattern = testNamePattern .. "'"
+    end
+  end
+
+  local binary = getJestCommand(pos.path)
+  local config = getJestConfig(pos.path) or "jest.config.js"
+  local command = vim.split(binary, "%s+")
+  if util.path.exists(config) then
+    -- only use config if available
+    table.insert(command, "--config=" .. config)
+  end
+
+  vim.list_extend(command, {
+    "--no-coverage",
+    "--testLocationInResults",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. results_path,
+    "--testNamePattern=" .. testNamePattern,
+    pos.path,
+  })
+
+  local cwd = getCwd(pos.path)
+
+  -- creating empty file for streaming results
+  lib.files.write(results_path, "")
+  local stream_data, stop_stream = util.stream(results_path)
+
+  return {
+    command = command,
+    cwd = cwd,
+    context = {
+      results_path = results_path,
+      file = pos.path,
+      stop_stream = stop_stream,
+    },
+    stream = function()
+      return function()
+        local new_results = stream_data()
+        local ok, parsed = pcall(vim.json.decode, new_results, { luanil = { object = true } })
+
+        if not ok or not parsed.testResults then
+          return {}
+        end
+
+        return parsed_json_to_results(parsed, results_path, nil)
+      end
+    end,
+    strategy = getStrategyConfig(
+      get_default_strategy_config(args.strategy, command, cwd) or {},
+      args
+    ),
+    env = getEnv(args[2] and args[2].env or {}),
+  }
+end
+
 ---@async
 ---@param spec neotest.RunSpec
 ---@return neotest.Result[]
 function adapter.results(spec, b, tree)
+  spec.context.stop_stream()
+
   local output_file = spec.context.results_path
 
   local success, data = pcall(lib.files.read, output_file)
@@ -394,6 +450,13 @@ setmetatable(adapter, {
     elseif opts.cwd then
       getCwd = function()
         return opts.cwd
+      end
+    end
+    if is_callable(opts.strategy_config) then
+      getStrategyConfig = opts.strategy_config
+    elseif opts.strategy_config then
+      getStrategyConfig = function()
+        return opts.strategy_config
       end
     end
     return adapter
