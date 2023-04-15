@@ -17,10 +17,9 @@ local adapter = { name = "neotest-jest" }
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
-  local rootPath = util.find_package_json_ancestor(path)
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
 
-  if not lib.files.exists(rootPath .. "/package.json") then
-    print("package.json not found")
+  if not rootPath then
     return false
   end
 
@@ -52,32 +51,31 @@ local function hasJestDependency(path)
 end
 
 adapter.root = function(path)
-  if not hasJestDependency(path) then
-    return
-  end
-
   return lib.files.match_root_pattern("package.json")(path)
 end
+
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
   end
+  local is_test_file = false
 
   if string.match(file_path, "__tests__") then
-    return true
+    is_test_file = true
   end
 
   for _, x in ipairs({ "spec", "test" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, x .. "%." .. ext .. "$") then
-        return true
+      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
+        is_test_file = true
+        goto matched_pattern
       end
     end
   end
-
-  return false
+  ::matched_pattern::
+  return is_test_file and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
