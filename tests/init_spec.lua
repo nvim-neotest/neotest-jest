@@ -1,4 +1,4 @@
-local async = require("plenary.async.tests")
+local async = require("nio").tests
 local plugin = require("neotest-jest")({
   jestCommand = "jest",
 })
