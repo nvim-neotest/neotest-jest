@@ -1,4 +1,4 @@
-local async = require("plenary.async.tests")
+local async = require("nio").tests
 local plugin = require("neotest-jest")({
   jestCommand = "jest",
 })
@@ -7,6 +7,12 @@ require("neotest-jest-assertions")
 A = function(...)
   print(vim.inspect(...))
 end
+
+describe("adpter root", function()
+  async.it("jest is installed", function()
+    assert.Not.Nil(plugin.root("./spec"))
+  end)
+end)
 
 describe("is_test_file", function()
   it("matches jest files", function()
