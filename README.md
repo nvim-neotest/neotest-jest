@@ -34,6 +34,12 @@ use({
 })
 ```
 
+Make sure you have the appropriate `treesitter` language parsers installed otherwise no tests will be found:
+
+```
+:TSInstall javascript
+```
+
 ## Usage
 
 See neotest's documentation for more information on how to run tests.
