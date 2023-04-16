@@ -203,21 +203,21 @@ end
 ---@param file_path string
 ---@return (fun(): string, fun()) Iterator and callback to stop streaming
 function M.stream(file_path)
-  local sender, receiver = async.control.channel.mpsc()
-  local read_semaphore = async.control.Semaphore.new(1)
+  local queue = async.control.queue()
+  local read_semaphore = async.control.semaphore(1)
 
   local open_err, file_fd = async.uv.fs_open(file_path, "r", 438)
   assert(not open_err, open_err)
 
-  local send_exit, await_exit = async.control.channel.oneshot()
+  local exit_future = async.control.future()
   local read = function()
-    local permit = read_semaphore:acquire()
-    local stat_err, stat = async.uv.fs_fstat(file_fd)
-    assert(not stat_err, stat_err)
-    local read_err, data = async.uv.fs_read(file_fd, stat.size, 0)
-    assert(not read_err, read_err)
-    permit:forget()
-    sender.send(data)
+    read_semaphore.with(function()
+      local stat_err, stat = async.uv.fs_fstat(file_fd)
+      assert(not stat_err, stat_err)
+      local read_err, data = async.uv.fs_read(file_fd, stat.size, 0)
+      assert(not read_err, read_err)
+      queue.put(data)
+    end)
   end
 
   read()
@@ -228,7 +228,7 @@ function M.stream(file_path)
   end)
 
   local function stop()
-    await_exit()
+    exit_future.wait()
     event:stop()
     local close_err = async.uv.fs_close(file_fd)
     assert(not close_err, close_err)
@@ -236,7 +236,7 @@ function M.stream(file_path)
 
   async.run(stop)
 
-  return receiver.recv, send_exit
+  return queue.get, exit_future.set
 end
 
 return M
