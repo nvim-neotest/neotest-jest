@@ -33,7 +33,7 @@ local function hasJestDependency(path)
 
   if parsedPackageJson["dependencies"] then
     for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
+      if key == "jest" or key == "react-scripts" then
         return true
       end
     end
@@ -41,7 +41,7 @@ local function hasJestDependency(path)
 
   if parsedPackageJson["devDependencies"] then
     for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
+      if key == "jest" or key == "react-scripts"  then
         return true
       end
     end
