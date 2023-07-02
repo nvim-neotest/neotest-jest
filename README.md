@@ -81,7 +81,7 @@ jestConfigFile = function()
 end,
 ```
 
-Also, if your monorepo set up requires you to learn a specific test file with cwd on the package
+Also, if your monorepo set up requires you to run a specific test file with cwd on the package
 directory (like when you have a lerna setup for example), you might also have to tweak things a
 bit:
 
