@@ -16,7 +16,45 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
-adapter.root = lib.files.match_root_pattern("package.json")
+---@param path string
+---@return boolean
+local function hasJestDependency(path)
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
+
+  if not rootPath then
+    return false
+  end
+
+  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+adapter.root = function(path)
+  return lib.files.match_root_pattern("package.json")(path)
+end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
@@ -27,20 +65,22 @@ function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
   end
+  local is_test_file = false
 
   if string.match(file_path, "__tests__") then
-    return true
+    is_test_file = true
   end
 
   for _, x in ipairs({ "spec", "test" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, x .. "%." .. ext .. "$") then
-        return true
+      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
+        is_test_file = true
+        goto matched_pattern
       end
     end
   end
-
-  return false
+  ::matched_pattern::
+  return is_test_file and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
