@@ -14,6 +14,40 @@ local util = require("neotest-jest.util")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
+local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
+---@return boolean
+local function rootProjectHasJestDependency()
+  local path = rootPackageJson
+
+  local success, packageJsonContent = pcall(lib.files.read, path)
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return true
+end
+
+
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
@@ -47,7 +81,7 @@ local function hasJestDependency(path)
     end
   end
 
-  return false
+  return rootProjectHasJestDependency()
 end
 
 adapter.root = function(path)
@@ -189,17 +223,17 @@ end
 local function escapeTestPattern(s)
   return (
     s:gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
+    :gsub("%)", "%\\)")
+    :gsub("%]", "%\\]")
+    :gsub("%[", "%\\[")
+    :gsub("%*", "%\\*")
+    :gsub("%+", "%\\+")
+    :gsub("%-", "%\\-")
+    :gsub("%?", "%\\?")
+    :gsub("%$", "%\\$")
+    :gsub("%^", "%\\^")
+    :gsub("%/", "%\\/")
+    :gsub("%'", "%\\'")
   )
 end
 
@@ -240,10 +274,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)

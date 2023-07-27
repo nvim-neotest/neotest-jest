@@ -66,6 +66,35 @@ or add a specific keymap to run tests with watch mode:
 vim.api.nvim_set_keymap("n", "<leader>tw", "<cmd>lua require('neotest').run.run({ jestCommand = 'jest --watch ' })<cr>", {})
 ```
 
+### Monorepos
+If you have a monorepo setup, you might have to do a little more configuration, especially if
+you have different jest configurations per package.
+
+```lua
+jestConfigFile = function()
+  local file = vim.fn.expand('%:p')
+  if string.find(file, "/packages/") then
+    return string.match(file, "(.-/[^/]+/)src") .. "jest.config.ts"
+  end
+
+  return vim.fn.getcwd() .. "/jest.config.ts"
+end,
+```
+
+Also, if your monorepo set up requires you to run a specific test file with cwd on the package
+directory (like when you have a lerna setup for example), you might also have to tweak things a
+bit:
+
+```lua
+cwd = function()
+  local file = vim.fn.expand('%:p')
+  if string.find(file, "/packages/") then
+    return string.match(file, "(.-/[^/]+/)src")
+  end
+  return vim.fn.getcwd()
+end
+```
+
 ## :gift: Contributing
 
 Please raise a PR if you are interested in adding new functionality or fixing any bugs. When submitting a bug, please include an example spec that can be tested.
