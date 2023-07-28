@@ -3,7 +3,7 @@
 [![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml)
 
 This plugin provides a jest adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
-**It is currently a work in progress**. It will be transferred to the official neotest organisation (once it's been created).
+**It is currently a work in progress**.
 
 ## Installation
 
