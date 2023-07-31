@@ -370,7 +370,7 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = getJestCommand(pos.path)
+  local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
