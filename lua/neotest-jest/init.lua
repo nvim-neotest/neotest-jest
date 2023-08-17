@@ -14,7 +14,79 @@ local util = require("neotest-jest.util")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
-adapter.root = lib.files.match_root_pattern("package.json")
+local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
+---@return boolean
+local function rootProjectHasJestDependency()
+  local path = rootPackageJson
+
+  local success, packageJsonContent = pcall(lib.files.read, path)
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return true
+end
+
+
+---@param path string
+---@return boolean
+local function hasJestDependency(path)
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
+
+  if not rootPath then
+    return false
+  end
+
+  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return rootProjectHasJestDependency()
+end
+
+adapter.root = function(path)
+  return lib.files.match_root_pattern("package.json")(path)
+end
 
 ---@param file_path? string
 ---@return boolean
@@ -22,20 +94,22 @@ function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
   end
+  local is_test_file = false
 
   if string.match(file_path, "__tests__") then
-    return true
+    is_test_file = true
   end
 
   for _, x in ipairs({ "spec", "test" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, x .. "%." .. ext .. "$") then
-        return true
+      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
+        is_test_file = true
+        goto matched_pattern
       end
     end
   end
-
-  return false
+  ::matched_pattern::
+  return is_test_file and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
@@ -47,19 +121,31 @@ end
 function adapter.discover_positions(path)
   local query = [[
     ; -- Namespaces --
-    ; Matches: `describe('context')`
+    ; Matches: `describe('context', () => {})`
     ((call_expression
       function: (identifier) @func_name (#eq? @func_name "describe")
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
-    ; Matches: `describe.only('context')`
+    ; Matches: `describe('context', function() {})`
+    ((call_expression
+      function: (identifier) @func_name (#eq? @func_name "describe")
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
+    ; Matches: `describe.only('context', () => {})`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "describe")
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
-    ; Matches: `describe.each(['data'])('context')`
+    ; Matches: `describe.only('context', function() {})`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "describe")
+      )
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
+    ; Matches: `describe.each(['data'])('context', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
@@ -68,19 +154,28 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
+    ; Matches: `describe.each(['data'])('context', function() {})`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "describe")
+        )
+      )
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
 
     ; -- Tests --
     ; Matches: `test('test') / it('test')`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
     ; Matches: `test.only('test') / it.only('test')`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
     ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
     ((call_expression
@@ -89,7 +184,7 @@ function adapter.discover_positions(path)
           object: (identifier) @func_name (#any-of? @func_name "it" "test")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
   ]]
 
@@ -99,11 +194,27 @@ end
 ---@param path string
 ---@return string
 local function getJestCommand(path)
-  local rootPath = util.find_node_modules_ancestor(path)
-  local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+  local gitAncestor = util.find_git_ancestor(path)
 
-  if util.path.exists(jestBinary) then
-    return jestBinary
+  local function findBinary(p)
+    local rootPath = util.find_node_modules_ancestor(p)
+    local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+
+    if util.path.exists(jestBinary) then
+      return jestBinary
+    end
+
+    -- If no binary found and the current directory isn't the parent
+    -- git ancestor, let's traverse up the tree again
+    if rootPath ~= gitAncestor then
+      return findBinary(util.path.dirname(rootPath))
+    end
+  end
+
+  local foundBinary = findBinary(path)
+
+  if foundBinary then
+    return foundBinary
   end
 
   return "jest"
@@ -132,18 +243,18 @@ end
 
 local function escapeTestPattern(s)
   return (
-    s
-      :gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
+    s:gsub("%(", "%\\(")
+    :gsub("%)", "%\\)")
+    :gsub("%]", "%\\]")
+    :gsub("%[", "%\\[")
+    :gsub("%*", "%\\*")
+    :gsub("%+", "%\\+")
+    :gsub("%-", "%\\-")
+    :gsub("%?", "%\\?")
+    :gsub("%$", "%\\$")
+    :gsub("%^", "%\\^")
+    :gsub("%/", "%\\/")
+    :gsub("%'", "%\\'")
   )
 end
 
@@ -182,67 +293,12 @@ local function getStrategyConfig(default_strategy_config, args)
   return default_strategy_config
 end
 
----@param args neotest.RunArgs
----@return neotest.RunSpec | nil
-function adapter.build_spec(args)
-  local results_path = async.fn.tempname() .. ".json"
-  local tree = args.tree
-
-  if not tree then
-    return
-  end
-
-  local pos = args.tree:data()
-  local testNamePattern = "'.*'"
-
-  if pos.type == "test" then
-    testNamePattern = "'" .. escapeTestPattern(pos.name) .. "$'"
-  end
-
-  if pos.type == "namespace" then
-    testNamePattern = "'^" .. escapeTestPattern(pos.name) .. "'"
-  end
-
-  local binary = getJestCommand(pos.path)
-  local config = getJestConfig(pos.path) or "jest.config.js"
-  local command = vim.split(binary, "%s+")
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
-  end
-
-  vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    pos.path,
-  })
-
-  local cwd = getCwd(pos.path)
-  return {
-    command = command,
-    cwd = cwd,
-    context = {
-      results_path = results_path,
-      file = pos.path,
-    },
-    strategy = getStrategyConfig(
-      get_default_strategy_config(args.strategy, command, cwd) or {},
-      args
-    ),
-    env = getEnv(args[2] and args[2].env or {}),
-  }
-end
-
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
@@ -310,10 +366,89 @@ local function parsed_json_to_results(data, output_file, consoleOut)
   return tests
 end
 
+---@param args neotest.RunArgs
+---@return neotest.RunSpec | nil
+function adapter.build_spec(args)
+  local results_path = async.fn.tempname() .. ".json"
+  local tree = args.tree
+
+  if not tree then
+    return
+  end
+
+  local pos = args.tree:data()
+  local testNamePattern = "'.*'"
+
+  if pos.type == "test" or pos.type == "namespace" then
+    -- pos.id in form "path/to/file::Describe text::test text"
+    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
+    testName, _ = string.gsub(testName, "::", " ")
+    testNamePattern = "'^" .. escapeTestPattern(testName)
+    if pos.type == "test" then
+      testNamePattern = testNamePattern .. "$'"
+    else
+      testNamePattern = testNamePattern .. "'"
+    end
+  end
+
+  local binary = getJestCommand(pos.path)
+  local config = getJestConfig(pos.path) or "jest.config.js"
+  local command = vim.split(binary, "%s+")
+  if util.path.exists(config) then
+    -- only use config if available
+    table.insert(command, "--config=" .. config)
+  end
+
+  vim.list_extend(command, {
+    "--no-coverage",
+    "--testLocationInResults",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. results_path,
+    "--testNamePattern=" .. testNamePattern,
+    pos.path,
+  })
+
+  local cwd = getCwd(pos.path)
+
+  -- creating empty file for streaming results
+  lib.files.write(results_path, "")
+  local stream_data, stop_stream = util.stream(results_path)
+
+  return {
+    command = command,
+    cwd = cwd,
+    context = {
+      results_path = results_path,
+      file = pos.path,
+      stop_stream = stop_stream,
+    },
+    stream = function()
+      return function()
+        local new_results = stream_data()
+        local ok, parsed = pcall(vim.json.decode, new_results, { luanil = { object = true } })
+
+        if not ok or not parsed.testResults then
+          return {}
+        end
+
+        return parsed_json_to_results(parsed, results_path, nil)
+      end
+    end,
+    strategy = getStrategyConfig(
+      get_default_strategy_config(args.strategy, command, cwd) or {},
+      args
+    ),
+    env = getEnv(args[2] and args[2].env or {}),
+  }
+end
+
 ---@async
 ---@param spec neotest.RunSpec
 ---@return neotest.Result[]
 function adapter.results(spec, b, tree)
+  spec.context.stop_stream()
+
   local output_file = spec.context.results_path
 
   local success, data = pcall(lib.files.read, output_file)
