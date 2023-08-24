@@ -49,7 +49,6 @@ local function rootProjectHasJestDependency()
   return true
 end
 
-
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
@@ -244,17 +243,17 @@ end
 local function escapeTestPattern(s)
   return (
     s:gsub("%(", "%\\(")
-    :gsub("%)", "%\\)")
-    :gsub("%]", "%\\]")
-    :gsub("%[", "%\\[")
-    :gsub("%*", "%\\*")
-    :gsub("%+", "%\\+")
-    :gsub("%-", "%\\-")
-    :gsub("%?", "%\\?")
-    :gsub("%$", "%\\$")
-    :gsub("%^", "%\\^")
-    :gsub("%/", "%\\/")
-    :gsub("%'", "%\\'")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
   )
 end
 
@@ -295,10 +294,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+m", "")
-      :gsub("\x1b%[%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
