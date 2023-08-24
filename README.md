@@ -3,7 +3,7 @@
 [![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml)
 
 This plugin provides a jest adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
-**It is currently a work in progress**. It will be transferred to the official neotest organisation (once it's been created).
+**It is currently a work in progress**.
 
 ## Installation
 
@@ -93,6 +93,35 @@ require("neotest").setup({
 because `jest_test_discovery` runs `jest` command on file to determine
 what tests are inside the file. If `discovery` would be enabled then `neotest-jest`
 would spawn a lot of procesees.
+
+### Monorepos
+If you have a monorepo setup, you might have to do a little more configuration, especially if
+you have different jest configurations per package.
+
+```lua
+jestConfigFile = function()
+  local file = vim.fn.expand('%:p')
+  if string.find(file, "/packages/") then
+    return string.match(file, "(.-/[^/]+/)src") .. "jest.config.ts"
+  end
+
+  return vim.fn.getcwd() .. "/jest.config.ts"
+end,
+```
+
+Also, if your monorepo set up requires you to run a specific test file with cwd on the package
+directory (like when you have a lerna setup for example), you might also have to tweak things a
+bit:
+
+```lua
+cwd = function()
+  local file = vim.fn.expand('%:p')
+  if string.find(file, "/packages/") then
+    return string.match(file, "(.-/[^/]+/)src")
+  end
+  return vim.fn.getcwd()
+end
+```
 
 ## :gift: Contributing
 

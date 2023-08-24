@@ -16,6 +16,40 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
+local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
+---@return boolean
+local function rootProjectHasJestDependency()
+  local path = rootPackageJson
+
+  local success, packageJsonContent = pcall(lib.files.read, path)
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return true
+end
+
+
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
@@ -49,7 +83,7 @@ local function hasJestDependency(path)
     end
   end
 
-  return false
+  return rootProjectHasJestDependency()
 end
 
 adapter.root = function(path)
@@ -121,19 +155,31 @@ end
 function adapter.discover_positions(path)
   local query = [[
     ; -- Namespaces --
-    ; Matches: `describe('context')`
+    ; Matches: `describe('context', () => {})`
     ((call_expression
       function: (identifier) @func_name (#eq? @func_name "describe")
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
-    ; Matches: `describe.only('context')`
+    ; Matches: `describe('context', function() {})`
+    ((call_expression
+      function: (identifier) @func_name (#eq? @func_name "describe")
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
+    ; Matches: `describe.only('context', () => {})`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "describe")
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
-    ; Matches: `describe.each(['data'])('context')`
+    ; Matches: `describe.only('context', function() {})`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "describe")
+      )
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
+    ; Matches: `describe.each(['data'])('context', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
@@ -142,19 +188,28 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
+    ; Matches: `describe.each(['data'])('context', function() {})`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "describe")
+        )
+      )
+      arguments: (arguments (string (string_fragment) @namespace.name) (function))
+    )) @namespace.definition
 
     ; -- Tests --
     ; Matches: `test('test') / it('test')`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
     ; Matches: `test.only('test') / it.only('test')`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
     ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
     ((call_expression
@@ -164,7 +219,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) (arrow_function))
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
   ]]
 
@@ -189,17 +244,17 @@ end
 local function escapeTestPattern(s)
   return (
     s:gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
+    :gsub("%)", "%\\)")
+    :gsub("%]", "%\\]")
+    :gsub("%[", "%\\[")
+    :gsub("%*", "%\\*")
+    :gsub("%+", "%\\+")
+    :gsub("%-", "%\\-")
+    :gsub("%?", "%\\?")
+    :gsub("%$", "%\\$")
+    :gsub("%^", "%\\^")
+    :gsub("%/", "%\\/")
+    :gsub("%'", "%\\'")
   )
 end
 
@@ -240,10 +295,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
