@@ -44,7 +44,7 @@ local function rootProjectHasJestDependency()
     end
   end
 
-  return true
+  return false
 end
 
 
