@@ -100,7 +100,7 @@ function adapter.is_test_file(file_path)
     is_test_file = true
   end
 
-  for _, x in ipairs({ "spec", "test" }) do
+  for _, x in ipairs({ "spec", "test", "unit", "regression", "integration" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
       if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
         is_test_file = true
