@@ -3,6 +3,8 @@ local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
+local jest_util = require("neotest-jest.jest-util")
+local parameterized_tests = require("neotest-jest.parameterized-tests")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string|fun(): string
@@ -47,7 +49,6 @@ local function rootProjectHasJestDependency()
   return false
 end
 
-
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
@@ -88,6 +89,9 @@ adapter.root = function(path)
   return lib.files.match_root_pattern("package.json")(path)
 end
 
+local getJestCommand = jest_util.getJestCommand
+local getJestConfig = jest_util.getJestConfig
+
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
@@ -114,6 +118,35 @@ end
 
 function adapter.filter_dir(name)
   return name ~= "node_modules"
+end
+
+local function get_match_type(captured_nodes)
+  if captured_nodes["test.name"] then
+    return "test"
+  end
+  if captured_nodes["namespace.name"] then
+    return "namespace"
+  end
+end
+
+-- Enrich `it.each` tests with metadata about TS node position
+function adapter.build_position(file_path, source, captured_nodes)
+  local match_type = get_match_type(captured_nodes)
+  if not match_type then
+    return
+  end
+
+  ---@type string
+  local name = vim.treesitter.get_node_text(captured_nodes[match_type .. ".name"], source)
+  local definition = captured_nodes[match_type .. ".definition"]
+
+  return {
+    type = match_type,
+    path = file_path,
+    name = name,
+    range = { definition:range() },
+    is_parameterized = captured_nodes["each_property"] and true or false,
+  }
 end
 
 ---@async
@@ -182,79 +215,45 @@ function adapter.discover_positions(path)
       function: (call_expression
         function: (member_expression
           object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
       arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function)])
     )) @test.definition
   ]]
 
-  return lib.treesitter.parse_positions(path, query, { nested_tests = true })
-end
+  local positions = lib.treesitter.parse_positions(path, query, {
+    nested_tests = false,
+    build_position = 'require("neotest-jest").build_position',
+  })
 
----@param path string
----@return string
-local function getJestCommand(path)
-  local gitAncestor = util.find_git_ancestor(path)
+  local parameterized_tests_positions =
+    parameterized_tests.get_parameterized_tests_positions(positions)
 
-  local function findBinary(p)
-    local rootPath = util.find_node_modules_ancestor(p)
-    local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
-
-    if util.path.exists(jestBinary) then
-      return jestBinary
-    end
-
-    -- If no binary found and the current directory isn't the parent
-    -- git ancestor, let's traverse up the tree again
-    if rootPath ~= gitAncestor then
-      return findBinary(util.path.dirname(rootPath))
-    end
+  if adapter.jest_test_discovery and #parameterized_tests_positions > 0 then
+    parameterized_tests.enrich_positions_with_parameterized_tests(
+      positions:data().path,
+      parameterized_tests_positions
+    )
   end
 
-  local foundBinary = findBinary(path)
-
-  if foundBinary then
-    return foundBinary
-  end
-
-  return "jest"
-end
-
-local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
-
----@param path string
----@return string|nil
-local function getJestConfig(path)
-  local rootPath = jestConfigPattern(path)
-
-  if not rootPath then
-    return nil
-  end
-
-  local jestJs = util.path.join(rootPath, "jest.config.js")
-  local jestTs = util.path.join(rootPath, "jest.config.ts")
-
-  if util.path.exists(jestTs) then
-    return jestTs
-  end
-
-  return jestJs
+  return positions
 end
 
 local function escapeTestPattern(s)
   return (
     s:gsub("%(", "%\\(")
-    :gsub("%)", "%\\)")
-    :gsub("%]", "%\\]")
-    :gsub("%[", "%\\[")
-    :gsub("%*", "%\\*")
-    :gsub("%+", "%\\+")
-    :gsub("%-", "%\\-")
-    :gsub("%?", "%\\?")
-    :gsub("%$", "%\\$")
-    :gsub("%^", "%\\^")
-    :gsub("%/", "%\\/")
-    :gsub("%'", "%\\'")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
   )
 end
 
@@ -295,10 +294,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+m", "")
-      :gsub("\x1b%[%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
@@ -383,7 +382,11 @@ function adapter.build_spec(args)
     -- pos.id in form "path/to/file::Describe text::test text"
     local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
     testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = "'^" .. escapeTestPattern(testName)
+    testNamePattern = escapeTestPattern(testName)
+    testNamePattern = pos.is_parameterized
+        and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
+      or testNamePattern
+    testNamePattern = "'^" .. testNamePattern
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$'"
     else
@@ -391,7 +394,7 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = getJestCommand(pos.path)
+  local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
   if util.path.exists(config) then
@@ -512,6 +515,11 @@ setmetatable(adapter, {
         return opts.strategy_config
       end
     end
+
+    if opts.jest_test_discovery then
+      adapter.jest_test_discovery = true
+    end
+
     return adapter
   end,
 })
