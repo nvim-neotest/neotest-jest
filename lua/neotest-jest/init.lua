@@ -409,7 +409,7 @@ function adapter.build_spec(args)
     "--json",
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
-    pos.path,
+    escapeTestPattern(pos.path),
   })
 
   local cwd = getCwd(pos.path)
