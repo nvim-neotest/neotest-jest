@@ -376,7 +376,7 @@ function adapter.build_spec(args)
   end
 
   local pos = args.tree:data()
-  local testNamePattern = "'.*'"
+  local testNamePattern = ".*"
 
   if pos.type == "test" or pos.type == "namespace" then
     -- pos.id in form "path/to/file::Describe text::test text"
@@ -386,9 +386,9 @@ function adapter.build_spec(args)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
-    testNamePattern = "'^" .. testNamePattern
+    testNamePattern = "^" .. testNamePattern
     if pos.type == "test" then
-      testNamePattern = testNamePattern .. "$'"
+      testNamePattern = testNamePattern .. "$"
     else
       testNamePattern = testNamePattern .. "'"
     end
