@@ -54,7 +54,7 @@ require('neotest').setup({
   ...,
   adapters = {
     require('neotest-jest')({
-      jestCommand = "jest --watch ",
+      jestCommand = require('neotest-jest.jest-util').getJestCommand(vim.fn.expand '%:p:h') .. ' --watch',
     }),
   }
 })
