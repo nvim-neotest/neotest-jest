@@ -14,7 +14,7 @@ use({
   'nvim-neotest/neotest',
   requires = {
     ...,
-    'haydenmeade/neotest-jest',
+    'nvim-neotest/neotest-jest',
   }
   config = function()
     require('neotest').setup({
