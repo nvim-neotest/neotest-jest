@@ -14,7 +14,7 @@ use({
   'nvim-neotest/neotest',
   requires = {
     ...,
-    'haydenmeade/neotest-jest',
+    'nvim-neotest/neotest-jest',
   }
   config = function()
     require('neotest').setup({
@@ -54,7 +54,7 @@ require('neotest').setup({
   ...,
   adapters = {
     require('neotest-jest')({
-      jestCommand = "jest --watch ",
+      jestCommand = require('neotest-jest.jest-util').getJestCommand(vim.fn.expand '%:p:h') .. ' --watch',
     }),
   }
 })
