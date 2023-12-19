@@ -313,10 +313,10 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 
   for _, testResult in pairs(data.testResults) do
     local testFn = testResult.name
-    if vim.loop.os_uname().sysname:find('Windows') == 1 then
+    if vim.loop.os_uname().sysname:find("Windows") == 1 then
       -- Transforms C:\\path\file into c:\\path\file to match original testId
       if string.match(testFn, "^%a:\\") then
-        local drive = testFn:sub(1,1)
+        local drive = testFn:sub(1, 1)
         local restOfPath = testFn:sub(2)
         testFn = drive:lower() .. restOfPath
       end
