@@ -313,7 +313,6 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 
   for _, testResult in pairs(data.testResults) do
     local testFn = testResult.name
-
     for _, assertionResult in pairs(testResult.assertionResults) do
       local status, name = assertionResult.status, assertionResult.title
 
@@ -410,7 +409,7 @@ function adapter.build_spec(args)
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     "--forceExit",
-    pos.path,
+    vim.fs.normalize(pos.path),
   })
 
   local cwd = getCwd(pos.path)
