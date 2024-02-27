@@ -241,7 +241,7 @@ describe("build_spec", function()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
-    local spec = plugin.build_spec({ tree = tree, jestCommand = 'jest --watch ' })
+    local spec = plugin.build_spec({ tree = tree, jestCommand = "jest --watch " })
 
     assert.is.truthy(spec)
     local command = spec.command
