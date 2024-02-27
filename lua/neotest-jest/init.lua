@@ -12,6 +12,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field extension_test_file_match fun(file_path: string): boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -99,6 +100,10 @@ end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
+local extension_test_file_match = util.create_test_file_extensions_matcher(
+  { "spec", "e2e%-spec", "test", "unit", "regression", "integration" },
+  { "js", "jsx", "coffee", "ts", "tsx" }
+)
 
 ---@param file_path? string
 ---@return boolean
@@ -106,22 +111,12 @@ function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
   end
-  local is_test_file = false
 
   if string.match(file_path, "__tests__") then
-    is_test_file = true
+    return hasJestDependency(file_path)
   end
 
-  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
-        is_test_file = true
-        goto matched_pattern
-      end
-    end
-  end
-  ::matched_pattern::
-  return is_test_file and hasJestDependency(file_path)
+  return extension_test_file_match(file_path) and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
@@ -522,6 +517,10 @@ setmetatable(adapter, {
       getStrategyConfig = function()
         return opts.strategy_config
       end
+    end
+
+    if is_callable(opts.extension_test_file_match) then
+      extension_test_file_match = opts.extension_test_file_match
     end
 
     if opts.jest_test_discovery then

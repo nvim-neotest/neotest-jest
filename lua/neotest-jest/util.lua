@@ -239,4 +239,25 @@ function M.stream(file_path)
   return queue.get, exit_future.set
 end
 
+---@param intermediate_extensions string[]
+---@param end_extensions string[]
+---@return fun(file_path: string): boolean
+function M.create_test_file_extensions_matcher(intermediate_extensions, end_extensions)
+  return function(file_path)
+    if file_path == nil then
+      return false
+    end
+
+    for _, iext in ipairs(intermediate_extensions) do
+      for _, eext in ipairs(end_extensions) do
+        if string.match(file_path, iext .. "%." .. eext .. "$") then
+          return true
+        end
+      end
+    end
+
+    return false
+  end
+end
+
 return M
