@@ -82,6 +82,20 @@ local function hasJestDependency(path)
     end
   end
 
+  if parsedPackageJson["scripts"] then
+    for _, value in pairs(parsedPackageJson["scripts"]) do
+      if string.find(value, "jest") then
+        return true
+      elseif value == "react-scripts test" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["jest"] then
+    return true
+  end
+
   return rootProjectHasJestDependency()
 end
 
