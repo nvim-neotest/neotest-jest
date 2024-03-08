@@ -2,7 +2,9 @@
 
 [![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml)
 
-This plugin provides a jest adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
+This plugin provides a [jest](https://github.com/jestjs/jest) adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
+Requires at least Neotest version 4.0.0 which in turn requires at least neovim version 0.9.0.
+
 **It is currently a work in progress**.
 
 ## Installation
