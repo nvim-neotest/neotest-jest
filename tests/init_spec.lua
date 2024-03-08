@@ -5,9 +5,6 @@ local plugin = require("neotest-jest")({
 })
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
-A = function(...)
-  print(vim.inspect(...))
-end
 
 describe("adpter root", function()
   async.it("jest is installed", function()
@@ -232,6 +229,30 @@ describe("build_spec", function()
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='.*'")
     assert.contains(command, "./spec/basic.test.ts")
+    assert.is.truthy(spec.context.file)
+    assert.is.truthy(spec.context.results_path)
+  end)
+
+  async.it("builds command for file test with extra arguments", function()
+    local positions = plugin.discover_positions("./spec/basic.test.ts"):to_list()
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
+    end)
+    local spec = plugin.build_spec({
+        tree = tree,
+        extra_args = { "--clearCache", "--updateSnapshot" },
+    })
+
+    assert.is.truthy(spec)
+    local command = spec.command
+    assert.is.truthy(command)
+    assert.contains(command, "jest")
+    assert.contains(command, "--json")
+    assert.is_not.contains(command, "--config=jest.config.js")
+    assert.contains(command, "--testNamePattern='.*'")
+    assert.contains(command, "./spec/basic.test.ts")
+    assert.contains(command, "--clearCache")
+    assert.contains(command, "--updateSnapshot")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
