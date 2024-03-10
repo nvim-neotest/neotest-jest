@@ -13,7 +13,7 @@ describe("adapter root", function()
 end)
 
 describe("is_test_file", function()
-  it("matches jest files", function()
+  async.it("matches jest files", function()
     assert.True(plugin.is_test_file("./spec/basic.test.ts"))
   end)
 
