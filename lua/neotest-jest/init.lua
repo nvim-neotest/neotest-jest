@@ -410,7 +410,7 @@ function adapter.build_spec(args)
     table.insert(command, "--config=" .. config)
   end
 
-  if args.extra_args then
+  if vim.tbl_islist(args.extra_args) then
       vim.list_extend(command, args.extra_args)
   end
 
