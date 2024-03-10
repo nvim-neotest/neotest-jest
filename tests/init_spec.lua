@@ -17,7 +17,7 @@ describe("is_test_file", function()
     assert.True(plugin.is_test_file("./spec/basic.test.ts"))
   end)
 
-  it("does not match plain js files", function()
+  async.it("does not match plain js files", function()
     assert.False(plugin.is_test_file("./index.ts"))
   end)
 end)

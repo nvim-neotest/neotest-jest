@@ -100,6 +100,7 @@ end
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
+---@async
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
