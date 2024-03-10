@@ -12,11 +12,16 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field test_dirs table<string, string>|fun(): table<string, string>
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
 local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
+local function get_test_dirs()
+  return { "__tests__" }
+end
 
 ---@return boolean
 local function rootProjectHasJestDependency()
@@ -100,12 +105,15 @@ function adapter.is_test_file(file_path)
   end
   local is_test_file = false
 
-  if string.match(file_path, "__tests__") then
-    is_test_file = true
+  for _, d in ipairs(get_test_dirs()) do
+    if string.match(file_path, d) then
+      is_test_file = true
+      goto matched_pattern
+    end
   end
 
   for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+    for _, ext in ipairs({ "js", "mjs", "jsx", "coffee", "ts", "tsx" }) do
       if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
         is_test_file = true
         goto matched_pattern
@@ -518,6 +526,14 @@ setmetatable(adapter, {
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if is_callable(opts.test_dirs) then
+      get_test_dirs = opts.test_dirs
+    elseif opts.test_dirs then
+      get_test_dirs = function()
+        return opts.test_dirs
+      end
     end
 
     return adapter
