@@ -6,7 +6,7 @@ local plugin = require("neotest-jest")({
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
 
-describe("adpter root", function()
+describe("adapter root", function()
   async.it("jest is installed", function()
     assert.Not.Nil(plugin.root("./spec"))
   end)

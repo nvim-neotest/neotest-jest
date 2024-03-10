@@ -1,13 +1,11 @@
 local async = require("nio").tests
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
-A = function(...)
-  print(vim.inspect(...))
-end
 
 local binary_override = function()
   return "mybinaryoverride"
 end
+
 local config_override = function()
   return "./spec/jest.config.ts"
 end
