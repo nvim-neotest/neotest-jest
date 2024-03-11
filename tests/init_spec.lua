@@ -5,6 +5,9 @@ local plugin = require("neotest-jest")({
 })
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
+A = function(...)
+  print(vim.inspect(...))
+end
 
 describe("adapter root", function()
   async.it("jest is installed", function()
