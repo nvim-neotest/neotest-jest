@@ -409,7 +409,7 @@ function adapter.build_spec(args)
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     "--forceExit",
-    vim.fs.normalize(pos.path),
+    escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
   local cwd = getCwd(pos.path)
