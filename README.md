@@ -101,8 +101,7 @@ If you have a monorepo setup, you might have to do a little more configuration, 
 you have different jest configurations per package.
 
 ```lua
-jestConfigFile = function()
-  local file = vim.fn.expand('%:p')
+jestConfigFile = function(file)
   if string.find(file, "/packages/") then
     return string.match(file, "(.-/[^/]+/)src") .. "jest.config.ts"
   end
@@ -116,8 +115,7 @@ directory (like when you have a lerna setup for example), you might also have to
 bit:
 
 ```lua
-cwd = function()
-  local file = vim.fn.expand('%:p')
+cwd = function(file)
   if string.find(file, "/packages/") then
     return string.match(file, "(.-/[^/]+/)src")
   end
