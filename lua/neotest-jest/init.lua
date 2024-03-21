@@ -82,6 +82,14 @@ local function hasJestDependency(path)
     end
   end
 
+  if parsedPackageJson["scripts"] then
+    for _, value in pairs(parsedPackageJson["scripts"]) do
+      if value == "jest" then
+        return true
+      end
+    end
+  end
+
   return rootProjectHasJestDependency()
 end
 
