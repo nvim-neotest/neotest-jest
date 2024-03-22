@@ -412,7 +412,7 @@ function adapter.build_spec(args)
   end
 
   if vim.tbl_islist(args.extra_args) then
-      vim.list_extend(command, args.extra_args)
+    vim.list_extend(command, args.extra_args)
   end
 
   vim.list_extend(command, {

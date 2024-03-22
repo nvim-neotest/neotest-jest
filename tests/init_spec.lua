@@ -242,8 +242,8 @@ describe("build_spec", function()
       return pos.id
     end)
     local spec = plugin.build_spec({
-        tree = tree,
-        extra_args = { "--clearCache", "--updateSnapshot" },
+      tree = tree,
+      extra_args = { "--clearCache", "--updateSnapshot" },
     })
 
     assert.is.truthy(spec)
