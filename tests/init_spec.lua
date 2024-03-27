@@ -3,25 +3,61 @@ local async = require("nio").tests
 local plugin = require("neotest-jest")({
   jestCommand = "jest",
 })
+local util = require("neotest-jest.util")
 local Tree = require("neotest.types").Tree
 require("neotest-jest-assertions")
 A = function(...)
   print(vim.inspect(...))
 end
 
-describe("adpter root", function()
+describe("adapter root", function()
   async.it("jest is installed", function()
     assert.Not.Nil(plugin.root("./spec"))
   end)
 end)
 
 describe("is_test_file", function()
-  it("matches jest files", function()
+  async.it("matches jest files", function()
     assert.True(plugin.is_test_file("./spec/basic.test.ts"))
   end)
 
-  it("does not match plain js files", function()
+  async.it("does not match plain js files", function()
     assert.False(plugin.is_test_file("./index.ts"))
+  end)
+
+  it("gets default test extensions", function()
+    local intermediate_extensions, extensions = util.default_test_extensions()
+
+    assert.same(intermediate_extensions, { "spec", "e2e%-spec", "test", "unit", "regression", "integration" })
+    assert.same(extensions, { "js", "jsx", "coffee", "ts", "tsx" })
+  end)
+
+  async.it("matches test files with default test patterns", function()
+    local intermediate_extensions, extensions = util.default_test_extensions()
+
+    for _, extension1 in ipairs(intermediate_extensions) do
+      for _, extension2 in ipairs(extensions) do
+        assert.True(plugin.is_test_file("./spec/basic." .. extension1 .. "." .. extension2))
+      end
+    end
+  end)
+
+  async.it("matches test files with configurable test patterns", function()
+    local intermediate_extensions = { "spec", "test", "lollipop" }
+    local extensions = { "js", "ts" }
+    local is_test_file = util.create_test_file_extensions_matcher(
+      intermediate_extensions,
+      extensions
+    )
+
+    for _, extension1 in ipairs(intermediate_extensions) do
+      for _, extension2 in ipairs(extensions) do
+        assert.True(is_test_file("./spec/basic." .. extension1 .. "." .. extension2))
+      end
+    end
+
+    -- Does not match anymore with custom extensions
+    assert.False(is_test_file("./spec/sample.integration.ts"))
   end)
 end)
 
@@ -231,7 +267,7 @@ describe("build_spec", function()
     assert.contains(command, "--json")
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='.*'")
-    assert.contains(command, "./spec/basic.test.ts")
+    assert.contains(command, ".\\/spec\\/basic.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
@@ -251,7 +287,7 @@ describe("build_spec", function()
     assert.contains(command, "--json")
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='.*'")
-    assert.contains(command, "./spec/basic.test.ts")
+    assert.contains(command, ".\\/spec\\/basic.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
@@ -272,7 +308,7 @@ describe("build_spec", function()
     assert.contains(command, "--json")
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='^describe text'")
-    assert.contains(command, "./spec/basic.test.ts")
+    assert.contains(command, ".\\/spec\\/basic.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
@@ -293,7 +329,7 @@ describe("build_spec", function()
     assert.contains(command, "--json")
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='^outer middle inner'")
-    assert.contains(command, "./spec/nestedDescribe.test.ts")
+    assert.contains(command, ".\\/spec\\/nestedDescribe.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
@@ -314,7 +350,7 @@ describe("build_spec", function()
     assert.contains(command, "--json")
     assert.is_not.contains(command, "--config=jest.config.js")
     assert.contains(command, "--testNamePattern='^outer middle inner this has a \\'$'")
-    assert.contains(command, "./spec/nestedDescribe.test.ts")
+    assert.contains(command, ".\\/spec\\/nestedDescribe.test.ts")
     assert.is.truthy(spec.context.file)
     assert.is.truthy(spec.context.results_path)
   end)
