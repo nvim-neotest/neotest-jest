@@ -100,9 +100,9 @@ end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
+local intermediate_extensions, extensions = util.default_test_extensions()
 local extension_test_file_match = util.create_test_file_extensions_matcher(
-  { "spec", "e2e%-spec", "test", "unit", "regression", "integration" },
-  { "js", "jsx", "coffee", "ts", "tsx" }
+  intermediate_extensions, extensions
 )
 
 ---@param file_path? string
