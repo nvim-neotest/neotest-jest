@@ -43,7 +43,7 @@ describe("is_test_file", function()
   end)
 
   async.it("matches test files with configurable test patterns", function()
-    local intermediate_extensions = { "spec", "test", "lollipop" }
+    local intermediate_extensions = { "spec", "lollipop" }
     local extensions = { "js", "ts" }
     local is_test_file = util.create_test_file_extensions_matcher(
       intermediate_extensions,
@@ -57,7 +57,7 @@ describe("is_test_file", function()
     end
 
     -- Does not match anymore with custom extensions
-    assert.False(is_test_file("./spec/sample.integration.ts"))
+    assert.False(is_test_file("./spec/basic.test.ts"))
   end)
 end)
 
