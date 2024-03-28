@@ -28,7 +28,10 @@ describe("is_test_file", function()
   it("gets default test extensions", function()
     local intermediate_extensions, extensions = util.default_test_extensions()
 
-    assert.same(intermediate_extensions, { "spec", "e2e%-spec", "test", "unit", "regression", "integration" })
+    assert.same(
+      intermediate_extensions,
+      { "spec", "e2e%-spec", "test", "unit", "regression", "integration" }
+    )
     assert.same(extensions, { "js", "jsx", "coffee", "ts", "tsx" })
   end)
 
@@ -45,10 +48,8 @@ describe("is_test_file", function()
   async.it("matches test files with configurable test patterns", function()
     local intermediate_extensions = { "spec", "lollipop" }
     local extensions = { "js", "ts" }
-    local is_test_file = util.create_test_file_extensions_matcher(
-      intermediate_extensions,
-      extensions
-    )
+    local is_test_file =
+      util.create_test_file_extensions_matcher(intermediate_extensions, extensions)
 
     for _, extension1 in ipairs(intermediate_extensions) do
       for _, extension2 in ipairs(extensions) do
