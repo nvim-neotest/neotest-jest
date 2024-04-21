@@ -37,13 +37,13 @@ describe("is_test_file", function()
 
   async.it("matches test files with default test patterns", function()
     stub(require("neotest.lib").files, "match_root_pattern", function()
-        return function(path)
-            return path
-        end
+      return function(path)
+        return path
+      end
     end)
 
     stub(require("neotest.lib").files, "read", function()
-        return [[
+      return [[
 {
   "name": "spec",
   "version": "1.0.0",
@@ -66,7 +66,10 @@ describe("is_test_file", function()
 
     for _, extension1 in ipairs(intermediate_extensions) do
       for _, extension2 in ipairs(extensions) do
-        local stripped_path, _ = ("./spec/basic." .. extension1 .. "." .. extension2):gsub("%%%-", "%-")
+        local stripped_path, _ = ("./spec/basic." .. extension1 .. "." .. extension2):gsub(
+          "%%%-",
+          "%-"
+        )
 
         assert.True(plugin.is_test_file(stripped_path))
       end
