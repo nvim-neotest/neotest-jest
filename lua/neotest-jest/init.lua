@@ -416,7 +416,6 @@ function adapter.build_spec(args)
     "--json",
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
-    "--forceExit",
     escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
