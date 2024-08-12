@@ -18,6 +18,12 @@ local adapter = { name = "neotest-jest" }
 
 local rootPackageJson = vim.fn.getcwd() .. "/package.json"
 
+---@param package string
+---@return boolean
+local function isSupportedJestPackage(package)
+  return package == "jest" or package == "@swc/jest"
+end
+
 ---@return boolean
 local function rootProjectHasJestDependency()
   local path = rootPackageJson
@@ -32,7 +38,7 @@ local function rootProjectHasJestDependency()
 
   if parsedPackageJson["dependencies"] then
     for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
+      if isSupportedJestPackage(key) then
         return true
       end
     end
@@ -40,7 +46,7 @@ local function rootProjectHasJestDependency()
 
   if parsedPackageJson["devDependencies"] then
     for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
+      if isSupportedJestPackage(key) then
         return true
       end
     end
@@ -68,7 +74,7 @@ local function hasJestDependency(path)
 
   if parsedPackageJson["dependencies"] then
     for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
+      if isSupportedJestPackage(key) then
         return true
       end
     end
@@ -76,7 +82,7 @@ local function hasJestDependency(path)
 
   if parsedPackageJson["devDependencies"] then
     for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
+      if isSupportedJestPackage(key) then
         return true
       end
     end
