@@ -177,6 +177,7 @@ function M.find_node_modules_ancestor(startpath)
     end
   end)
 end
+
 function M.find_package_json_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     if M.path.is_file(M.path.join(path, "package.json")) then
@@ -184,6 +185,7 @@ function M.find_package_json_ancestor(startpath)
     end
   end)
 end
+
 function M.find_git_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     -- .git is a file when the project is a git worktree
@@ -237,6 +239,39 @@ function M.stream(file_path)
   async.run(stop)
 
   return queue.get, exit_future.set
+end
+
+---@return string[]
+---@return string[]
+function M.default_test_extensions()
+  return { "spec", "e2e%-spec", "test", "unit", "regression", "integration" }, {
+    "js",
+    "jsx",
+    "coffee",
+    "ts",
+    "tsx",
+  }
+end
+
+---@param intermediate_extensions string[]
+---@param end_extensions string[]
+---@return fun(file_path: string): boolean
+function M.create_test_file_extensions_matcher(intermediate_extensions, end_extensions)
+  return function(file_path)
+    if file_path == nil then
+      return false
+    end
+
+    for _, iext in ipairs(intermediate_extensions) do
+      for _, eext in ipairs(end_extensions) do
+        if string.match(file_path, "%." .. iext .. "%." .. eext .. "$") then
+          return true
+        end
+      end
+    end
+
+    return false
+  end
 end
 
 return M

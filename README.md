@@ -78,12 +78,12 @@ require('neotest').setup({
   adapters = {
     require('neotest-jest')({
       ...,
-      jest_test_discovery = false,
+      jest_test_discovery = true,
     }),
   }
 })
 ```
-Its also recommended to disable `neotest` `discovery` option like this:
+It's also recommended to disable `neotest` `discovery` option like this:
 ```lua
 require("neotest").setup({
 	...,
@@ -122,6 +122,37 @@ cwd = function(file)
   return vim.fn.getcwd()
 end
 ```
+
+### Custom test extensions
+
+If the default test extensions don't match your test patterns, you can provide
+your own:
+
+```lua
+require('neotest').setup({
+    ...,
+    adapters = {
+      require('neotest-jest')({
+        ...,
+        extension_test_file_match = require('neotest-jest.util').create_test_file_extensions_matcher({ "perf", "spec" }, { "ts", "tsx" })
+      }),
+    }
+})
+```
+
+The call to `create_test_file_extensions_matcher` will return a function that will match
+`".perf.ts"`, `".perf.tsx"`, `".spec.ts"`, and `".spec.tsx"` test patterns.
+
+Note that the default test extensions won't be used for matching anymore. If you
+want to extend the defaults, you can retrieve them.
+
+```lua
+local intermediate_extensions, extensions =
+require('neotest-jest.util').default_test_extensions()
+```
+
+Here, `intermediate_extensions` are the extensions like `perf` and `spec` and
+`extensions` is `ts` and `tsx` in the example above.
 
 ## :gift: Contributing
 
