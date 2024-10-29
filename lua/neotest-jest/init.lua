@@ -100,6 +100,7 @@ end
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
+---@async
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
@@ -404,9 +405,14 @@ function adapter.build_spec(args)
   local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
+
   if util.path.exists(config) then
     -- only use config if available
     table.insert(command, "--config=" .. config)
+  end
+
+  if vim.tbl_islist(args.extra_args) then
+    vim.list_extend(command, args.extra_args)
   end
 
   vim.list_extend(command, {
