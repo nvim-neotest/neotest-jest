@@ -16,10 +16,20 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
+local rootJestBinary = vim.fn.getcwd() .. "/node_modules/.bin/jest"
 local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
+local function rootProjectHasJestBinary()
+  local success = pcall(lib.files.read, rootJestBinary)
+  return success
+end
 
 ---@return boolean
 local function rootProjectHasJestDependency()
+  if rootProjectHasJestBinary() then
+    return true
+  end
+
   local path = rootPackageJson
 
   local success, packageJsonContent = pcall(lib.files.read, path)
