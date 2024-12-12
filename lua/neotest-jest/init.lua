@@ -99,6 +99,7 @@ end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
+local require_jest_dependency = true
 
 ---@param file_path? string
 ---@return boolean
@@ -121,7 +122,7 @@ function adapter.is_test_file(file_path)
     end
   end
   ::matched_pattern::
-  return is_test_file and hasJestDependency(file_path)
+  return is_test_file and (not require_jest_dependency or hasJestDependency(file_path))
 end
 
 function adapter.filter_dir(name)
@@ -522,6 +523,9 @@ setmetatable(adapter, {
       getStrategyConfig = function()
         return opts.strategy_config
       end
+    end
+    if opts.require_jest_dependency ~= nil then
+      require_jest_dependency = opts.require_jest_dependency
     end
 
     if opts.jest_test_discovery then
