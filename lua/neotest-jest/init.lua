@@ -122,11 +122,7 @@ function adapter.is_test_file(file_path)
     end
   end
   ::matched_pattern::
-  if require_jest_dependency == true then
-    return is_test_file and hasJestDependency(file_path)
-  else
-    return is_test_file
-  end
+  return is_test_file and (not require_jest_dependency or hasJestDependency(file_path))
 end
 
 function adapter.filter_dir(name)
