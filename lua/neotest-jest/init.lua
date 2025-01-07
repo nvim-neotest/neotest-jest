@@ -12,6 +12,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field skipDependencyCheck? boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -52,6 +53,10 @@ end
 ---@param path string
 ---@return boolean
 local function hasJestDependency(path)
+  if adapter.skipDependencyCheck then
+    return true
+  end
+
   local rootPath = lib.files.match_root_pattern("package.json")(path)
 
   if not rootPath then
@@ -526,6 +531,10 @@ setmetatable(adapter, {
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if opts.skipDependencyCheck then
+      adapter.skipDependencyCheck = opts.skipDependencyCheck
     end
 
     return adapter
