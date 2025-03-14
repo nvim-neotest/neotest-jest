@@ -393,7 +393,7 @@ function adapter.build_spec(args)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
-    testNamePattern = "'^" .. testNamePattern
+    testNamePattern = "'" .. testNamePattern
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$'"
     else
