@@ -410,7 +410,6 @@ function adapter.build_spec(args)
   end
 
   vim.list_extend(command, {
-    "--no-coverage",
     "--testLocationInResults",
     "--verbose",
     "--json",
