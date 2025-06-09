@@ -36,6 +36,18 @@ function M.getJestCommand(path)
   return "jest"
 end
 
+function M.getJestOptions(results_path, testNamePattern)
+    return {
+        "--no-coverage",
+        "--testLocationInResults",
+        "--verbose",
+        "--json",
+        "--outputFile=" .. results_path,
+        "--testNamePattern=" .. testNamePattern,
+        "--forceExit",
+    }
+end
+
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 -- Returns jest config file path if it exists.
