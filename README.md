@@ -42,6 +42,41 @@ Make sure you have the appropriate `treesitter` language parsers installed other
 :TSInstall javascript
 ```
 
+## Configuration
+
+#### `jestCommand`
+
+Type: `string | fun(path: string): string`
+
+The jest command to run when running tests. Can also be a function that accepts
+the path to the current neotest position and returns the command to run.
+
+#### `jestOptions`
+
+Type: `string[] | fun(path: string, testNamePattern: string): string[]`
+
+The options to pass to jest when running tests. Can either be a list of strings
+or a function that accepts the path to a location for storing json test output
+and the testNamePattern for that position. It should return the options.
+
+> [!IMPORTANT]  
+> Three arguments are always passed regardless of this option: `--forceExit`, `--testLocationInResults`, and `--verbose`.
+>
+> Users must provide an option for generating json test output (default is
+> `--json`) and a destination output file (`--outputFile=...`). Otherwise,
+> neotest-jest will not work properly.
+>
+> Default options can be obtained by calling
+> `require("neotest-jest.jest-util").getJestOptions`.
+
+#### `jestConfigFile`
+
+Type: `string[] | fun(path: string, testNamePattern: string): string[]`
+
+#### `env`
+
+#### `cwd`
+
 ## Usage
 
 See neotest's documentation for more information on how to run tests.
