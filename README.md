@@ -41,6 +41,7 @@ Make sure you have the appropriate `treesitter` language parsers installed other
 ```
 :TSInstall javascript
 ```
+You might want to install `tsx` and `typescript` parser as well depending on your project.
 
 ## Usage
 
