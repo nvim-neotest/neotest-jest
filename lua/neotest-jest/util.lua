@@ -1,4 +1,5 @@
 local async = require("neotest.async")
+local compat = require("neotest-jest.compat")
 local vim = vim
 local validate = vim.validate
 local uv = vim.loop
@@ -68,7 +69,7 @@ M.path = (function()
   end
 
   local function path_join(...)
-    return table.concat(vim.tbl_flatten({ ... }), "/")
+    return table.concat(compat.tbl_flatten({ ... }), "/")
   end
 
   -- Traverse the path calling cb along the way.
@@ -159,7 +160,7 @@ function M.search_ancestors(startpath, func)
 end
 
 function M.root_pattern(...)
-  local patterns = vim.tbl_flatten({ ... })
+  local patterns = compat.tbl_flatten({ ... })
   local function matcher(path)
     for _, pattern in ipairs(patterns) do
       for _, p in ipairs(vim.fn.glob(M.path.join(path, pattern), true, true)) do
