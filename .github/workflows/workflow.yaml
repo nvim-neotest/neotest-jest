@@ -15,8 +15,8 @@ jobs:
     name: stylua
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: JohnnyMorganz/stylua-action@v2
+      - uses: actions/checkout@v4
+      - uses: JohnnyMorganz/stylua-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: 0.15.1
@@ -30,14 +30,20 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz
-            version: nightly
-          - os: ubuntu-latest
             url: https://github.com/neovim/neovim/releases/download/v0.9.0/nvim-linux64.tar.gz
             version: 0.9.0
+          - os: ubuntu-latest
+            url: https://github.com/neovim/neovim/releases/download/v0.10.0/nvim-linux64.tar.gz
+            version: 0.10.0
+          - os: ubuntu-latest
+            url: https://github.com/neovim/neovim/releases/download/v0.11.0/nvim-linux-x86_64.tar.gz
+            version: 0.11.0
+          - os: ubuntu-latest
+            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz
+            version: nightly
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: date +%F > todays-date
       - name: Restore cache for today's nightly.
         uses: actions/cache@v4
