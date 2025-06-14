@@ -128,11 +128,15 @@ end
 
 Please raise a PR if you are interested in adding new functionality or fixing any bugs. When submitting a bug, please include an example spec that can be tested.
 
-To trigger the tests for the adapter, run:
+To run the tests and styling:
 
-```sh
-./scripts/test
-```
+1. Fork this repository.
+2. Make changes.
+3. Make sure tests and styling checks are passing.
+   * Run tests by running `./scripts/test` in the root directory. Running the tests requires [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim). You may need to update the paths in `./tests/init.vim` to point to your local installation.
+   * Install [stylua](https://github.com/JohnnyMorganz/StyLua) and check styling using `stylua --check lua/ tests/`. Omit `--check` in order to fix styling.
+4. Submit a pull request.
+5. Get it approved.
 
 ## Bug Reports
 
