@@ -18,6 +18,7 @@ end)
 describe("is_test_file", function()
   it("matches jest files", function()
     assert.True(plugin.is_test_file("./spec/basic.test.ts"))
+    assert.True(plugin.is_test_file("./spec.ts"))
   end)
 
   it("does not match plain js files", function()
