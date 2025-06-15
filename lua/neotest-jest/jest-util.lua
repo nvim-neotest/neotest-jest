@@ -14,6 +14,15 @@ function M.getJestCommand(path)
 
   local function findBinary(p)
     local rootPath = util.find_node_modules_ancestor(p)
+
+    if not rootPath then
+      -- We did not find a root path so bail out since we already searched a
+      -- lot of parent directories. Otherwise we would compare a nil value
+      -- with a possible non-nil gitAncestor path resulting in infinite
+      -- recursion
+      return
+    end
+
     local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
 
     if util.path.exists(jestBinary) then
