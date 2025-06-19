@@ -11,29 +11,41 @@ end
 
 -- Some path utilities
 M.path = (function()
+  ---@type string
   local is_windows = uv.os_uname().version:match("Windows")
 
+  ---@param path string
+  ---@return string
   local function sanitize(path)
     if is_windows then
       path = path:sub(1, 1):upper() .. path:sub(2)
       path = path:gsub("\\", "/")
     end
+
     return path
   end
 
+  ---@param filename string
+  ---@return string | false
   local function exists(filename)
     local stat = uv.fs_stat(filename)
     return stat and stat.type or false
   end
 
+  ---@param filename string
+  ---@return boolean
   local function is_dir(filename)
     return exists(filename) == "directory"
   end
 
+  ---@param filename string
+  ---@return boolean
   local function is_file(filename)
     return exists(filename) == "file"
   end
 
+  ---@param path string
+  ---@return string | boolean
   local function is_fs_root(path)
     if is_windows then
       return path:match("^%a:$")
@@ -42,6 +54,8 @@ M.path = (function()
     end
   end
 
+  ---@param filename string
+  ---@return string
   local function is_absolute(filename)
     if is_windows then
       return filename:match("^%a:") or filename:match("^\\\\")
@@ -50,6 +64,8 @@ M.path = (function()
     end
   end
 
+  ---@param path string
+  ---@return string?
   local function dirname(path)
     local strip_dir_pat = "/([^/]+)$"
     local strip_sep_pat = "/$"
@@ -67,11 +83,17 @@ M.path = (function()
     return result
   end
 
+  ---@param ... any[]
+  ---@return string
   local function path_join(...)
     return table.concat(vim.tbl_flatten({ ... }), "/")
   end
 
   -- Traverse the path calling cb along the way.
+  ---@param path string
+  ---@param cb fun(dir: string, path: string): boolean
+  ---@return string?
+  ---@return string?
   local function traverse_parents(path, cb)
     path = uv.fs_realpath(path)
     local dir = path
@@ -92,6 +114,10 @@ M.path = (function()
   end
 
   -- Iterate the path until we find the rootdir.
+  ---@param path string
+  ---@return unknown
+  ---@return string?
+  ---@return string?
   local function iterate_parents(path)
     local function it(_, v)
       if v and not is_fs_root(v) then
@@ -108,6 +134,9 @@ M.path = (function()
     return it, path, path
   end
 
+  ---@param root string
+  ---@param path string
+  ---@return boolean
   local function is_descendant(root, path)
     if not path then
       return false
@@ -139,6 +168,9 @@ M.path = (function()
   }
 end)()
 
+---@param startpath string
+---@param func fun(path: string): boolean
+---@return string?
 function M.search_ancestors(startpath, func)
   validate({ func = { func, "f" } })
   if func(startpath) then
@@ -174,6 +206,8 @@ function M.root_pattern(...)
   end
 end
 
+---@param startpath string
+---@return string?
 function M.find_node_modules_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     if M.path.is_dir(M.path.join(path, "node_modules")) then
@@ -181,6 +215,9 @@ function M.find_node_modules_ancestor(startpath)
     end
   end)
 end
+
+---@param startpath string
+---@return string?
 function M.find_package_json_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     if M.path.is_file(M.path.join(path, "package.json")) then
@@ -188,6 +225,9 @@ function M.find_package_json_ancestor(startpath)
     end
   end)
 end
+
+---@param startpath string
+---@return string?
 function M.find_git_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     -- .git is a file when the project is a git worktree
