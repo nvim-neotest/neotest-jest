@@ -1,4 +1,3 @@
----@diagnostic disable: undefined-field
 local async = require("neotest.async")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
@@ -12,17 +11,19 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field jest_test_discovery? boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
 local rootPackageJson = vim.fn.getcwd() .. "/package.json"
 
+---@async
 ---@return boolean
 local function rootProjectHasJestDependency()
   local path = rootPackageJson
-
   local success, packageJsonContent = pcall(lib.files.read, path)
+
   if not success then
     print("cannot read package.json")
     return false
@@ -93,15 +94,21 @@ local function hasJestDependency(path)
   return rootProjectHasJestDependency()
 end
 
-adapter.root = function(path)
-  return lib.files.match_root_pattern("package.json")(path)
+---@async
+---@param dir string @Directory to treat as cwd
+---@return string | nil @Absolute root dir of test suite
+---@diagnostic disable-next-line: inject-field
+adapter.root = function(dir)
+  return lib.files.match_root_pattern("package.json")(dir)
 end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
----@param file_path? string
+---@async
+---@param file_path string
 ---@return boolean
+---@diagnostic disable-next-line: inject-field
 function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
@@ -124,10 +131,17 @@ function adapter.is_test_file(file_path)
   return is_test_file and hasJestDependency(file_path)
 end
 
-function adapter.filter_dir(name)
+---@param name string Name of directory
+---@param rel_path string Path to directory, relative to root
+---@param root string Root directory of project
+---@return boolean
+---@diagnostic disable-next-line: unused-local, inject-field
+function adapter.filter_dir(name, rel_path, root)
   return name ~= "node_modules"
 end
 
+---@param captured_nodes table<string, userdata>
+---@return ("test" | "namespace")?
 local function get_match_type(captured_nodes)
   if captured_nodes["test.name"] then
     return "test"
@@ -138,6 +152,10 @@ local function get_match_type(captured_nodes)
 end
 
 -- Enrich `it.each` tests with metadata about TS node position
+---@param file_path  string
+---@param source string
+---@param captured_nodes table<string, userdata>
+---@diagnostic disable-next-line: inject-field
 function adapter.build_position(file_path, source, captured_nodes)
   local match_type = get_match_type(captured_nodes)
   if not match_type then
@@ -158,8 +176,10 @@ function adapter.build_position(file_path, source, captured_nodes)
 end
 
 ---@async
+---@param file_path string Absolute file path
 ---@return neotest.Tree | nil
-function adapter.discover_positions(path)
+---@diagnostic disable-next-line: unused-local, inject-field
+function adapter.discover_positions(file_path)
   local query = [[
     ; -- Namespaces --
     ; Matches: `describe('context', () => {})`
@@ -230,7 +250,7 @@ function adapter.discover_positions(path)
     )) @test.definition
   ]]
 
-  local positions = lib.treesitter.parse_positions(path, query, {
+  local positions = lib.treesitter.parse_positions(file_path, query, {
     nested_tests = false,
     build_position = 'require("neotest-jest").build_position',
   })
@@ -248,6 +268,8 @@ function adapter.discover_positions(path)
   return positions
 end
 
+---@param s string
+---@return string
 local function escapeTestPattern(s)
   return (
     s:gsub("%(", "%\\(")
@@ -265,6 +287,10 @@ local function escapeTestPattern(s)
   )
 end
 
+---@param strategy string
+---@param command string[]
+---@param cwd string?
+---@return table?
 local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
@@ -292,14 +318,19 @@ end
 
 ---@param path string
 ---@return string|nil
+---@diagnostic disable-next-line: unused-local
 local function getCwd(path)
   return nil
 end
 
+---@diagnostic disable-next-line: unused-local
 local function getStrategyConfig(default_strategy_config, args)
   return default_strategy_config
 end
 
+---@param s string
+---@return string
+---@return integer
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
@@ -308,6 +339,12 @@ local function cleanAnsi(s)
     :gsub("\x1b%[%d+m", "")
 end
 
+-- TODO: Check types
+
+---@param file string
+---@param errStr string
+---@return string
+---@return string
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
   local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
@@ -316,6 +353,7 @@ local function findErrorPosition(file, errStr)
   return errLine, errColumn
 end
 
+---@diagnostic disable-next-line: unused-local
 local function parsed_json_to_results(data, output_file, consoleOut)
   local tests = {}
 
@@ -373,7 +411,8 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 end
 
 ---@param args neotest.RunArgs
----@return neotest.RunSpec | nil
+---@return nil | neotest.RunSpec | neotest.RunSpec[]
+---@diagnostic disable-next-line: inject-field
 function adapter.build_spec(args)
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
@@ -456,8 +495,10 @@ end
 
 ---@async
 ---@param spec neotest.RunSpec
----@return neotest.Result[]
-function adapter.results(spec, b, tree)
+---@param result neotest.StrategyResult
+---@param tree neotest.Tree
+---@return table<string, neotest.Result>
+function adapter.results(spec, result, tree)
   spec.context.stop_stream()
 
   local output_file = spec.context.results_path
@@ -476,11 +517,13 @@ function adapter.results(spec, b, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, b.output)
+  local results = parsed_json_to_results(parsed, output_file, result.output)
 
   return results
 end
 
+---@param obj unknown
+---@return boolean
 local is_callable = function(obj)
   return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
@@ -489,7 +532,9 @@ setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
     if is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
+      local jestCommand = opts.jestCommand
+      ---@cast jestCommand fun(path: string): string
+      getJestCommand = jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
         return opts.jestCommand
