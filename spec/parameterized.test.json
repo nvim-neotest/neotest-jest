@@ -26,7 +26,7 @@
     "unmatched": 0,
     "updated": 0
   },
-  "startTime": 1749981764879,
+  "startTime": 1749985512027,
   "success": true,
   "testResults": [
     {
@@ -35,12 +35,15 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 13,
+          "duration": 18,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text test with percent %",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 2
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -50,12 +53,15 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 4,
+          "duration": 2,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text test with all of the parameters \"string\" %s %d %i %f %j %o 0 % %p %s %d %i %f %j %o %# %",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 6
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -70,7 +76,10 @@
           "failureMessages": [],
           "fullName": "describe text test with $namedParameter",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 13
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -85,7 +94,10 @@
           "failureMessages": [],
           "fullName": "describe text test with $namedParameter and $anotherNamedParameter",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 17
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -95,12 +107,15 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 1,
+          "duration": 2,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text test with $variable.field.otherField",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 24
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -115,17 +130,20 @@
           "failureMessages": [],
           "fullName": "describe text test with $variable.field.otherField and (parenthesis)",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 22,
+            "line": 28
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
           "title": "test with $variable.field.otherField and (parenthesis)"
         }
       ],
-      "endTime": 1749981765170,
+      "endTime": 1749985512460,
       "message": "",
       "name": "./spec/parameterized.test.ts",
-      "startTime": 1749981764917,
+      "startTime": 1749985512089,
       "status": "passed",
       "summary": ""
     }

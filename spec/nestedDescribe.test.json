@@ -26,7 +26,7 @@
     "unmatched": 0,
     "updated": 0
   },
-  "startTime": 1749974828105,
+  "startTime": 1750414513030,
   "success": true,
   "testResults": [
     {
@@ -42,7 +42,10 @@
           "failureMessages": [],
           "fullName": "outer middle inner should do a thing",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 7,
+            "line": 5
+          },
           "numPassingAsserts": 1,
           "retryReasons": [],
           "status": "passed",
@@ -54,22 +57,25 @@
             "middle",
             "inner"
           ],
-          "duration": 1,
+          "duration": 0,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "outer middle inner this has a '",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 7,
+            "line": 8
+          },
           "numPassingAsserts": 1,
           "retryReasons": [],
           "status": "passed",
           "title": "this has a '"
         }
       ],
-      "endTime": 1749974828383,
+      "endTime": 1750414513443,
       "message": "",
       "name": "./spec/nestedDescribe.test.ts",
-      "startTime": 1749974828152,
+      "startTime": 1750414513084,
       "status": "passed",
       "summary": ""
     }

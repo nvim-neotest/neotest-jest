@@ -26,7 +26,7 @@
     "unmatched": 0,
     "updated": 0
   },
-  "startTime": 1749981590281,
+  "startTime": 1750416516962,
   "success": true,
   "testResults": [
     {
@@ -35,42 +35,15 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 12,
+          "duration": 18,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text Array1",
           "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array1"
-        },
-        {
-          "ancestorTitles": [
-            "describe text"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text Array1",
-          "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array1"
-        },
-        {
-          "ancestorTitles": [
-            "describe text"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text Array1",
-          "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 2
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -83,9 +56,48 @@
           "duration": 2,
           "failureDetails": [],
           "failureMessages": [],
+          "fullName": "describe text Array1",
+          "invocations": 1,
+          "location": {
+            "column": 21,
+            "line": 2
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array1"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text Array1",
+          "invocations": 1,
+          "location": {
+            "column": 21,
+            "line": 2
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array1"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
           "fullName": "describe text Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 6
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -100,7 +112,10 @@
           "failureMessages": [],
           "fullName": "describe text Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 6
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -115,7 +130,10 @@
           "failureMessages": [],
           "fullName": "describe text Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 6
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -130,7 +148,10 @@
           "failureMessages": [],
           "fullName": "describe text Array3",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 10
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -145,7 +166,10 @@
           "failureMessages": [],
           "fullName": "describe text Array3",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 10
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -160,7 +184,10 @@
           "failureMessages": [],
           "fullName": "describe text Array3",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 10
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -175,7 +202,10 @@
           "failureMessages": [],
           "fullName": "describe text Array4",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 14
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -190,7 +220,10 @@
           "failureMessages": [],
           "fullName": "describe text Array4",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 14
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -205,7 +238,10 @@
           "failureMessages": [],
           "fullName": "describe text Array4",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 14
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -220,7 +256,10 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array1",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 20
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -235,7 +274,10 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array1",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 20
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -250,7 +292,10 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array1",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 20
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -265,7 +310,10 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 24
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -280,7 +328,10 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 24
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -295,71 +346,14 @@
           "failureMessages": [],
           "fullName": "describe text 2 Array2",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 21,
+            "line": 24
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
           "title": "Array2"
-        },
-        {
-          "ancestorTitles": [
-            "describe text 2"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text 2 Array3",
-          "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array3"
-        },
-        {
-          "ancestorTitles": [
-            "describe text 2"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text 2 Array3",
-          "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array3"
-        },
-        {
-          "ancestorTitles": [
-            "describe text 2"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text 2 Array3",
-          "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array3"
-        },
-        {
-          "ancestorTitles": [
-            "describe text 2"
-          ],
-          "duration": 1,
-          "failureDetails": [],
-          "failureMessages": [],
-          "fullName": "describe text 2 Array4",
-          "invocations": 1,
-          "location": null,
-          "numPassingAsserts": 0,
-          "retryReasons": [],
-          "status": "passed",
-          "title": "Array4"
         },
         {
           "ancestorTitles": [
@@ -368,9 +362,66 @@
           "duration": 0,
           "failureDetails": [],
           "failureMessages": [],
+          "fullName": "describe text 2 Array3",
+          "invocations": 1,
+          "location": {
+            "column": 23,
+            "line": 28
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array3"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 Array3",
+          "invocations": 1,
+          "location": {
+            "column": 23,
+            "line": 28
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array3"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 Array3",
+          "invocations": 1,
+          "location": {
+            "column": 23,
+            "line": 28
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array3"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
           "fullName": "describe text 2 Array4",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 32
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
@@ -380,22 +431,43 @@
           "ancestorTitles": [
             "describe text 2"
           ],
-          "duration": 0,
+          "duration": 1,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text 2 Array4",
           "invocations": 1,
-          "location": null,
+          "location": {
+            "column": 23,
+            "line": 32
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "Array4"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 Array4",
+          "invocations": 1,
+          "location": {
+            "column": 23,
+            "line": 32
+          },
           "numPassingAsserts": 0,
           "retryReasons": [],
           "status": "passed",
           "title": "Array4"
         }
       ],
-      "endTime": 1749981590602,
+      "endTime": 1750416517229,
       "message": "",
       "name": "./spec/array.test.ts",
-      "startTime": 1749981590328,
+      "startTime": 1750416517011,
       "status": "passed",
       "summary": ""
     }
