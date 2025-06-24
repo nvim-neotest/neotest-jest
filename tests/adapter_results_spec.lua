@@ -3,7 +3,6 @@ local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local stub = require("luassert.stub")
 local types = require("neotest.types")
--- local util = require("neotest-jest.util")
 
 describe("adapter.results", function()
   local spec = {}
@@ -24,8 +23,6 @@ describe("adapter.results", function()
   before_each(function()
     assert:set_parameter("TableFormatLevel", 10)
 
-    -- local stream_data, stop_stream = util.stream("test_output.json")
-
     spec = {
       context = {
         results_path = "test_output.json",
@@ -42,7 +39,6 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results", function()
-    require("neotest-jest.jest-util").getJestCommand("./spec/basic.test.ts")
     local adapter = require("neotest-jest")({})
     local path = "./spec/basic.test.ts"
     local tree = discover_positions(adapter, path, "./spec/basic.test.json")
