@@ -121,7 +121,7 @@ describe("adapter.results", function()
 
     -- local expected_tree = require("./spec/basic.test.expected_tree")
     --
-    -- -- Tree remains unchanged
+    -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
@@ -160,7 +160,7 @@ describe("adapter.results", function()
 
     -- local expected_tree = require("./spec/basic.test.expected_tree")
     --
-    -- -- Tree remains unchanged
+    -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
@@ -176,7 +176,7 @@ describe("adapter.results", function()
     local tree = discover_positions(adapter, path, "./spec/array.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
-    -- TODO: Does not work since test names and positions are the same
+    -- todo: does not work since test names and positions are the same
     assert.are.same(neotest_results, {
       [path .. "::describe text::Array1"] = {
         status = types.ResultStatus.passed,
@@ -398,7 +398,7 @@ describe("adapter.results", function()
 
     -- local expected_tree = require("./spec/basic.test.expected_tree")
     --
-    -- -- Tree remains unchanged
+    -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
@@ -473,7 +473,7 @@ describe("adapter.results", function()
 
     -- local expected_tree = require("./spec/basic.test.expected_tree")
     --
-    -- -- Tree remains unchanged
+    -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
@@ -483,9 +483,132 @@ describe("adapter.results", function()
     lib.files.read:revert()
   end)
 
-  async.it("creates neotest results with failed and skipped results", function() end)
+  async.it("creates neotest results with failed and skipped results", function()
+    local adapter = require("neotest-jest")({})
+    local path = "./spec/basic-skipped-failed.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/basic-skipped-failed.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
 
-  it("handles failure to find parsed test result", function() end)
+    assert.are.same(neotest_results, {
+      [path .. "::describe text::1"] = {
+        status = types.ResultStatus.passed,
+        short = "1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 2,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::2"] = {
+        status = types.ResultStatus.passed,
+        short = "2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 6,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::3"] = {
+        errors = {
+          {
+            line = 9,
+            column = 0,
+            message = "ReferenceError: assert is not defined",
+          },
+        },
+        status = types.ResultStatus.failed,
+        short = "3: failed\nReferenceError: assert is not defined",
+        output = strategy_result.output,
+        location = {
+          line = 10,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::4"] = {
+        status = types.ResultStatus.passed,
+        short = "4: passed",
+        output = strategy_result.output,
+        location = {
+          line = 15,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::1"] = {
+        status = types.ResultStatus.passed,
+        short = "1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 21,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::2"] = {
+        status = types.ResultStatus.skipped,
+        short = "2: skipped",
+        output = strategy_result.output,
+        location = {
+          line = 25,
+          column = 6,
+        },
+      },
+      [path .. "::describe text 2::3"] = {
+        status = types.ResultStatus.passed,
+        short = "3: passed",
+        output = strategy_result.output,
+        location = {
+          line = 29,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::4"] = {
+        status = types.ResultStatus.passed,
+        short = "4: passed",
+        output = strategy_result.output,
+        location = {
+          line = 33,
+          column = 3,
+        },
+      },
+    })
+
+    -- local expected_tree = require("./spec/basic.test.expected_tree")
+    --
+    -- -- tree remains unchanged
+    -- assert.are.same(tree:to_list(), expected_tree)
+
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
+  async.it("handles failure to find parsed test result", function()
+    local path = "./spec/basic.test.ts"
+    local adapter = require("neotest-jest")({})
+    local tree = discover_positions(adapter, path, "./spec/basic-parse-fail.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+    assert.are.same(neotest_results, {})
+
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    assert.stub(logger.error).was.called_with("Failed to find parsed test result ", {
+      ancestorTitles = {
+        "describe text",
+      },
+      duration = 18,
+      failureDetails = {},
+      failureMessages = {},
+      fullName = "describe text 1",
+      invocations = 1,
+      location = {
+        column = 3,
+        line = 2,
+      },
+      numPassingAsserts = 0,
+      retryReasons = {},
+      status = "passed",
+    })
+  end)
 
   it("handles failure to read json test output", function()
     stub(lib.files, "read", function()
