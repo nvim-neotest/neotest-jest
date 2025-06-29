@@ -4,6 +4,9 @@
   "description": "neotest-jest spec",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "jest": "^28.1.2",
     "ts-node": "^10.8.2",

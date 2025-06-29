@@ -140,6 +140,7 @@ end
 -- Enrich `it.each` tests with metadata about TS node position
 function adapter.build_position(file_path, source, captured_nodes)
   local match_type = get_match_type(captured_nodes)
+
   if not match_type then
     return
   end
@@ -456,8 +457,10 @@ end
 
 ---@async
 ---@param spec neotest.RunSpec
----@return neotest.Result[]
-function adapter.results(spec, b, tree)
+---@param result neotest.StrategyResult
+---@param tree neotest.Tree
+---@return table<string, neotest.Result>
+function adapter.results(spec, result, tree)
   spec.context.stop_stream()
 
   local output_file = spec.context.results_path
@@ -476,7 +479,7 @@ function adapter.results(spec, b, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, b.output)
+  local results = parsed_json_to_results(parsed, output_file, result.output)
 
   return results
 end
