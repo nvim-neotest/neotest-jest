@@ -12,6 +12,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field isTestFile async fun(file_path: string): boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -49,9 +50,14 @@ local function rootProjectHasJestDependency()
   return false
 end
 
----@param path string
+---@async
+---@param path string?
 ---@return boolean
 local function hasJestDependency(path)
+  if not path then
+    return false
+  end
+
   local rootPath = lib.files.match_root_pattern("package.json")(path)
 
   if not rootPath then
@@ -100,28 +106,36 @@ end
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
----@param file_path? string
+---@async
+---@param file_path string?
 ---@return boolean
-function adapter.is_test_file(file_path)
+local function defaultIsTestFile(file_path)
   if file_path == nil then
     return false
   end
-  local is_test_file = false
 
-  if string.match(file_path, "__tests__") then
-    is_test_file = true
+  if file_path:match("__tests__") then
+      return true
   end
 
   for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
       if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
-        is_test_file = true
-        goto matched_pattern
+        return true
       end
     end
   end
-  ::matched_pattern::
-  return is_test_file and hasJestDependency(file_path)
+
+  return false
+end
+
+local isTestFile = defaultIsTestFile
+
+---@async
+---@param file_path? string
+---@return boolean
+function adapter.is_test_file(file_path)
+  return isTestFile(file_path) and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
@@ -526,6 +540,10 @@ setmetatable(adapter, {
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if is_callable(opts.isTestFile) then
+      isTestFile = opts.isTestFile
     end
 
     return adapter

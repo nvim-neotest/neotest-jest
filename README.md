@@ -29,6 +29,12 @@ use({
           cwd = function(path)
             return vim.fn.getcwd()
           end,
+          ---@async
+          ---@param file_path string?
+          ---@return boolean
+          isTestFile = function(file_path)
+            return file_path and vim.fn.fnamemodify(file_path, ":e:e") == "test.ts"
+          end,
         }),
       }
     })
