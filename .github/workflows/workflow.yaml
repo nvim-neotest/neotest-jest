@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: 22
       - run: |
-          cp ./spec/package-lock.json .
+          cp ./spec/package.json ./spec/package-lock.json .
           npm ci
       - name: Prepare dependencies
         run: |
