@@ -42,7 +42,12 @@ jobs:
         with:
           path: _neovim
           key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          cp ./spec/package-lock.json .
+          npm ci
       - name: Prepare dependencies
         run: |
           test -d _neovim || {
