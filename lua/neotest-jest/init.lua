@@ -108,13 +108,13 @@ function adapter.is_test_file(file_path)
   end
   local is_test_file = false
 
-  if string.match(file_path, "__tests__") then
+  if file_path:match("__tests__") then
     is_test_file = true
   end
 
   for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
+      if file_path:match("%." .. x .. "%." .. ext .. "$") then
         is_test_file = true
         goto matched_pattern
       end
@@ -312,7 +312,7 @@ end
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
   local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
-  local _, _, errLine, errColumn = string.find(errStr, regexp)
+  local _, _, errLine, errColumn = errStr:find(regexp)
 
   return errLine, errColumn
 end
@@ -388,8 +388,8 @@ function adapter.build_spec(args)
 
   if pos.type == "test" or pos.type == "namespace" then
     -- pos.id in form "path/to/file::Describe text::test text"
-    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
-    testName, _ = string.gsub(testName, "::", " ")
+    local testName = pos.id:sub(pos.id:find("::") + 2)
+    testName, _ = testName:gsub("::", " ")
     testNamePattern = escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
