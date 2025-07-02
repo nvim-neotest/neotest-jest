@@ -2,6 +2,7 @@ local adapter = require("neotest-jest")({ jestCommand = "jest" })
 local async = require("nio").tests
 local stub = require("luassert.stub")
 local Tree = require("neotest.types").Tree
+local util = require("neotest-jest.util")
 
 require("neotest-jest-assertions")
 
@@ -201,7 +202,7 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=" .. config_override())
     assert.contains(command, "--testNamePattern='.*'")
-    assert.contains(command, "spec\\/basic.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize("./spec/basic.test.ts")))
 
     assert.are.same(spec.context.file, "./spec/basic.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
