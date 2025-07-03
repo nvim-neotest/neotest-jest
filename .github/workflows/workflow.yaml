@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: _neovim
-          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}-${{ $matrix.version }}
+          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}-${{ matrix.version }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
