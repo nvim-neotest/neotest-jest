@@ -139,7 +139,6 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern='^outer middle inner this has a \\'$'")
-    assert.contains(command, "spec\\/nestedDescribe.test.ts")
     assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/nestedDescribe.test.ts")
