@@ -231,8 +231,6 @@ function adapter.discover_positions(path)
     )) @test.definition
   ]]
 
-  async.scheduler()
-
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
     build_position = 'require("neotest-jest").build_position',
