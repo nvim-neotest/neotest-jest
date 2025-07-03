@@ -249,23 +249,6 @@ function adapter.discover_positions(path)
   return positions
 end
 
-local function escapeTestPattern(s)
-  return (
-    s:gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
-  )
-end
-
 local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
@@ -390,7 +373,7 @@ function adapter.build_spec(args)
     -- pos.id in form "path/to/file::Describe text::test text"
     local testName = pos.id:sub(pos.id:find("::") + 2)
     testName, _ = testName:gsub("::", " ")
-    testNamePattern = escapeTestPattern(testName)
+    testNamePattern = util.escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
@@ -418,7 +401,7 @@ function adapter.build_spec(args)
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     "--forceExit",
-    escapeTestPattern(vim.fs.normalize(pos.path)),
+    util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
   local cwd = getCwd(pos.path)
