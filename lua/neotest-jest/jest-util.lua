@@ -11,6 +11,7 @@ end
 ---@return string
 function M.getJestCommand(path)
   local gitAncestor = util.find_git_ancestor(path)
+  vim.print(gitAncestor)
 
   local function findBinary(p)
     local rootPath = util.find_node_modules_ancestor(p)
@@ -24,6 +25,7 @@ function M.getJestCommand(path)
     end
 
     local jestBinary = util.path.join(rootPath, "node_modules", ".bin", "jest")
+    vim.print(jestBinary)
 
     if util.path.exists(jestBinary) then
       return jestBinary

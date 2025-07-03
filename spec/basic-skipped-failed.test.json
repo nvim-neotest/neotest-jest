@@ -1,0 +1,192 @@
+{
+  "numFailedTestSuites": 1,
+  "numFailedTests": 1,
+  "numPassedTestSuites": 0,
+  "numPassedTests": 6,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 1,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 8,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1751198748324,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 13,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 1",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 2
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "1"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 6
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "2"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "ReferenceError: assert is not defined"
+          ],
+          "fullName": "describe text 3",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 10
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "failed",
+          "title": "3"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 3,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 4",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 15
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "4"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 1",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 21
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "1"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": null,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 2",
+          "invocations": 1,
+          "location": {
+            "column": 6,
+            "line": 25
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "pending",
+          "title": "2"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 3",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 29
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "3"
+        },
+        {
+          "ancestorTitles": [
+            "describe text 2"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text 2 4",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 33
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "4"
+        }
+      ],
+      "endTime": 1751198748669,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m? \u001b[22m\u001b[1mdescribe text � 3\u001b[39m\u001b[22m\n\n    ReferenceError: assert is not defined",
+      "name": "./spec/basic-skipped-failed.test.ts",
+      "startTime": 1751198748377,
+      "status": "failed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}

@@ -132,7 +132,9 @@ To run the tests and styling:
 
 1. Fork this repository.
 2. Make changes.
-3. Make sure tests and styling checks are passing.
+3. Make sure tests and styling checks are passing. You will need to install jest
+   and make sure it is available as a command in order to run the tests since it
+   tests parametrized tests which require running a jest command.
    * Run tests by running `./scripts/test` in the root directory. Running the tests requires [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim). You may need to update the paths in `./tests/init.vim` to point to your local installation.
    * Install [stylua](https://github.com/JohnnyMorganz/StyLua) and check styling using `stylua --check lua/ tests/`. Omit `--check` in order to fix styling.
 4. Submit a pull request.

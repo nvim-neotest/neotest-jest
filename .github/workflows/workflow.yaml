@@ -31,8 +31,10 @@ jobs:
         include:
           - os: ubuntu-latest
             url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz
+            version: nightly
           - os: ubuntu-latest
             url: https://github.com/neovim/neovim/releases/download/v0.9.0/nvim-linux64.tar.gz
+            version: 0.9.0
 
     steps:
       - uses: actions/checkout@v3
@@ -41,8 +43,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: _neovim
-          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
-
+          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}-${{ matrix.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          cp ./spec/package.json ./spec/package-lock.json .
+          npm ci
       - name: Prepare dependencies
         run: |
           test -d _neovim || {
@@ -53,7 +60,8 @@ jobs:
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim.git ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           git clone --depth 1 https://github.com/nvim-neotest/neotest.git ~/.local/share/nvim/site/pack/vendor/start/neotest
           git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter.git ~/.local/share/nvim/site/pack/vendor/start/nvim-treesitter
-          git clone --depth 1 https://github.com/neovim/nvim-lspconfig.git ~/.local/share/nvim/site/pack/vendor/start/nvim-lspconfig
+          git clone --depth 1 https://github.com/nvim-neotest/nvim-nio ~/.local/share/nvim/site/pack/vendor/start/nvim-nio
+          # git clone --depth 1 https://github.com/neovim/nvim-lspconfig.git ~/.local/share/nvim/site/pack/vendor/start/nvim-lspconfig
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
@@ -63,4 +71,4 @@ jobs:
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
           nvim --version
-          ./scripts/test
+          ./scripts/test-ci
