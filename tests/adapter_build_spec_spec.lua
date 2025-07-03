@@ -8,7 +8,8 @@ require("neotest-jest-assertions")
 
 describe("adapter.build_spec", function()
   async.it("builds command for file test", function()
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
@@ -26,14 +27,15 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--json")
     assert.contains(command, "--testNamePattern='.*'")
     assert.contains(command, "--forceExit")
-    assert.contains(command, "spec\\/basic.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/basic.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
   end)
 
   async.it("builds command for file test with jestCommand arg", function()
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
@@ -51,14 +53,15 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern='.*'")
-    assert.contains(command, "spec\\/basic.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/basic.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
   end)
 
   async.it("builds command for namespace", function()
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -78,14 +81,15 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern='^describe text'")
-    assert.contains(command, "spec\\/basic.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/basic.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
   end)
 
   async.it("builds command for nested namespace", function()
-    local positions = adapter.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
+    local path = "./spec/nestedDescribe.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -105,14 +109,15 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern='^outer middle inner'")
-    assert.contains(command, "spec\\/nestedDescribe.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/nestedDescribe.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
   end)
 
   async.it("builds correct command for test name with ' ", function()
-    local positions = adapter.discover_positions("./spec/nestedDescribe.test.ts"):to_list()
+    local path = "./spec/nestedDescribe.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -135,6 +140,7 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern='^outer middle inner this has a \\'$'")
     assert.contains(command, "spec\\/nestedDescribe.test.ts")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/nestedDescribe.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
@@ -184,7 +190,8 @@ describe("adapter.build_spec", function()
       env = { override = "override", adapter_override = true },
     })
 
-    local positions = _adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/basic.test.ts"
+    local positions = _adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
@@ -202,7 +209,7 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=" .. config_override())
     assert.contains(command, "--testNamePattern='.*'")
-    assert.contains(command, util.escapeTestPattern(vim.fs.normalize("./spec/basic.test.ts")))
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, "./spec/basic.test.ts")
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
