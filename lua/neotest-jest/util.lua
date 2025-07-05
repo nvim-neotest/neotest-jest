@@ -5,6 +5,10 @@ local uv = vim.loop
 
 local M = {}
 
+function M.is_callable(obj)
+  return type(obj) == "function" or (type(obj) == "table" and type(obj.__call) == "function")
+end
+
 -- Some path utilities
 M.path = (function()
   local is_windows = uv.os_uname().version:match("Windows")

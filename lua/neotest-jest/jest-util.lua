@@ -2,10 +2,6 @@ local util = require("neotest-jest.util")
 
 local M = {}
 
-function M.is_callable(obj)
-  return type(obj) == "function" or (type(obj) == "table" and obj.__call)
-end
-
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
 ---@return string
