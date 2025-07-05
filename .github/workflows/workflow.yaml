@@ -71,4 +71,4 @@ jobs:
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
           nvim --version
-          ./scripts/test-ci
+          ./scripts/test
