@@ -112,14 +112,13 @@ function adapter.is_test_file(file_path)
     is_test_file = true
   end
 
-  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if file_path:match("%." .. x .. "%." .. ext .. "$") then
-        is_test_file = true
-        goto matched_pattern
-      end
+  for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
+    if file_path:match(pattern) then
+      is_test_file = true
+      goto matched_pattern
     end
   end
+
   ::matched_pattern::
   return is_test_file and hasJestDependency(file_path)
 end

@@ -16,40 +16,15 @@ describe("adapter.is_test_file", function()
   end)
 
   async.it("matches all supported extensions", function()
-    assert.True(adapter.is_test_file("./spec/test_paths/file.spec.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.spec.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.spec.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.spec.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.spec.tsx"))
+    for _, extension in ipairs(util.getDefaultTestExtensions()) do
+      local path = "./spec/test_paths/file." .. extension[1] .. "." .. extension[2]
+      local result = adapter.is_test_file(path)
 
-    assert.True(adapter.is_test_file("./spec/test_paths/file.e2e-spec.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.e2e-spec.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.e2e-spec.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.e2e-spec.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.e2e-spec.tsx"))
+      if not result then
+        vim.print(path)
+      end
 
-    assert.True(adapter.is_test_file("./spec/test_paths/file.test.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.test.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.test.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.test.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.test.tsx"))
-
-    assert.True(adapter.is_test_file("./spec/test_paths/file.unit.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.unit.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.unit.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.unit.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.unit.tsx"))
-
-    assert.True(adapter.is_test_file("./spec/test_paths/file.regression.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.regression.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.regression.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.regression.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.regression.tsx"))
-
-    assert.True(adapter.is_test_file("./spec/test_paths/file.integration.js"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.integration.jsx"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.integration.coffee"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.integration.ts"))
-    assert.True(adapter.is_test_file("./spec/test_paths/file.integration.tsx"))
+      assert.True(result)
+    end
   end)
 end)

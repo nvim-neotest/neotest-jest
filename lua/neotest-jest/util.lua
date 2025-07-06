@@ -260,4 +260,26 @@ function M.escapeTestPattern(s)
   )
 end
 
+local default_extensions = {}
+local default_patterns = {}
+
+for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
+  for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+    table.insert(default_extensions, { x:gsub("%%", ""), ext:gsub("%%", "") })
+    table.insert(default_patterns, "%." .. x .. "%." .. ext .. "$")
+  end
+end
+
+---@return string[][]
+function M.getDefaultTestExtensions()
+  return default_extensions
+end
+
+---@return string[]
+function M.getDefaultTestExtensionPatterns()
+  return default_patterns
+end
+
+function M.create_neotest_id() end
+
 return M
