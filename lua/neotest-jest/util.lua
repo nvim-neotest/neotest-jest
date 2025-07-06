@@ -260,15 +260,22 @@ function M.escapeTestPattern(s)
   )
 end
 
-local default_extensions = {}
-local default_patterns = {}
+---@return string[][], string[]
+local function createDefaultExtensionsAndPatterns()
+  local extensions = {}
+  local patterns = {}
 
-for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-  for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-    table.insert(default_extensions, { x:gsub("%%", ""), ext:gsub("%%", "") })
-    table.insert(default_patterns, "%." .. x .. "%." .. ext .. "$")
+  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
+    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+      table.insert(extensions, { x:gsub("%%", ""), ext:gsub("%%", "") })
+      table.insert(patterns, "%." .. x .. "%." .. ext .. "$")
+    end
   end
+
+  return extensions, patterns
 end
+
+local default_extensions, default_patterns = createDefaultExtensionsAndPatterns()
 
 ---@return string[][]
 function M.getDefaultTestExtensions()
