@@ -48,8 +48,9 @@ jobs:
         with:
           node-version: 22
       - run: |
-          cp ./spec/package.json ./spec/package-lock.json .
+          cd ./spec
           npm ci
+          cd ..
       - name: Prepare dependencies
         run: |
           test -d _neovim || {
