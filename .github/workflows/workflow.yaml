@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: 22
       - name: Install npm packages
-      - run: |
+        run: |
           cd ./spec
           npm ci
           cd ..
