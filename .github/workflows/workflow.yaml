@@ -52,7 +52,7 @@ jobs:
           cd ./spec
           npm ci
           cd ..
-      - name: Prepare neotest-jest dependencies
+      - name: Install neotest-jest dependencies
         run: |
           test -d _neovim || {
             mkdir -p _neovim
