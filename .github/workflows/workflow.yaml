@@ -47,11 +47,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install npm packages
       - run: |
           cd ./spec
           npm ci
           cd ..
-      - name: Prepare dependencies
+      - name: Prepare neotest-jest dependencies
         run: |
           test -d _neovim || {
             mkdir -p _neovim
