@@ -383,7 +383,7 @@ function adapter.build_spec(args)
   end
 
   local pos = args.tree:data()
-  local testNamePattern = "'.*'"
+  local testNamePattern = ".*"
 
   if pos.type == "test" or pos.type == "namespace" then
     -- pos.id in form "path/to/file::Describe text::test text"
