@@ -465,42 +465,38 @@ function adapter.results(spec, result, tree)
   return results
 end
 
-local is_callable = function(obj)
-  return type(obj) == "function" or (type(obj) == "table" and obj.__call)
-end
-
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if is_callable(opts.jestCommand) then
+    if util.is_callable(opts.jestCommand) then
       getJestCommand = opts.jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
         return opts.jestCommand
       end
     end
-    if is_callable(opts.jestConfigFile) then
+    if util.is_callable(opts.jestConfigFile) then
       getJestConfig = opts.jestConfigFile
     elseif opts.jestConfigFile then
       getJestConfig = function()
         return opts.jestConfigFile
       end
     end
-    if is_callable(opts.env) then
+    if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
       end
     end
-    if is_callable(opts.cwd) then
+    if util.is_callable(opts.cwd) then
       getCwd = opts.cwd
     elseif opts.cwd then
       getCwd = function()
         return opts.cwd
       end
     end
-    if is_callable(opts.strategy_config) then
+    if util.is_callable(opts.strategy_config) then
       getStrategyConfig = opts.strategy_config
     elseif opts.strategy_config then
       getStrategyConfig = function()
