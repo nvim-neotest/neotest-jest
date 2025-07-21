@@ -1,6 +1,5 @@
 local adapter = require("neotest-jest")({ jestCommand = "jest" })
 local async = require("nio").tests
-local stub = require("luassert.stub")
 local util = require("neotest-jest.util")
 
 describe("adapter.is_test_file", function()
@@ -17,7 +16,7 @@ describe("adapter.is_test_file", function()
 
   async.it("matches all supported extensions", function()
     for _, extension in ipairs(util.getDefaultTestExtensions()) do
-      local path = "./spec/test_paths/file." .. extension[1] .. "." .. extension[2]
+      local path = "./spec/file." .. extension[1] .. "." .. extension[2]
       local result = adapter.is_test_file(path)
 
       if not result then

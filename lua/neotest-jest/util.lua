@@ -267,7 +267,10 @@ local function createDefaultExtensionsAndPatterns()
 
   for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      table.insert(extensions, { x:gsub("%%", ""), ext:gsub("%%", "") })
+      local stripped_x, _ = x:gsub("%%", "")
+      local stripped_ext, _ = ext:gsub("%%", "")
+
+      table.insert(extensions, { stripped_x, stripped_ext })
       table.insert(patterns, "%." .. x .. "%." .. ext .. "$")
     end
   end
@@ -286,7 +289,5 @@ end
 function M.getDefaultTestExtensionPatterns()
   return default_patterns
 end
-
-function M.create_neotest_id() end
 
 return M

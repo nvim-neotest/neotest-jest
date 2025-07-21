@@ -115,11 +115,10 @@ function adapter.is_test_file(file_path)
   for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
     if file_path:match(pattern) then
       is_test_file = true
-      goto matched_pattern
+      break
     end
   end
 
-  ::matched_pattern::
   return is_test_file and hasJestDependency(file_path)
 end
 
