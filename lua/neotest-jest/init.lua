@@ -108,19 +108,17 @@ function adapter.is_test_file(file_path)
   end
   local is_test_file = false
 
-  if string.match(file_path, "__tests__") then
+  if file_path:match("__tests__") then
     is_test_file = true
   end
 
-  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
-        is_test_file = true
-        goto matched_pattern
-      end
+  for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
+    if file_path:match(pattern) then
+      is_test_file = true
+      break
     end
   end
-  ::matched_pattern::
+
   return is_test_file and hasJestDependency(file_path)
 end
 
@@ -140,6 +138,7 @@ end
 -- Enrich `it.each` tests with metadata about TS node position
 function adapter.build_position(file_path, source, captured_nodes)
   local match_type = get_match_type(captured_nodes)
+
   if not match_type then
     return
   end
@@ -248,23 +247,6 @@ function adapter.discover_positions(path)
   return positions
 end
 
-local function escapeTestPattern(s)
-  return (
-    s:gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
-  )
-end
-
 local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
@@ -311,7 +293,7 @@ end
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
   local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
-  local _, _, errLine, errColumn = string.find(errStr, regexp)
+  local _, _, errLine, errColumn = errStr:find(regexp)
 
   return errLine, errColumn
 end
@@ -387,9 +369,9 @@ function adapter.build_spec(args)
 
   if pos.type == "test" or pos.type == "namespace" then
     -- pos.id in form "path/to/file::Describe text::test text"
-    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
-    testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = escapeTestPattern(testName)
+    local testName = pos.id:sub(pos.id:find("::") + 2)
+    testName, _ = testName:gsub("::", " ")
+    testNamePattern = util.escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
@@ -417,7 +399,7 @@ function adapter.build_spec(args)
     "--outputFile=" .. results_path,
     "--testNamePattern=" .. testNamePattern,
     "--forceExit",
-    escapeTestPattern(vim.fs.normalize(pos.path)),
+    util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
   local cwd = getCwd(pos.path)
@@ -456,8 +438,10 @@ end
 
 ---@async
 ---@param spec neotest.RunSpec
----@return neotest.Result[]
-function adapter.results(spec, b, tree)
+---@param result neotest.StrategyResult
+---@param tree neotest.Tree
+---@return table<string, neotest.Result>
+function adapter.results(spec, result, tree)
   spec.context.stop_stream()
 
   local output_file = spec.context.results_path
@@ -476,47 +460,43 @@ function adapter.results(spec, b, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, b.output)
+  local results = parsed_json_to_results(parsed, output_file, result.output)
 
   return results
-end
-
-local is_callable = function(obj)
-  return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
 
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if is_callable(opts.jestCommand) then
+    if util.is_callable(opts.jestCommand) then
       getJestCommand = opts.jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
         return opts.jestCommand
       end
     end
-    if is_callable(opts.jestConfigFile) then
+    if util.is_callable(opts.jestConfigFile) then
       getJestConfig = opts.jestConfigFile
     elseif opts.jestConfigFile then
       getJestConfig = function()
         return opts.jestConfigFile
       end
     end
-    if is_callable(opts.env) then
+    if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
       end
     end
-    if is_callable(opts.cwd) then
+    if util.is_callable(opts.cwd) then
       getCwd = opts.cwd
     elseif opts.cwd then
       getCwd = function()
         return opts.cwd
       end
     end
-    if is_callable(opts.strategy_config) then
+    if util.is_callable(opts.strategy_config) then
       getStrategyConfig = opts.strategy_config
     elseif opts.strategy_config then
       getStrategyConfig = function()

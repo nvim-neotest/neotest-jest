@@ -5,6 +5,10 @@ local uv = vim.loop
 
 local M = {}
 
+function M.is_callable(obj)
+  return type(obj) == "function" or (type(obj) == "table" and type(obj.__call) == "function")
+end
+
 -- Some path utilities
 M.path = (function()
   local is_windows = uv.os_uname().version:match("Windows")
@@ -239,6 +243,53 @@ function M.stream(file_path)
   async.run(stop)
 
   return queue.get, exit_future.set
+end
+
+function M.escapeTestPattern(s)
+  return (
+    s:gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
+  )
+end
+
+---@return string[][], string[]
+local function createDefaultExtensionsAndPatterns()
+  local extensions = {}
+  local patterns = {}
+
+  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
+    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+      local stripped_x, _ = x:gsub("%%", "")
+      local stripped_ext, _ = ext:gsub("%%", "")
+
+      table.insert(extensions, { stripped_x, stripped_ext })
+      table.insert(patterns, "%." .. x .. "%." .. ext .. "$")
+    end
+  end
+
+  return extensions, patterns
+end
+
+local default_extensions, default_patterns = createDefaultExtensionsAndPatterns()
+
+---@return string[][]
+function M.getDefaultTestExtensions()
+  return default_extensions
+end
+
+---@return string[]
+function M.getDefaultTestExtensionPatterns()
+  return default_patterns
 end
 
 return M

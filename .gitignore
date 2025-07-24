@@ -40,3 +40,5 @@ luac.out
 *.hex
 
 node_modules
+
+.test_output.tmp
