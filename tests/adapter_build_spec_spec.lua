@@ -3,14 +3,12 @@ local async = require("nio").tests
 local stub = require("luassert.stub")
 local Tree = require("neotest.types").Tree
 local util = require("neotest-jest.util")
-local nio = require("nio")
 
 require("neotest-jest-assertions")
 
 describe("adapter.build_spec", function()
   async.it("builds command for file test", function()
     local path = "./spec/basic.test.ts"
-    nio.scheduler()
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -37,7 +35,6 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for file test with jestCommand arg", function()
     local path = "./spec/basic.test.ts"
-    nio.scheduler()
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -64,7 +61,6 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for namespace", function()
     local path = "./spec/basic.test.ts"
-    nio.scheduler()
     local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -93,7 +89,6 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for nested namespace", function()
     local path = "./spec/nestedDescribe.test.ts"
-    nio.scheduler()
     local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -122,7 +117,6 @@ describe("adapter.build_spec", function()
 
   async.it("builds correct command for test name with ' ", function()
     local path = "./spec/nestedDescribe.test.ts"
-    nio.scheduler()
     local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -167,7 +161,6 @@ describe("adapter.build_spec", function()
         -- Mock neotest process run to not run jest test discovery
         stub(require("neotest.lib").process, "run")
 
-        nio.scheduler()
         local positions = adapter.discover_positions("./spec/parameterized.test.ts"):to_list()
 
         local tree = Tree.from_list(positions, function(pos)
@@ -197,7 +190,6 @@ describe("adapter.build_spec", function()
     })
 
     local path = "./spec/basic.test.ts"
-    nio.scheduler()
     local positions = _adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
