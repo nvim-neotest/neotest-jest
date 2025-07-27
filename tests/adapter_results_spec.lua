@@ -3,6 +3,7 @@ local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local stub = require("luassert.stub")
 local types = require("neotest.types")
+local nio = require("nio")
 
 describe("adapter.results", function()
   local spec = {}
@@ -11,6 +12,7 @@ describe("adapter.results", function()
   }
 
   local function discover_positions(adapter, test_path, json_path)
+    nio.scheduler()
     local tree = adapter.discover_positions(test_path)
     local test_json = lib.files.read(json_path)
 
@@ -41,6 +43,7 @@ describe("adapter.results", function()
   async.it("creates neotest results", function()
     local adapter = require("neotest-jest")({})
     local path = "./spec/basic.test.ts"
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
@@ -134,6 +137,7 @@ describe("adapter.results", function()
   async.it("creates neotest results for nested describes", function()
     local adapter = require("neotest-jest")({})
     local path = "./spec/nestedDescribe.test.ts"
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/nestedDescribe.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
@@ -173,6 +177,7 @@ describe("adapter.results", function()
   async.it("creates neotest results for parametrized tests 1", function()
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/array.test.ts"
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/array.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
@@ -411,6 +416,7 @@ describe("adapter.results", function()
   async.it("creates neotest results for parametrized tests 2", function()
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/parameterized.test.ts"
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/parameterized.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
@@ -486,6 +492,7 @@ describe("adapter.results", function()
   async.it("creates neotest results with failed and skipped results", function()
     local adapter = require("neotest-jest")({})
     local path = "./spec/basic-skipped-failed.test.ts"
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic-skipped-failed.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
@@ -586,6 +593,7 @@ describe("adapter.results", function()
   async.it("handles failure to find parsed test result", function()
     local path = "./spec/basic.test.ts"
     local adapter = require("neotest-jest")({})
+    nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic-parse-fail.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
     assert.are.same(neotest_results, {})
