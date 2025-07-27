@@ -1,6 +1,7 @@
 local adapter = require("neotest-jest")({ jestCommand = "jest" })
 local async = require("nio").tests
 local stub = require("luassert.stub")
+local nio = require("nio")
 
 describe("adapter.discover_positions", function()
   local assert_test_positions_match = function(expected_output, positions)
@@ -14,6 +15,7 @@ describe("adapter.discover_positions", function()
   end
 
   async.it("provides meaningful names from a basic spec", function()
+    nio.scheduler()
     local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
 
     local expected_output = {
@@ -96,6 +98,7 @@ describe("adapter.discover_positions", function()
 
   async.it("provides meaningful names for parametric tests", function()
     stub(require("neotest.lib").process, "run")
+    nio.scheduler()
     local positions = adapter.discover_positions("./spec/array.test.ts"):to_list()
 
     local expected_output = {
