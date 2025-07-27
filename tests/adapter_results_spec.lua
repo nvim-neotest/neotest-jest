@@ -45,6 +45,7 @@ describe("adapter.results", function()
     local path = "./spec/basic.test.ts"
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -139,6 +140,7 @@ describe("adapter.results", function()
     local path = "./spec/nestedDescribe.test.ts"
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/nestedDescribe.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -179,6 +181,7 @@ describe("adapter.results", function()
     local path = "./spec/array.test.ts"
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/array.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     -- todo: does not work since test names and positions are the same
@@ -418,6 +421,7 @@ describe("adapter.results", function()
     local path = "./spec/parameterized.test.ts"
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/parameterized.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -494,6 +498,7 @@ describe("adapter.results", function()
     local path = "./spec/basic-skipped-failed.test.ts"
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic-skipped-failed.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -595,6 +600,7 @@ describe("adapter.results", function()
     local adapter = require("neotest-jest")({})
     nio.scheduler()
     local tree = discover_positions(adapter, path, "./spec/basic-parse-fail.test.json")
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result, tree)
     assert.are.same(neotest_results, {})
 
@@ -624,6 +630,7 @@ describe("adapter.results", function()
     end)
 
     local adapter = require("neotest-jest")({})
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result)
     assert.are.same(neotest_results, {})
 
@@ -640,6 +647,7 @@ describe("adapter.results", function()
     local adapter = require("neotest-jest")({})
 
     ---@diagnostic disable-next-line: missing-parameter
+    nio.scheduler()
     local neotest_results = adapter.results(spec, strategy_result)
 
     assert.are.same(neotest_results, {})
