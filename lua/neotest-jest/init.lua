@@ -366,7 +366,7 @@ local function parsed_json_to_results(data, consoleOut)
 
       tests[keyid] = {
         status = neotestStatus,
-        short = name .. ": " .. status,
+        short = name .. ": " .. neotestStatus,
         output = consoleOut,
         location = assertionResult.location,
       }
