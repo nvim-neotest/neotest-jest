@@ -8,30 +8,10 @@ require("neotest-jest-assertions")
 
 describe("adapter.build_spec", function()
   async.it("builds command for file test", function()
-    vim.schedule(function()
-      local path = "./spec/basic.test.ts"
-      local positions = adapter.discover_positions(path):to_list()
-      local tree = Tree.from_list(positions, function(pos)
-        return pos.id
-      end)
-      local spec = adapter.build_spec({ tree = tree })
-
-      assert.is.truthy(spec)
-
-      local command = spec.command
-      assert.is.truthy(command)
-      assert.contains(command, "jest")
-      assert.contains(command, "--config=./spec/jest.config.ts")
-      assert.contains(command, "--no-coverage")
-      assert.contains(command, "--testLocationInResults")
-      assert.contains(command, "--verbose")
-      assert.contains(command, "--json")
-      assert.contains(command, "--testNamePattern='.*'")
-      assert.contains(command, "--forceExit")
-      assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
-
-      assert.are.same(spec.context.file, "./spec/basic.test.ts")
-      assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
     end)
     local spec = adapter.build_spec({ tree = tree })
 
