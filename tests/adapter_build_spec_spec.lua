@@ -229,6 +229,8 @@ describe("adapter.build_spec", function()
     assert.contains(command, "--forceExit")
     assert.contains(command, "--config=./spec/jest.config.ts")
     assert.contains(command, "--testNamePattern=.*")
+    assert._not.contains(command, "--clearCache")
+    assert._not.contains(command, "--updateSnapshot")
     assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
 
     assert.are.same(spec.context.file, path)
