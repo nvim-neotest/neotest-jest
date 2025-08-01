@@ -166,11 +166,29 @@ function adapter.discover_positions(path)
       function: (identifier) @func_name (#eq? @func_name "describe")
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe('context', function() {})`
     ((call_expression
       function: (identifier) @func_name (#eq? @func_name "describe")
       arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
     )) @namespace.definition
+
+    ; Matches:
+    ; * `fdescribe('context', () => {})` (alias for describe.only)
+    ; * `xdescribe('context', () => {})` (alias for describe.skip)
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "fdescribe" "xdescribe")
+      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+    )) @namespace.definition
+
+    ; Matches:
+    ; * `fdescribe('context', () => {})` (alias for describe.only)
+    ; * `xdescribe('context', () => {})` (alias for describe.skip)
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "fdescribe" "xdescribe")
+      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+    )) @namespace.definition
+
     ; Matches: `describe.only('context', () => {})`
     ((call_expression
       function: (member_expression
@@ -178,6 +196,7 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe.only('context', function() {})`
     ((call_expression
       function: (member_expression
@@ -185,6 +204,7 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
     )) @namespace.definition
+
     ; Matches: `describe.each(['data'])('context', () => {})`
     ((call_expression
       function: (call_expression
@@ -194,6 +214,7 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe.each(['data'])('context', function() {})`
     ((call_expression
       function: (call_expression
@@ -210,6 +231,7 @@ function adapter.discover_positions(path)
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
       arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
     )) @test.definition
+
     ; Matches: `test.only('test') / it.only('test')`
     ((call_expression
       function: (member_expression
@@ -217,6 +239,7 @@ function adapter.discover_positions(path)
       )
       arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
     )) @test.definition
+
     ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
     ((call_expression
       function: (call_expression
@@ -376,7 +399,7 @@ function adapter.build_spec(args)
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
     testNamePattern = "^" .. testNamePattern
-    if pos.type == "test" then
+    if pos.type == "test" or pos.type == "namespace" then
       testNamePattern = testNamePattern .. "$"
     end
   end
