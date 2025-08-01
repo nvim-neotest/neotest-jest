@@ -1,5 +1,6 @@
 ---@diagnostic disable: undefined-field
 local async = require("neotest.async")
+local compat = require("neotest-jest.compat")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
@@ -391,7 +392,7 @@ function adapter.build_spec(args)
     table.insert(command, "--config=" .. config)
   end
 
-  if vim.tbl_islist(args.extra_args) then
+  if compat.tbl_islist(args.extra_args) then
     vim.list_extend(command, args.extra_args)
   end
 
