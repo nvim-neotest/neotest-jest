@@ -205,6 +205,35 @@ describe("adapter.build_spec", function()
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
   end)
 
+  async.it("builds command for file test without extra arguments if not a list", function()
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
+    end)
+
+    local spec = adapter.build_spec({
+      tree = tree,
+      extra_args = { arg1 = "--clearCache", arg2 = "--updateSnapshot" },
+    })
+
+    assert.is.truthy(spec)
+    local command = spec.command
+
+    assert.is.truthy(command)
+    assert.contains(command, "jest")
+    assert.contains(command, "--json")
+    assert.contains(command, "--verbose")
+    assert.contains(command, "--no-coverage")
+    assert.contains(command, "--testLocationInResults")
+    assert.contains(command, "--forceExit")
+    assert.contains(command, "--config=./spec/jest.config.ts")
+    assert.contains(command, "--testNamePattern=.*")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
+
+    assert.are.same(spec.context.file, path)
+    assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+  end)
   async.it("builds command with custom binary and config overrides", function()
     local binary_override = function()
       return "mybinaryoverride"
