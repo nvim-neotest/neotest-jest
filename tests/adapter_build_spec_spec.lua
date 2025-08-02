@@ -3,6 +3,9 @@ local async = require("nio").tests
 local stub = require("luassert.stub")
 local Tree = require("neotest.types").Tree
 local util = require("neotest-jest.util")
+local test_utils = require("neotest-jest.test-utils")
+
+test_utils.prepare_vim_treesitter()
 
 require("neotest-jest-assertions")
 
