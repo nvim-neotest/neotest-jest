@@ -13,6 +13,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field isTestFile async fun(file_path: string): boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -50,9 +51,14 @@ local function rootProjectHasJestDependency()
   return false
 end
 
----@param path string
+---@async
+---@param path string?
 ---@return boolean
 local function hasJestDependency(path)
+  if not path then
+    return false
+  end
+
   local rootPath = lib.files.match_root_pattern("package.json")(path)
 
   if not rootPath then
@@ -102,26 +108,33 @@ local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
 ---@async
----@param file_path? string
+---@param file_path string?
 ---@return boolean
-function adapter.is_test_file(file_path)
+local function defaultIsTestFile(file_path)
   if file_path == nil then
     return false
   end
-  local is_test_file = false
 
   if file_path:match("__tests__") then
-    is_test_file = true
+    return true
   end
 
   for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
     if file_path:match(pattern) then
-      is_test_file = true
-      break
+      return true
     end
   end
 
-  return is_test_file and hasJestDependency(file_path)
+  return false
+end
+
+local isTestFile = defaultIsTestFile
+
+---@async
+---@param file_path? string
+---@return boolean
+function adapter.is_test_file(file_path)
+  return isTestFile(file_path) and hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)
@@ -511,6 +524,10 @@ setmetatable(adapter, {
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if util.is_callable(opts.isTestFile) then
+      isTestFile = opts.isTestFile
     end
 
     return adapter
