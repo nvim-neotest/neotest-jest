@@ -2,6 +2,10 @@ local util = require("neotest-jest.util")
 
 local M = {}
 
+local lib = require("neotest.lib")
+
+local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
 ---@return string
@@ -61,6 +65,85 @@ function M.getJestConfig(path)
   end
 
   return jestJs
+end
+
+function M.packageJsonHasJestDependency(packageJsonContent)
+  local success, parsedPackageJson = pcall(vim.json.decode, packageJsonContent)
+
+  if not success then
+    print("cannot parse package.json")
+    return false
+  end
+
+  local keys = { "dependencies", "devDependencies", "scripts" }
+
+  for _, key in ipairs(keys) do
+    if parsedPackageJson[key] then
+      for subkey, _ in pairs(parsedPackageJson[key]) do
+        if subkey == "jest" then
+          return true
+        end
+      end
+    end
+  end
+end
+
+---@return boolean
+function M.rootProjectHasJestDependency()
+  local path = rootPackageJson
+
+  local success, packageJsonContent = pcall(lib.files.read, path)
+
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  local parsedPackageJson = vim.json.decode(packageJsonContent)
+
+  if parsedPackageJson["dependencies"] then
+    for key, _ in pairs(parsedPackageJson["dependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  if parsedPackageJson["devDependencies"] then
+    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
+      if key == "jest" then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+---@async
+---@param path string?
+---@return boolean
+function M.hasJestDependency(path)
+  if not path then
+    return false
+  end
+
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
+
+  if not rootPath then
+    return false
+  end
+
+  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
+
+  if not success then
+    print("cannot read package.json")
+    return false
+  end
+
+  M.packageJsonHasJestDependency(packageJsonContent)
+
+  return M.rootProjectHasJestDependency()
 end
 
 -- Returns neotest test id from jest test result.

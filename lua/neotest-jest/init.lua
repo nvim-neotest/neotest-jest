@@ -13,92 +13,10 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
----@field isTestFile async fun(file_path: string): boolean
+---@field isTestFile async fun(file_path: string?): boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
-
-local rootPackageJson = vim.fn.getcwd() .. "/package.json"
-
----@return boolean
-local function rootProjectHasJestDependency()
-  local path = rootPackageJson
-
-  local success, packageJsonContent = pcall(lib.files.read, path)
-  if not success then
-    print("cannot read package.json")
-    return false
-  end
-
-  local parsedPackageJson = vim.json.decode(packageJsonContent)
-
-  if parsedPackageJson["dependencies"] then
-    for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["devDependencies"] then
-    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  return false
-end
-
----@async
----@param path string?
----@return boolean
-local function hasJestDependency(path)
-  if not path then
-    return false
-  end
-
-  local rootPath = lib.files.match_root_pattern("package.json")(path)
-
-  if not rootPath then
-    return false
-  end
-
-  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
-  if not success then
-    print("cannot read package.json")
-    return false
-  end
-
-  local parsedPackageJson = vim.json.decode(packageJsonContent)
-
-  if parsedPackageJson["dependencies"] then
-    for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["devDependencies"] then
-    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["scripts"] then
-    for _, value in pairs(parsedPackageJson["scripts"]) do
-      if value == "jest" then
-        return true
-      end
-    end
-  end
-
-  return rootProjectHasJestDependency()
-end
 
 adapter.root = function(path)
   return lib.files.match_root_pattern("package.json")(path)
@@ -134,7 +52,7 @@ local isTestFile = defaultIsTestFile
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
-  return isTestFile(file_path) and hasJestDependency(file_path)
+  return isTestFile(file_path) and jest_util.hasJestDependency(file_path)
 end
 
 function adapter.filter_dir(name)

@@ -33,7 +33,7 @@ use({
           ---@param file_path string?
           ---@return boolean
           isTestFile = function(file_path)
-            return file_path and vim.fn.fnamemodify(file_path, ":e:e") == "test.ts"
+            return isTestFile(file_path) and require("neotest-jest.jest-util").hasJestDependency(file_path)
           end,
         }),
       }
