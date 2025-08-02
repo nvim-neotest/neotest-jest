@@ -1,0 +1,65 @@
+---@alias JestStatus "passed" | "failed" | "skipped" | "pending" | "todo" | "disabled" | "focused"
+
+---@class JestUncheckedSnapshot
+---@field filePath string
+---@field keys     string[]
+
+---@class JestTestSnapshot
+---@field added               number
+---@field didUpdate           boolean
+---@field failure             boolean
+---@field filesAdded          number
+---@field filesRemoved        number
+---@field filesRemovedList    number
+---@field filesUnmatched      number
+---@field filesUpdated        number
+---@field matched             number
+---@field total               number
+---@field unchecked           number
+---@field uncheckedKeysByFile JestUncheckedSnapshot[]
+---@field unmatched           number
+---@field updated             number
+
+---@class JestTestLocation
+---@field column integer
+---@field line   integer
+
+---@class JestTestAssertionResult
+---@field ancestorTitles    string[]
+---@field duration          integer?
+---@field failureDetails    unknown[]
+---@field failureMessages   string[]
+---@field fullName          string
+---@field invocations       integer?
+---@field location          JestTestLocation?
+---@field numPassingAsserts integer
+---@field retryReasons      string[]?
+---@field status            JestStatus
+---@field title             string
+
+---@class JestTestResult
+---@field assertionResults JestTestAssertionResult[]
+---@field startTime        integer
+---@field endTime          integer
+---@field message          string
+---@field name             string
+---@field status           string
+---@field summary          string
+
+---@class JestTestResults
+---@field numFailedTestSuites       number
+---@field numFailedTests            number
+---@field numPassedTestSuites       number
+---@field numPassedTests            number
+---@field numPendingTestSuites      number
+---@field numPendingTests           number
+---@field numRuntimeErrorTestSuites number
+---@field numTodoTests              number
+---@field numTotalTestSuites        number
+---@field numTotalTests             number
+---@field openHandles               string[]
+---@field snapshot                  JestTestSnapshot
+---@field startTime                 integer
+---@field success                   boolean
+---@field wasInterrupted            boolean
+---@field testResults               JestTestResult[]
