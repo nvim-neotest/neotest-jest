@@ -116,7 +116,7 @@ local function defaultIsTestFile(file_path)
   end
 
   if file_path:match("__tests__") then
-      return true
+    return true
   end
 
   for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
