@@ -1,9 +1,14 @@
 local async = require("neotest.async")
+local compat = require("neotest-jest.compat")
 local vim = vim
 local validate = vim.validate
 local uv = vim.loop
 
 local M = {}
+
+function M.is_callable(obj)
+  return type(obj) == "function" or (type(obj) == "table" and type(obj.__call) == "function")
+end
 
 -- Some path utilities
 M.path = (function()
@@ -64,7 +69,7 @@ M.path = (function()
   end
 
   local function path_join(...)
-    return table.concat(vim.tbl_flatten({ ... }), "/")
+    return table.concat(compat.tbl_flatten({ ... }), "/")
   end
 
   -- Traverse the path calling cb along the way.
@@ -155,7 +160,7 @@ function M.search_ancestors(startpath, func)
 end
 
 function M.root_pattern(...)
-  local patterns = vim.tbl_flatten({ ... })
+  local patterns = compat.tbl_flatten({ ... })
   local function matcher(path)
     for _, pattern in ipairs(patterns) do
       for _, p in ipairs(vim.fn.glob(M.path.join(path, pattern), true, true)) do
@@ -188,7 +193,9 @@ function M.find_git_ancestor(startpath)
   return M.search_ancestors(startpath, function(path)
     -- .git is a file when the project is a git worktree
     -- or it's a directory if it's a regular project
-    if M.path.is_file(M.path.join(path, ".git")) or M.path.is_dir(M.path.join(path, ".git")) then
+    local git_path = M.path.join(path, ".git")
+
+    if M.path.is_file(git_path) or M.path.is_dir(git_path) then
       return path
     end
   end)
@@ -237,6 +244,53 @@ function M.stream(file_path)
   async.run(stop)
 
   return queue.get, exit_future.set
+end
+
+function M.escapeTestPattern(s)
+  return (
+    s:gsub("%(", "%\\(")
+      :gsub("%)", "%\\)")
+      :gsub("%]", "%\\]")
+      :gsub("%[", "%\\[")
+      :gsub("%*", "%\\*")
+      :gsub("%+", "%\\+")
+      :gsub("%-", "%\\-")
+      :gsub("%?", "%\\?")
+      :gsub("%$", "%\\$")
+      :gsub("%^", "%\\^")
+      :gsub("%/", "%\\/")
+      :gsub("%'", "%\\'")
+  )
+end
+
+---@return string[][], string[]
+local function createDefaultExtensionsAndPatterns()
+  local extensions = {}
+  local patterns = {}
+
+  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
+    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
+      local stripped_x, _ = x:gsub("%%", "")
+      local stripped_ext, _ = ext:gsub("%%", "")
+
+      table.insert(extensions, { stripped_x, stripped_ext })
+      table.insert(patterns, "%." .. x .. "%." .. ext .. "$")
+    end
+  end
+
+  return extensions, patterns
+end
+
+local default_extensions, default_patterns = createDefaultExtensionsAndPatterns()
+
+---@return string[][]
+function M.getDefaultTestExtensions()
+  return default_extensions
+end
+
+---@return string[]
+function M.getDefaultTestExtensionPatterns()
+  return default_patterns
 end
 
 return M
