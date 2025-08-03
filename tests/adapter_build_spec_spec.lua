@@ -4,6 +4,9 @@ describe("adapter.build_spec", function()
   local Tree = require("neotest.types").Tree
   local jest_util = require("neotest-jest.jest-util")
   local util = require("neotest-jest.util")
+  local test_utils = require("neotest-jest.test-utils")
+
+  test_utils.prepare_vim_treesitter()
 
   require("neotest-jest-assertions")
 
