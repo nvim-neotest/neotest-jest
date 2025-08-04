@@ -295,7 +295,6 @@ end
 ---@param file_path string?
 ---@return boolean
 function M.defaultIsTestFile(file_path)
-  vim.print(file_path)
   if file_path == nil then
     return false
   end
