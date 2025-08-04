@@ -26,4 +26,18 @@ describe("adapter.is_test_file", function()
       assert.True(result)
     end
   end)
+
+  async.it("uses isTestFile option if given", function()
+    local _adapter = require("neotest-jest")({
+      jestCommand = "jest",
+      isTestFile = function(file_path)
+        return file_path and vim.fn.fnamemodify(file_path, ":e:e") == "testy.js"
+      end,
+    })
+
+    assert.False(_adapter.is_test_file("./spec/basic.test.ts"))
+    assert.False(_adapter.is_test_file("./spec/__tests__/some.test.ts"))
+    assert.False(_adapter.is_test_file("./spec/test.test.ts"))
+    assert.True(_adapter.is_test_file("./spec/test.testy.js"))
+  end)
 end)
