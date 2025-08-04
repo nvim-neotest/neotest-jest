@@ -25,28 +25,7 @@ end
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
----@async
----@param file_path string?
----@return boolean
-local function defaultIsTestFile(file_path)
-  if file_path == nil then
-    return false
-  end
-
-  if file_path:match("__tests__") then
-    return true
-  end
-
-  for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
-    if file_path:match(pattern) then
-      return true
-    end
-  end
-
-  return false
-end
-
-local isTestFile = defaultIsTestFile
+local isTestFile = util.defaultIsTestFile
 
 ---@async
 ---@param file_path? string

@@ -293,4 +293,26 @@ function M.getDefaultTestExtensionPatterns()
   return default_patterns
 end
 
+---@async
+---@param file_path string?
+---@return boolean
+function M.defaultIsTestFile(file_path)
+  vim.print(file_path)
+  if file_path == nil then
+    return false
+  end
+
+  if file_path:match("__tests__") then
+    return true
+  end
+
+  for _, pattern in ipairs(M.getDefaultTestExtensionPatterns()) do
+    if file_path:match(pattern) then
+      return true
+    end
+  end
+
+  return false
+end
+
 return M
