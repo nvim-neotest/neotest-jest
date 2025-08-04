@@ -86,6 +86,8 @@ function M.packageJsonHasJestDependency(packageJsonContent)
       end
     end
   end
+
+  return false
 end
 
 ---@return boolean
@@ -141,7 +143,9 @@ function M.hasJestDependency(path)
     return false
   end
 
-  M.packageJsonHasJestDependency(packageJsonContent)
+  if M.packageJsonHasJestDependency(packageJsonContent) then
+    return true
+  end
 
   return M.rootProjectHasJestDependency()
 end
