@@ -75,7 +75,7 @@ function M.packageJsonHasJestDependency(packageJsonContent)
     return false
   end
 
-  local keys = { "dependencies", "devDependencies", "scripts" }
+  local keys = { "dependencies", "devDependencies" }
 
   for _, key in ipairs(keys) do
     if parsedPackageJson[key] then
@@ -83,6 +83,14 @@ function M.packageJsonHasJestDependency(packageJsonContent)
         if subkey == "jest" then
           return true
         end
+      end
+    end
+  end
+
+  if parsedPackageJson["scripts"] then
+    for _, value in pairs(parsedPackageJson["scripts"]) do
+      if value == "jest" then
+        return true
       end
     end
   end
