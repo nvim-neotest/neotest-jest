@@ -9,7 +9,7 @@ describe("adapter.is_test_file", function()
   end)
 
   async.it("does not match nil or plain js/ts files", function()
-    assert.False(adapter.is_test_file("nil"))
+    assert.False(adapter.is_test_file(nil))
     assert.False(adapter.is_test_file("./index.js"))
     assert.False(adapter.is_test_file("./index.ts"))
   end)
@@ -31,10 +31,15 @@ describe("adapter.is_test_file", function()
     local _adapter = require("neotest-jest")({
       jestCommand = "jest",
       isTestFile = function(file_path)
-        return file_path and vim.fn.fnamemodify(file_path, ":e:e") == "testy.js"
+        if not file_path then
+          return false
+        end
+
+        return vim.fn.fnamemodify(file_path, ":e:e") == "testy.js"
       end,
     })
 
+    assert.False(_adapter.is_test_file(nil))
     assert.False(_adapter.is_test_file("./spec/basic.test.ts"))
     assert.False(_adapter.is_test_file("./spec/__tests__/some.test.ts"))
     assert.False(_adapter.is_test_file("./spec/test.test.ts"))
