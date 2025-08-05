@@ -24,8 +24,7 @@ end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
-
-local isTestFile = util.defaultIsTestFile
+local isTestFile = jest_util.defaultIsTestFile
 
 ---@async
 ---@param file_path? string

@@ -167,4 +167,15 @@ function M.get_test_full_id_from_test_result(testFile, assertionResult)
   return keyid
 end
 
+---@async
+---@param file_path string?
+---@return boolean
+function M.defaultIsTestFile(file_path)
+  if not file_path then
+    return false
+  end
+
+  return util.defaultTestFileMatcher(file_path) and M.hasJestDependency(file_path)
+end
+
 return M

@@ -294,7 +294,7 @@ end
 ---@async
 ---@param file_path string?
 ---@return boolean
-function M.defaultIsTestFile(file_path)
+function M.defaultTestFileMatcher(file_path)
   if file_path == nil then
     return false
   end
