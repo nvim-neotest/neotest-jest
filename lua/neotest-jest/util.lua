@@ -1,8 +1,6 @@
 local async = require("neotest.async")
 local compat = require("neotest-jest.compat")
-local vim = vim
 local validate = vim.validate
-local uv = vim.loop
 
 local M = {}
 
@@ -12,7 +10,7 @@ end
 
 -- Some path utilities
 M.path = (function()
-  local is_windows = uv.os_uname().version:match("Windows")
+  local is_windows = compat.uv.os_uname().version:match("Windows")
 
   local function sanitize(path)
     if is_windows then
@@ -23,7 +21,7 @@ M.path = (function()
   end
 
   local function exists(filename)
-    local stat = uv.fs_stat(filename)
+    local stat = compat.uv.fs_stat(filename)
     return stat and stat.type or false
   end
 
@@ -74,7 +72,7 @@ M.path = (function()
 
   -- Traverse the path calling cb along the way.
   local function traverse_parents(path, cb)
-    path = uv.fs_realpath(path)
+    path = compat.uv.fs_realpath(path)
     local dir = path
     -- Just in case our algo is buggy, don't infinite loop.
     for _ = 1, 100 do
@@ -100,7 +98,7 @@ M.path = (function()
       else
         return
       end
-      if v and uv.fs_realpath(v) then
+      if v and compat.uv.fs_realpath(v) then
         return v, path
       else
         return
@@ -291,6 +289,27 @@ end
 ---@return string[]
 function M.getDefaultTestExtensionPatterns()
   return default_patterns
+end
+
+---@async
+---@param file_path string?
+---@return boolean
+function M.defaultTestFileMatcher(file_path)
+  if file_path == nil then
+    return false
+  end
+
+  if file_path:match("__tests__") then
+    return true
+  end
+
+  for _, pattern in ipairs(M.getDefaultTestExtensionPatterns()) do
+    if file_path:match(pattern) then
+      return true
+    end
+  end
+
+  return false
 end
 
 return M

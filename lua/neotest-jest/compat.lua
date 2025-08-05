@@ -1,5 +1,7 @@
 local compat = {}
 
+compat.uv = vim.uv or vim.loop
+
 ---@param tbl table
 ---@return table
 function compat.tbl_flatten(tbl)
