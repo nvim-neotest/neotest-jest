@@ -13,28 +13,23 @@ Using packer:
 
 ```lua
 use({
-  'nvim-neotest/neotest',
+  "nvim-neotest/neotest",
   requires = {
     ...,
-    'nvim-neotest/neotest-jest',
+    "nvim-neotest/neotest-jest",
   }
   config = function()
-    require('neotest').setup({
+    require("neotest").setup({
       ...,
       adapters = {
-        require('neotest-jest')({
+        require("neotest-jest")({
           jestCommand = "npm test --",
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
             return vim.fn.getcwd()
           end,
-          ---@async
-          ---@param file_path string?
-          ---@return boolean
-          isTestFile = function(file_path)
-            return isTestFile(file_path) and require("neotest-jest.jest-util").hasJestDependency(file_path)
-          end,
+          isTestFile = require("neotest-jest.jest-util").defaultIsTestFile,
         }),
       }
     })
@@ -52,6 +47,100 @@ You might want to install `tsx` and `typescript` parser as well depending on you
 ## Usage
 
 See neotest's documentation for more information on how to run tests.
+
+### Options
+
+#### `jestCommand`
+
+The jest base command to use to run tests. Will attempt to resolve it
+automatically if not given.
+
+* Example: `"npm test --"`
+
+#### `jestConfigFile`
+
+The path to the jest config file to use. Will use either `jest.config.js` or
+`jest.config.ts` if present.
+
+* Example: `"custom.jest.ts"`
+
+#### `env`
+
+A table of environment variables to set when running tests.
+
+* Example: `{ CI = true }`
+
+#### `cwd`
+
+The working directory to use when running tests.
+
+* Example: `function() return vim.fn.getCwd() end`
+
+#### `strategy_config`
+
+The strategy config for debugging tests with [`nvim-dap`]().
+
+* Example:
+
+```lua
+---@param strategy string
+---@param command string[]
+---@param cwd string?
+function(strategy, command, cwd)
+  return {
+    name = "Debug Jest Tests",
+    type = "pwa-node",
+    request = "launch",
+    args = { unpack(command, 2) },
+    runtimeExecutable = command[1],
+    console = "integratedTerminal",
+    internalConsoleOptions = "neverOpen",
+    rootPath = "${workspaceFolder}",
+    cwd = cwd or "${workspaceFolder}",
+  }
+end
+```
+
+#### `jest_test_discovery`
+
+Whether to discover parametrized tests such as those run with
+`it.each`/`test.each`. See [Parameterized tests](#parameterized-tests) for more
+info.
+
+* Example: `jest_test_discovery = true`
+
+#### `isTestFile`
+
+If set, overrides the check for determining if a file is a test file or not. The
+default behaviour will match the file path with a predefined set of patterns and
+require jest to be installed as a dependency via `dependencies` or
+`devDependencies`, or if a value in `scripts` is exactly `'jest'` in the
+`package.json`.
+
+> [!WARNING]
+> The `isTestFile` function runs in an async context so you cannot call
+> functions that cannot be called in fast events (see `:h vim.in_fast_event()`)
+
+Example:
+
+```lua
+---@async
+---@param file_path string?
+---@return boolean
+isTestFile = function(file_path)
+  if not file_path then
+    return false
+  end
+
+  return vim.fn.fnamemodify(file_path, ":e:e") == "testy.js"
+end
+```
+
+You can access the default `isTestFile` function via
+`require("neotest-jest.jest-util").defaultIsTestFile`, the default test file
+matcher via `require("neotest-jest.util").defaultTestFileMatcher`, and the
+default check for a jest dependency via
+`require("neotest-jest.jest-util").hasJestDependency`
 
 ### Running tests in watch mode
 
