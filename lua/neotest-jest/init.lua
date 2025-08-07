@@ -162,30 +162,18 @@ function adapter.discover_positions(path)
   local query = [[
     ; -- Namespaces --
     ; Matches: `describe('context', () => {})`
+    ;          `fdescribe('context', () => {})` (alias for describe.only)
+    ;          `xdescribe('context', () => {})` (alias for describe.skip)
     ((call_expression
-      function: (identifier) @func_name (#eq? @func_name "describe")
+      function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe('context', function() {})`
+    ;          `fdescribe('context', function() {})` (alias for describe.only)
+    ;          `xdescribe('context', function() {})` (alias for describe.skip)
     ((call_expression
-      function: (identifier) @func_name (#eq? @func_name "describe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
-    )) @namespace.definition
-
-    ; Matches:
-    ; * `fdescribe('context', () => {})` (alias for describe.only)
-    ; * `xdescribe('context', () => {})` (alias for describe.skip)
-    ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "fdescribe" "xdescribe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
-    )) @namespace.definition
-
-    ; Matches:
-    ; * `fdescribe('context', () => {})` (alias for describe.only)
-    ; * `xdescribe('context', () => {})` (alias for describe.skip)
-    ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "fdescribe" "xdescribe")
+      function: (identifier) @func_name (#eq? @func_name "describe" "fdescribe" "xdescribe")
       arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
     )) @namespace.definition
 
