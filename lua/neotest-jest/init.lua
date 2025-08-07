@@ -1,5 +1,6 @@
 ---@diagnostic disable: undefined-field
 local async = require("neotest.async")
+local compat = require("neotest-jest.compat")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
@@ -102,6 +103,7 @@ local getJestCommand = jest_util.getJestCommand
 local getJestOptions = jest_util.getJestOptions
 local getJestConfig = jest_util.getJestConfig
 
+---@async
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
@@ -110,19 +112,17 @@ function adapter.is_test_file(file_path)
   end
   local is_test_file = false
 
-  if string.match(file_path, "__tests__") then
+  if file_path:match("__tests__") then
     is_test_file = true
   end
 
-  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
-    for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
-      if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
-        is_test_file = true
-        goto matched_pattern
-      end
+  for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
+    if file_path:match(pattern) then
+      is_test_file = true
+      break
     end
   end
-  ::matched_pattern::
+
   return is_test_file and hasJestDependency(file_path)
 end
 
@@ -142,6 +142,7 @@ end
 -- Enrich `it.each` tests with metadata about TS node position
 function adapter.build_position(file_path, source, captured_nodes)
   local match_type = get_match_type(captured_nodes)
+
   if not match_type then
     return
   end
@@ -250,23 +251,6 @@ function adapter.discover_positions(path)
   return positions
 end
 
-local function escapeTestPattern(s)
-  return (
-    s:gsub("%(", "%\\(")
-      :gsub("%)", "%\\)")
-      :gsub("%]", "%\\]")
-      :gsub("%[", "%\\[")
-      :gsub("%*", "%\\*")
-      :gsub("%+", "%\\+")
-      :gsub("%-", "%\\-")
-      :gsub("%?", "%\\?")
-      :gsub("%$", "%\\$")
-      :gsub("%^", "%\\^")
-      :gsub("%/", "%\\/")
-      :gsub("%'", "%\\'")
-  )
-end
-
 local function get_default_strategy_config(strategy, command, cwd)
   local config = {
     dap = function()
@@ -313,7 +297,7 @@ end
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
   local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
-  local _, _, errLine, errColumn = string.find(errStr, regexp)
+  local _, _, errLine, errColumn = errStr:find(regexp)
 
   return errLine, errColumn
 end
@@ -385,27 +369,26 @@ function adapter.build_spec(args)
   end
 
   local pos = args.tree:data()
-  local testNamePattern = "'.*'"
+  local testNamePattern = ".*"
 
   if pos.type == "test" or pos.type == "namespace" then
     -- pos.id in form "path/to/file::Describe text::test text"
-    local testName = string.sub(pos.id, string.find(pos.id, "::") + 2)
-    testName, _ = string.gsub(testName, "::", " ")
-    testNamePattern = escapeTestPattern(testName)
+    local testName = pos.id:sub(pos.id:find("::") + 2)
+    testName, _ = testName:gsub("::", " ")
+    testNamePattern = util.escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
-    testNamePattern = "'^" .. testNamePattern
+    testNamePattern = "^" .. testNamePattern
     if pos.type == "test" then
-      testNamePattern = testNamePattern .. "$'"
-    else
-      testNamePattern = testNamePattern .. "'"
+      testNamePattern = testNamePattern .. "$"
     end
   end
 
   local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
+
   if util.path.exists(config) then
     -- only use config if available
     table.insert(command, "--config=" .. config)
@@ -416,11 +399,15 @@ function adapter.build_spec(args)
   vim.list_extend(command, options)
 
   -- We need to pass a few options regardless of any user specific options:
+  if compat.tbl_islist(args.extra_args) then
+    vim.list_extend(command, args.extra_args)
+  end
+
   vim.list_extend(command, {
     "--forceExit", -- Ensure jest and thus the adapter does not hand
     "--testLocationInResults",
     "--verbose",
-    escapeTestPattern(vim.fs.normalize(pos.path)),
+    util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
   local cwd = getCwd(pos.path)
@@ -459,8 +446,10 @@ end
 
 ---@async
 ---@param spec neotest.RunSpec
----@return neotest.Result[]
-function adapter.results(spec, b, tree)
+---@param result neotest.StrategyResult
+---@param tree neotest.Tree
+---@return table<string, neotest.Result>
+function adapter.results(spec, result, tree)
   spec.context.stop_stream()
 
   local output_file = spec.context.results_path
@@ -479,13 +468,9 @@ function adapter.results(spec, b, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, b.output)
+  local results = parsed_json_to_results(parsed, output_file, result.output)
 
   return results
-end
-
-local is_callable = function(obj)
-  return type(obj) == "function" or (type(obj) == "table" and obj.__call)
 end
 
 ---@generic T
@@ -493,7 +478,7 @@ end
 ---@param default fun(any): T
 ---@return fun(any): T
 local function resolve_config_option(value, default)
-    if is_callable(value) then
+    if util.is_callable(value) then
       return value
     elseif value then
       return function()
@@ -513,7 +498,7 @@ setmetatable(adapter, {
     getCwd = resolve_config_option(opts.cwd, getCwd)
     getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)
 
-    if is_callable(opts.env) then
+    if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
       getEnv = function(specEnv)
