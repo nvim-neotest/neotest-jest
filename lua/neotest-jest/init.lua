@@ -173,7 +173,7 @@ function adapter.discover_positions(path)
     ;          `fdescribe('context', function() {})` (alias for describe.only)
     ;          `xdescribe('context', function() {})` (alias for describe.skip)
     ((call_expression
-      function: (identifier) @func_name (#eq? @func_name "describe" "fdescribe" "xdescribe")
+      function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
       arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
     )) @namespace.definition
 
@@ -387,7 +387,7 @@ function adapter.build_spec(args)
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
       or testNamePattern
     testNamePattern = "^" .. testNamePattern
-    if pos.type == "test" or pos.type == "namespace" then
+    if pos.type == "test" then
       testNamePattern = testNamePattern .. "$"
     end
   end
