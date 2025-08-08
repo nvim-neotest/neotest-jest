@@ -41,16 +41,28 @@ function M.getJestCommand(path)
   return "jest"
 end
 
-function M.getJestOptions(results_path, testNamePattern)
-    return {
-        "--no-coverage",
-        "--testLocationInResults",
-        "--verbose",
-        "--json",
-        "--outputFile=" .. results_path,
-        "--testNamePattern=" .. testNamePattern,
-        "--forceExit",
-    }
+function M.getJestDefaultOptions(context)
+  local arguments = {}
+
+  if util.path.exists(context.config) then
+    -- Only use config if available
+    table.insert(arguments, "--config=" .. context.config)
+  end
+
+  return vim.list_extend(arguments, {
+    "--no-coverage",
+    "--testLocationInResults",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. context.results_path,
+    "--testNamePattern=" .. context.testNamePattern,
+    "--forceExit",
+  })
+end
+
+---@diagnostic disable-next-line: unused-local
+function M.getJestOptions(defaultOptions, context)
+  return defaultOptions
 end
 
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")

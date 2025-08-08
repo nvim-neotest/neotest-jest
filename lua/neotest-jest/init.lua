@@ -389,13 +389,13 @@ function adapter.build_spec(args)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
 
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
-  end
+  local jestArgsContext = {
+    config = config,
+    results_path = results_path,
+    testNamePattern = testNamePattern,
+  }
 
-  local options = getJestOptions(results_path, testNamePattern)
-
+  local options = getJestOptions(jest_util.getJestDefaultOptions(jestArgsContext), jestArgsContext)
   vim.list_extend(command, options)
 
   -- We need to pass a few options regardless of any user specific options:
