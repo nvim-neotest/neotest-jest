@@ -41,6 +41,8 @@ function M.getJestCommand(path)
   return "jest"
 end
 
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
 function M.getJestDefaultArguments(context)
   local arguments = {}
 
@@ -54,12 +56,15 @@ function M.getJestDefaultArguments(context)
     "--testLocationInResults",
     "--verbose",
     "--json",
-    "--outputFile=" .. context.results_path,
+    "--outputFile=" .. context.resultsPath,
     "--testNamePattern=" .. context.testNamePattern,
     "--forceExit",
   })
 end
 
+---@param defaultArguments string[]
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
 ---@diagnostic disable-next-line: unused-local
 function M.getJestArguments(defaultArguments, context)
   return defaultArguments

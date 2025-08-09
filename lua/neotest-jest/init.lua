@@ -7,9 +7,16 @@ local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 
+-- TODO: Perhaps make resultsPath and testNamePattern mandatory arguments
+
+---@class neotest-jest.JestArgumentContext
+---@field config string?
+---@field resultsPath string
+---@field testNamePattern string
+
 ---@class neotest.JestOptions
 ---@field jestCommand? string | fun(): string
----@field jestArguments? string[] | fun(): string[]
+---@field jestArguments? string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
 ---@field jestConfigFile? string | fun(): string
 ---@field env? table<string, string> | fun(): table<string, string>
 ---@field cwd? string | fun(): string
@@ -361,6 +368,7 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
+  ---@type string
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
@@ -391,12 +399,13 @@ function adapter.build_spec(args)
 
   local jestArgsContext = {
     config = config,
-    results_path = results_path,
+    resultsPath = results_path,
     testNamePattern = testNamePattern,
   }
 
   local options =
     getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+
   vim.list_extend(command, options)
 
   -- We need to pass a few options regardless of any user specific options:
@@ -405,7 +414,7 @@ function adapter.build_spec(args)
   end
 
   vim.list_extend(command, {
-    "--forceExit", -- Ensure jest and thus the adapter does not hand
+    "--forceExit", -- Ensure jest and thus the adapter does not hang
     "--testLocationInResults",
     "--verbose",
     util.escapeTestPattern(vim.fs.normalize(pos.path)),
