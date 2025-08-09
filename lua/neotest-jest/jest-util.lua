@@ -41,7 +41,7 @@ function M.getJestCommand(path)
   return "jest"
 end
 
-function M.getJestDefaultOptions(context)
+function M.getJestDefaultArguments(context)
   local arguments = {}
 
   if util.path.exists(context.config) then
@@ -61,8 +61,8 @@ function M.getJestDefaultOptions(context)
 end
 
 ---@diagnostic disable-next-line: unused-local
-function M.getJestOptions(defaultOptions, context)
-  return defaultOptions
+function M.getJestArguments(defaultArguments, context)
+  return defaultArguments
 end
 
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")

@@ -24,6 +24,7 @@ use({
       adapters = {
         require('neotest-jest')({
           jestCommand = "npm test --",
+          jestArguments = { "--clearCache", "--useStderr" },
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
@@ -52,23 +53,30 @@ Type: `string | fun(path: string): string`
 The jest command to run when running tests. Can also be a function that accepts
 the path to the current neotest position and returns the command to run.
 
-#### `jestOptions`
+#### `jestArguments`
 
-Type: `string[] | fun(path: string, testNamePattern: string): string[]`
+Type: `string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
 
-The options to pass to jest when running tests. Can either be a list of strings
-or a function that accepts the path to a location for storing json test output
-and the testNamePattern for that position. It should return the options.
+The arguments to pass to jest when running tests. Can either be a list of strings
+or a function that accepts default arguments used and a context table that
+contains a `config: string?` entry for the config file or `nil` if none was found.
+
+It should return the final arguments as a `string[]`.
 
 > [!IMPORTANT]  
-> Three arguments are always passed regardless of this option: `--forceExit`, `--testLocationInResults`, and `--verbose`.
+> Some arguments are always passed regardless of this option:
+> `--forceExit`
+> `--testLocationInResults`
+> `--verbose`.
 >
-> Users must provide an option for generating json test output (default is
-> `--json`) and a destination output file (`--outputFile=...`). Otherwise,
-> neotest-jest will not work properly.
->
-> Default options can be obtained by calling
-> `require("neotest-jest.jest-util").getJestOptions`.
+
+The default arguments can be obtained by calling `require("neotest-jest.jest-util").getJestArguments`.
+
+Example usage:
+
+```lua
+-- TODO:
+```
 
 #### `jestConfigFile`
 

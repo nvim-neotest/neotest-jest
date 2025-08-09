@@ -9,7 +9,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string | fun(): string
----@field jestOptions? string[] | fun(): string[]
+---@field jestArguments? string[] | fun(): string[]
 ---@field jestConfigFile? string | fun(): string
 ---@field env? table<string, string> | fun(): table<string, string>
 ---@field cwd? string | fun(): string
@@ -100,7 +100,7 @@ adapter.root = function(path)
 end
 
 local getJestCommand = jest_util.getJestCommand
-local getJestOptions = jest_util.getJestOptions
+local getJestArguments = jest_util.getJestArguments
 local getJestConfig = jest_util.getJestConfig
 
 ---@async
@@ -395,7 +395,8 @@ function adapter.build_spec(args)
     testNamePattern = testNamePattern,
   }
 
-  local options = getJestOptions(jest_util.getJestDefaultOptions(jestArgsContext), jestArgsContext)
+  local options =
+    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
   vim.list_extend(command, options)
 
   -- We need to pass a few options regardless of any user specific options:
@@ -493,7 +494,7 @@ setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
     getJestCommand = resolve_config_option(opts.jestCommand, getJestCommand)
-    getJestOptions = resolve_config_option(opts.jestOptions, getJestOptions)
+    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments)
     getJestConfig = resolve_config_option(opts.jestConfigFile, getJestConfig)
     getCwd = resolve_config_option(opts.cwd, getCwd)
     getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)

@@ -251,7 +251,7 @@ describe("adapter.build_spec", function()
   async.it("builds command with overridden jest arguments (string array)", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
-      jestOptions = { "--coverage", "--clearCache" },
+      jestArguments = { "--coverage", "--clearCache" },
     })
 
     local path = "./spec/basic.test.ts"
@@ -284,7 +284,7 @@ describe("adapter.build_spec", function()
   async.it("builds command with overridden jest arguments (string array) and extra_args", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
-      jestOptions = { "--coverage", "--clearCache" },
+      jestArguments = { "--coverage", "--clearCache" },
     })
 
     local path = "./spec/basic.test.ts"
@@ -322,10 +322,10 @@ describe("adapter.build_spec", function()
   async.it("builds command with overridden jest arguments (function)", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
-      jestOptions = function(defaultOptions)
+      jestArguments = function(defaultArguments)
         local options = vim.tbl_filter(function(arg)
           return arg ~= "--no-coverage"
-        end, defaultOptions)
+        end, defaultArguments)
 
         return vim.list_extend(options, { "--coverage", "--clearCache" })
       end,
@@ -361,10 +361,10 @@ describe("adapter.build_spec", function()
   async.it("builds command with overridden jest arguments (function) and extra_args", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
-      jestOptions = function(defaultOptions)
+      jestArguments = function(defaultArguments)
         local options = vim.tbl_filter(function(arg)
           return arg ~= "--no-coverage"
-        end, defaultOptions)
+        end, defaultArguments)
 
         return vim.list_extend(options, { "--coverage", "--clearCache" })
       end,
@@ -410,10 +410,10 @@ describe("adapter.build_spec", function()
   --   end)
   --   local spec = adapter.build_spec({
   --     tree = tree,
-  --     jestOptions = function(defaultOptions)
+  --     jestArguments = function(defaultArguments)
   --       local options = vim.tbl_filter(function(arg)
   --         return arg ~= "--no-coverage"
-  --       end, defaultOptions)
+  --       end, defaultArguments)
   --
   --       return vim.list_extend(options, { "--coverage", "--clearCache" })
   --     end,
@@ -454,7 +454,7 @@ describe("adapter.build_spec", function()
     local adapter = require("neotest-jest")({
       jestCommand = binary_override,
       jestConfigFile = config_override,
-      jestOptions = jest_util.getJestOptions,
+      jestArguments = jest_util.getJestArguments,
       env = { override = "override", adapter_override = true },
     })
 
