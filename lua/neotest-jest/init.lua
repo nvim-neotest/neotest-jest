@@ -1,4 +1,3 @@
----@diagnostic disable: undefined-field
 local async = require("neotest.async")
 local compat = require("neotest-jest.compat")
 local lib = require("neotest.lib")
@@ -13,17 +12,19 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field jest_test_discovery? boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
 
 local rootPackageJson = vim.fn.getcwd() .. "/package.json"
 
+---@async
 ---@return boolean
 local function rootProjectHasJestDependency()
   local path = rootPackageJson
-
   local success, packageJsonContent = pcall(lib.files.read, path)
+
   if not success then
     print("cannot read package.json")
     return false
@@ -94,16 +95,21 @@ local function hasJestDependency(path)
   return rootProjectHasJestDependency()
 end
 
-adapter.root = function(path)
-  return lib.files.match_root_pattern("package.json")(path)
+---@async
+---@param dir string Directory to treat as cwd
+---@return string? # Absolute root dir of test suite
+---@diagnostic disable-next-line: inject-field
+adapter.root = function(dir)
+  return lib.files.match_root_pattern("package.json")(dir)
 end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
 
 ---@async
----@param file_path? string
+---@param file_path string?
 ---@return boolean
+---@diagnostic disable-next-line: inject-field
 function adapter.is_test_file(file_path)
   if file_path == nil then
     return false
@@ -124,10 +130,17 @@ function adapter.is_test_file(file_path)
   return is_test_file and hasJestDependency(file_path)
 end
 
-function adapter.filter_dir(name)
+---@param name string Name of directory
+---@param rel_path string Path to directory, relative to root
+---@param root string Root directory of project
+---@return boolean
+---@diagnostic disable-next-line: unused-local, inject-field
+function adapter.filter_dir(name, rel_path, root)
   return name ~= "node_modules"
 end
 
+---@param captured_nodes table<string, TSNode>
+---@return ("test" | "namespace")?
 local function get_match_type(captured_nodes)
   if captured_nodes["test.name"] then
     return "test"
@@ -138,6 +151,10 @@ local function get_match_type(captured_nodes)
 end
 
 -- Enrich `it.each` tests with metadata about TS node position
+---@param file_path string
+---@param source string
+---@param captured_nodes table<string, TSNode>
+---@diagnostic disable-next-line: inject-field
 function adapter.build_position(file_path, source, captured_nodes)
   local match_type = get_match_type(captured_nodes)
 
@@ -159,8 +176,10 @@ function adapter.build_position(file_path, source, captured_nodes)
 end
 
 ---@async
+---@param file_path string Absolute file path
 ---@return neotest.Tree | nil
-function adapter.discover_positions(path)
+---@diagnostic disable-next-line: unused-local, inject-field
+function adapter.discover_positions(file_path)
   local query = [[
     ; -- Namespaces --
     ; Matches: `describe('context', () => {})`
@@ -231,8 +250,9 @@ function adapter.discover_positions(path)
     )) @test.definition
   ]]
 
-  local positions = lib.treesitter.parse_positions(path, query, {
+  local positions = lib.treesitter.parse_positions(file_path, query, {
     nested_tests = false,
+    ---@diagnostic disable-next-line: assign-type-mismatch
     build_position = 'require("neotest-jest").build_position',
   })
 
@@ -270,28 +290,44 @@ local function get_default_strategy_config(strategy, command, cwd)
   end
 end
 
+---@param specEnv table<string, unknown>
+---@return table<string, unknown>
 local function getEnv(specEnv)
   return specEnv
 end
 
 ---@param path string
 ---@return string|nil
+---@diagnostic disable-next-line: unused-local
 local function getCwd(path)
   return nil
 end
 
+---@param default_strategy_config table?
+---@param args neotest.RunArgs
+---@return table?
+---@diagnostic disable-next-line: unused-local
 local function getStrategyConfig(default_strategy_config, args)
   return default_strategy_config
 end
 
-local function cleanAnsi(s)
-  return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
+---@param value string
+---@return string
+---@return integer
+local function cleanAnsi(value)
+  return value
+    :gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+m", "")
     :gsub("\x1b%[%d+m", "")
 end
 
+-- TODO: Check types
+
+---@param file string
+---@param errStr string
+---@return string, string
 local function findErrorPosition(file, errStr)
   -- Look for: /path/to/file.js:123:987
   local regexp = file:gsub("([^%w])", "%%%1") .. "%:(%d+)%:(%d+)"
@@ -300,11 +336,16 @@ local function findErrorPosition(file, errStr)
   return errLine, errColumn
 end
 
-local function parsed_json_to_results(data, output_file, consoleOut)
+---@param data JestTestResults
+---@param consoleOut string?
+---@return table<string, neotest.Result>
+local function parsed_json_to_results(data, consoleOut)
+  ---@type table<string, neotest.Result>
   local tests = {}
 
   for _, testResult in pairs(data.testResults) do
     local testFn = testResult.name
+
     for _, assertionResult in pairs(testResult.assertionResults) do
       local status, name = assertionResult.status, assertionResult.title
 
@@ -321,29 +362,29 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 
       keyid = keyid .. "::" .. name
 
-      if status == "pending" then
-        status = "skipped"
-      end
+      local neotestStatus = status == "pending" and "skipped" or status
+      ---@cast neotestStatus neotest.ResultStatus
 
       tests[keyid] = {
-        status = status,
-        short = name .. ": " .. status,
+        status = neotestStatus,
+        short = name .. ": " .. neotestStatus,
         output = consoleOut,
         location = assertionResult.location,
       }
 
       if not vim.tbl_isempty(assertionResult.failureMessages) then
+        ---@type neotest.Error[]
         local errors = {}
 
-        for i, failMessage in ipairs(assertionResult.failureMessages) do
+        for idx, failMessage in ipairs(assertionResult.failureMessages) do
           local msg = cleanAnsi(failMessage)
           local errorLine, errorColumn = findErrorPosition(testFn, msg)
 
-          errors[i] = {
+          table.insert(errors, {
             line = (errorLine or assertionResult.location.line) - 1,
             column = (errorColumn or 1) - 1,
             message = msg,
-          }
+          })
 
           tests[keyid].short = tests[keyid].short .. "\n" .. msg
         end
@@ -357,7 +398,8 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 end
 
 ---@param args neotest.RunArgs
----@return neotest.RunSpec | nil
+---@return (neotest.RunSpec | neotest.RunSpec[])?
+---@diagnostic disable-next-line: inject-field
 function adapter.build_spec(args)
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
@@ -383,6 +425,7 @@ function adapter.build_spec(args)
     end
   end
 
+  -- TODO: The first condition will always fail?
   local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
@@ -430,7 +473,7 @@ function adapter.build_spec(args)
           return {}
         end
 
-        return parsed_json_to_results(parsed, results_path, nil)
+        return parsed_json_to_results(parsed, nil)
       end
     end,
     strategy = getStrategyConfig(
@@ -465,7 +508,7 @@ function adapter.results(spec, result, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, result.output)
+  local results = parsed_json_to_results(parsed, result.output)
 
   return results
 end
@@ -474,35 +517,45 @@ setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
     if util.is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
+      local jestCommand = opts.jestCommand
+      ---@cast jestCommand fun(path: string): string
+      getJestCommand = jestCommand
     elseif opts.jestCommand then
       getJestCommand = function()
         return opts.jestCommand
       end
     end
     if util.is_callable(opts.jestConfigFile) then
-      getJestConfig = opts.jestConfigFile
+      local jestConfig = opts.jestConfigFile
+      ---@cast jestConfig fun(path: string): string
+      getJestConfig = jestConfig
     elseif opts.jestConfigFile then
       getJestConfig = function()
         return opts.jestConfigFile
       end
     end
     if util.is_callable(opts.env) then
-      getEnv = opts.env
+      local env = opts.env
+      ---@cast env fun(path: string): string
+      getEnv = env
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
       end
     end
     if util.is_callable(opts.cwd) then
-      getCwd = opts.cwd
+      local cwd = opts.cwd
+      ---@cast cwd fun(path: string): string
+      getCwd = cwd
     elseif opts.cwd then
       getCwd = function()
         return opts.cwd
       end
     end
     if util.is_callable(opts.strategy_config) then
-      getStrategyConfig = opts.strategy_config
+      local strategy_config = opts.strategy_config
+      ---@cast strategy_config fun(path: string): string
+      getStrategyConfig = strategy_config
     elseif opts.strategy_config then
       getStrategyConfig = function()
         return opts.strategy_config
