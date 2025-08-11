@@ -373,17 +373,18 @@ local function parsed_json_to_results(data, consoleOut)
       }
 
       if not vim.tbl_isempty(assertionResult.failureMessages) then
+        ---@type neotest.Error[]
         local errors = {}
 
         for idx, failMessage in ipairs(assertionResult.failureMessages) do
           local msg = cleanAnsi(failMessage)
           local errorLine, errorColumn = findErrorPosition(testFn, msg)
 
-          errors[idx] = {
+          table.insert(errors, {
             line = (errorLine or assertionResult.location.line) - 1,
             column = (errorColumn or 1) - 1,
             message = msg,
-          }
+          })
 
           tests[keyid].short = tests[keyid].short .. "\n" .. msg
         end
