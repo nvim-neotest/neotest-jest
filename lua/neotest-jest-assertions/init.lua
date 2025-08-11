@@ -1,4 +1,4 @@
-local s = require("say")
+local say = require("say")
 
 function Contains(state, arguments)
   if not type(arguments[1]) == "table" or #arguments ~= 2 then
@@ -14,8 +14,8 @@ function Contains(state, arguments)
   return false
 end
 
-s:set("assertion.Contains.positive", "Expected %s \nto contain: %s")
-s:set("assertion.Contains.negative", "Expected %s \nto not contain: %s")
+say:set("assertion.Contains.positive", "Expected %s \nto contain: %s")
+say:set("assertion.Contains.negative", "Expected %s \nto not contain: %s")
 assert:register(
   "assertion",
   "Contains",

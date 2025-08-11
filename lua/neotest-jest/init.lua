@@ -1,18 +1,11 @@
 ---@diagnostic disable: undefined-field
 local async = require("neotest.async")
 local compat = require("neotest-jest.compat")
+local config = require("neotest-jest.config")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
-local util = require("neotest-jest.util")
-local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
-
----@class neotest.JestOptions
----@field jestCommand? string|fun(): string
----@field jestConfigFile? string|fun(): string
----@field env? table<string, string>|fun(): table<string, string>
----@field cwd? string|fun(): string
----@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+local util = require("neotest-jest.util")
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -97,9 +90,6 @@ end
 adapter.root = function(path)
   return lib.files.match_root_pattern("package.json")(path)
 end
-
-local getJestCommand = jest_util.getJestCommand
-local getJestConfig = jest_util.getJestConfig
 
 ---@async
 ---@param file_path? string
@@ -249,41 +239,6 @@ function adapter.discover_positions(path)
   return positions
 end
 
-local function get_default_strategy_config(strategy, command, cwd)
-  local config = {
-    dap = function()
-      return {
-        name = "Debug Jest Tests",
-        type = "pwa-node",
-        request = "launch",
-        args = { unpack(command, 2) },
-        runtimeExecutable = command[1],
-        console = "integratedTerminal",
-        internalConsoleOptions = "neverOpen",
-        rootPath = "${workspaceFolder}",
-        cwd = cwd or "${workspaceFolder}",
-      }
-    end,
-  }
-  if config[strategy] then
-    return config[strategy]()
-  end
-end
-
-local function getEnv(specEnv)
-  return specEnv
-end
-
----@param path string
----@return string|nil
-local function getCwd(path)
-  return nil
-end
-
-local function getStrategyConfig(default_strategy_config, args)
-  return default_strategy_config
-end
-
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
     :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
@@ -383,13 +338,13 @@ function adapter.build_spec(args)
     end
   end
 
-  local binary = args.jestCommand or getJestCommand(pos.path)
-  local config = getJestConfig(pos.path) or "jest.config.js"
+  local binary = args.jestCommand or config.getJestCommand(pos.path)
+  local config_path = config.getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
 
-  if util.path.exists(config) then
+  if util.path.exists(config_path) then
     -- only use config if available
-    table.insert(command, "--config=" .. config)
+    table.insert(command, "--config=" .. config_path)
   end
 
   if compat.tbl_islist(args.extra_args) then
@@ -407,7 +362,7 @@ function adapter.build_spec(args)
     util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
-  local cwd = getCwd(pos.path)
+  local cwd = config.getCwd(pos.path)
 
   -- creating empty file for streaming results
   lib.files.write(results_path, "")
@@ -433,11 +388,11 @@ function adapter.build_spec(args)
         return parsed_json_to_results(parsed, results_path, nil)
       end
     end,
-    strategy = getStrategyConfig(
-      get_default_strategy_config(args.strategy, command, cwd) or {},
+    strategy = config.getStrategyConfig(
+      config.getDefaultStrategyConfig(args.strategy, command, cwd) or {},
       args
     ),
-    env = getEnv(args[2] and args[2].env or {}),
+    env = config.getEnv(args[2] and args[2].env or {}),
   }
 end
 
@@ -471,47 +426,9 @@ function adapter.results(spec, result, tree)
 end
 
 setmetatable(adapter, {
-  ---@param opts neotest.JestOptions
-  __call = function(_, opts)
-    if util.is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
-    elseif opts.jestCommand then
-      getJestCommand = function()
-        return opts.jestCommand
-      end
-    end
-    if util.is_callable(opts.jestConfigFile) then
-      getJestConfig = opts.jestConfigFile
-    elseif opts.jestConfigFile then
-      getJestConfig = function()
-        return opts.jestConfigFile
-      end
-    end
-    if util.is_callable(opts.env) then
-      getEnv = opts.env
-    elseif opts.env then
-      getEnv = function(specEnv)
-        return vim.tbl_extend("force", opts.env, specEnv)
-      end
-    end
-    if util.is_callable(opts.cwd) then
-      getCwd = opts.cwd
-    elseif opts.cwd then
-      getCwd = function()
-        return opts.cwd
-      end
-    end
-    if util.is_callable(opts.strategy_config) then
-      getStrategyConfig = opts.strategy_config
-    elseif opts.strategy_config then
-      getStrategyConfig = function()
-        return opts.strategy_config
-      end
-    end
-
-    if opts.jest_test_discovery then
-      adapter.jest_test_discovery = true
-    end
+  ---@param user_config neotest-jest.Config
+  __call = function(_, user_config)
+    config.configure(user_config)
 
     return adapter
   end,
