@@ -7,8 +7,6 @@ local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 
--- TODO: Perhaps make resultsPath and testNamePattern mandatory arguments
-
 ---@class neotest-jest.JestArgumentContext
 ---@field config string?
 ---@field resultsPath string
@@ -415,8 +413,7 @@ function adapter.build_spec(args)
 
   vim.list_extend(command, {
     "--forceExit", -- Ensure jest and thus the adapter does not hang
-    "--testLocationInResults",
-    "--verbose",
+    "--testLocationInResults", -- Ensure jest outputs test locations
     util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 

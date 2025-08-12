@@ -53,12 +53,10 @@ function M.getJestDefaultArguments(context)
 
   return vim.list_extend(arguments, {
     "--no-coverage",
-    "--testLocationInResults",
     "--verbose",
     "--json",
     "--outputFile=" .. context.resultsPath,
     "--testNamePattern=" .. context.testNamePattern,
-    "--forceExit",
   })
 end
 
