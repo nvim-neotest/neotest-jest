@@ -65,9 +65,8 @@ It should return the final arguments as a `string[]`.
 
 > [!IMPORTANT]  
 > Some arguments are always passed regardless of this option:
-> `--forceExit`
-> `--testLocationInResults`
-> `--verbose`.
+> `--forceExit` (ensure jest and thus the adapter does not hang)
+> `--testLocationInResults` (ensure jest outputs test locations)
 >
 
 The default arguments can be obtained by calling `require("neotest-jest.jest-util").getJestArguments`.
