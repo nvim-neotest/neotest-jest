@@ -7,12 +7,18 @@ local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 
+---@class neotest-jest.JestArgumentContext
+---@field config string?
+---@field resultsPath string
+---@field testNamePattern string
+
 ---@class neotest.JestOptions
----@field jestCommand? string|fun(): string
----@field jestConfigFile? string|fun(): string
----@field env? table<string, string>|fun(): table<string, string>
----@field cwd? string|fun(): string
----@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field jestCommand? string | fun(): string
+---@field jestArguments? string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
+---@field jestConfigFile? string | fun(): string
+---@field env? table<string, string> | fun(): table<string, string>
+---@field cwd? string | fun(): string
+---@field strategy_config? table<string, unknown> | fun(): table<string, unknown>
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -99,6 +105,7 @@ adapter.root = function(path)
 end
 
 local getJestCommand = jest_util.getJestCommand
+local getJestArguments = jest_util.getJestArguments
 local getJestConfig = jest_util.getJestConfig
 
 ---@async
@@ -359,6 +366,7 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
+  ---@type string
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
@@ -387,23 +395,25 @@ function adapter.build_spec(args)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
 
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
-  end
+  local jestArgsContext = {
+    config = config,
+    resultsPath = results_path,
+    testNamePattern = testNamePattern,
+  }
 
+  local options =
+    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+
+  vim.list_extend(command, options)
+
+  -- We need to pass a few options regardless of any user specific options:
   if compat.tbl_islist(args.extra_args) then
     vim.list_extend(command, args.extra_args)
   end
 
   vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    "--forceExit",
+    "--forceExit", -- Ensure jest and thus the adapter does not hang
+    "--testLocationInResults", -- Ensure jest outputs test locations
     util.escapeTestPattern(vim.fs.normalize(pos.path)),
   })
 
@@ -470,42 +480,36 @@ function adapter.results(spec, result, tree)
   return results
 end
 
+---@generic T
+---@param value T | fun(any): T
+---@param default fun(any): T
+---@return fun(any): T
+local function resolve_config_option(value, default)
+  if util.is_callable(value) then
+    return value
+  elseif value then
+    return function()
+      return value
+    end
+  end
+
+  return default
+end
+
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if util.is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
-    elseif opts.jestCommand then
-      getJestCommand = function()
-        return opts.jestCommand
-      end
-    end
-    if util.is_callable(opts.jestConfigFile) then
-      getJestConfig = opts.jestConfigFile
-    elseif opts.jestConfigFile then
-      getJestConfig = function()
-        return opts.jestConfigFile
-      end
-    end
+    getJestCommand = resolve_config_option(opts.jestCommand, getJestCommand)
+    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments)
+    getJestConfig = resolve_config_option(opts.jestConfigFile, getJestConfig)
+    getCwd = resolve_config_option(opts.cwd, getCwd)
+    getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)
+
     if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
-      end
-    end
-    if util.is_callable(opts.cwd) then
-      getCwd = opts.cwd
-    elseif opts.cwd then
-      getCwd = function()
-        return opts.cwd
-      end
-    end
-    if util.is_callable(opts.strategy_config) then
-      getStrategyConfig = opts.strategy_config
-    elseif opts.strategy_config then
-      getStrategyConfig = function()
-        return opts.strategy_config
       end
     end
 

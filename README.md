@@ -24,6 +24,7 @@ use({
       adapters = {
         require('neotest-jest')({
           jestCommand = "npm test --",
+          jestArguments = { "--clearCache", "--useStderr" },
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
@@ -42,6 +43,47 @@ Make sure you have the appropriate `treesitter` language parsers installed other
 :TSInstall javascript
 ```
 You might want to install `tsx` and `typescript` parser as well depending on your project.
+
+## Configuration
+
+#### `jestCommand`
+
+Type: `string | fun(path: string): string`
+
+The jest command to run when running tests. Can also be a function that accepts
+the path to the current neotest position and returns the command to run.
+
+#### `jestArguments`
+
+Type: `string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
+
+The arguments to pass to jest when running tests. Can either be a list of strings
+or a function that accepts default arguments used and a context table that
+contains a `config: string?` entry for the config file or `nil` if none was found.
+
+It should return the final arguments as a `string[]`.
+
+> [!IMPORTANT]  
+> Some arguments are always passed regardless of this option:
+> `--forceExit` (ensure jest and thus the adapter does not hang)
+> `--testLocationInResults` (ensure jest outputs test locations)
+>
+
+The default arguments can be obtained by calling `require("neotest-jest.jest-util").getJestArguments`.
+
+Example usage:
+
+```lua
+-- TODO:
+```
+
+#### `jestConfigFile`
+
+Type: `string[] | fun(path: string, testNamePattern: string): string[]`
+
+#### `env`
+
+#### `cwd`
 
 ## Usage
 
