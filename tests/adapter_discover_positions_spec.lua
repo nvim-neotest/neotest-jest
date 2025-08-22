@@ -1,6 +1,9 @@
 local adapter = require("neotest-jest")({ jestCommand = "jest" })
 local async = require("nio").tests
 local stub = require("luassert.stub")
+local test_utils = require("neotest-jest.test-utils")
+
+test_utils.prepare_vim_treesitter()
 
 describe("adapter.discover_positions", function()
   local assert_test_positions_match = function(expected_output, positions)
