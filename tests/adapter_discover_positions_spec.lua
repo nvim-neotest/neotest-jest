@@ -45,6 +45,10 @@ describe("adapter.discover_positions", function()
           name = "4",
           type = "test",
         },
+        {
+          name = "5",
+          type = "test",
+        },
       },
       {
         {
@@ -65,6 +69,10 @@ describe("adapter.discover_positions", function()
         },
         {
           name = "4",
+          type = "test",
+        },
+        {
+          name = "5",
           type = "test",
         },
       },
