@@ -153,13 +153,19 @@ what tests are inside the file. If `discovery` would be enabled then `neotest-je
 would spawn a lot of procesees.
 
 ### Monorepos
+
 If you have a monorepo setup, you might have to do a little more configuration, especially if
 you have different jest configurations per package.
 
 ```lua
 jestConfigFile = function(file)
-  if string.find(file, "/packages/") then
-    return string.match(file, "(.-/[^/]+/)src") .. "jest.config.ts"
+  if file:find("/packages/") then
+    -- Matches "some/path/" in "some/path/src/"
+    local match = file:match("(.*/[^/]+/)src")
+
+    if match then
+      return match .. "jest.config.ts"
+    end
   end
 
   return vim.fn.getcwd() .. "/jest.config.ts"
@@ -172,9 +178,15 @@ bit:
 
 ```lua
 cwd = function(file)
-  if string.find(file, "/packages/") then
-    return string.match(file, "(.-/[^/]+/)src")
+  if file:find("/packages/") then
+    -- Matches "some/path/" in "some/path/src/"
+    local match = file:match("(.*/[^/]+/)src")
+
+    if match then
+      return match
+    end
   end
+
   return vim.fn.getcwd()
 end
 ```
