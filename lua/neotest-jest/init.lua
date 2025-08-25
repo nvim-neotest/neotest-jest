@@ -15,7 +15,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@class neotest.JestOptions
 ---@field jestCommand? string | fun(): string
 ---@field jestArguments? string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
----@field jestConfigFile? string | fun(): string
+---@field jestConfigFile? string | fun(file_path: string): string
 ---@field env? table<string, string> | fun(): table<string, string>
 ---@field cwd? string | fun(): string
 ---@field strategy_config? table<string, unknown> | fun(): table<string, unknown>
@@ -404,13 +404,17 @@ function adapter.build_spec(args)
   local options =
     getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
 
-  vim.list_extend(command, options)
+  if compat.tbl_islist(options) then
+    vim.list_extend(command, options)
+  else
+    vim.notify("Jest arguments must be a list", vim.log.levels.ERROR)
+  end
 
-  -- We need to pass a few options regardless of any user specific options:
   if compat.tbl_islist(args.extra_args) then
     vim.list_extend(command, args.extra_args)
   end
 
+  -- We need to pass a few options regardless of any user specific options
   vim.list_extend(command, {
     "--forceExit", -- Ensure jest and thus the adapter does not hang
     "--testLocationInResults", -- Ensure jest outputs test locations
@@ -419,7 +423,7 @@ function adapter.build_spec(args)
 
   local cwd = getCwd(pos.path)
 
-  -- creating empty file for streaming results
+  -- Creating empty file for streaming results
   lib.files.write(results_path, "")
   local stream_data, stop_stream = util.stream(results_path)
 
