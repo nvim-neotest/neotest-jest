@@ -57,33 +57,46 @@ the path to the current neotest position and returns the command to run.
 
 Type: `string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
 
-The arguments to pass to jest when running tests. Can either be a list of strings
-or a function that accepts default arguments used and a context table that
-contains a `config: string?` entry for the config file or `nil` if none was found.
+The arguments to pass to jest when running tests. Can either be a list of
+strings or a function.
 
-It should return the final arguments as a `string[]`.
+In the case of a list of string, the arguments replace the default arguments.
+
+In the case of a function, it is called with the default arguments and a context
+table that contains a `config: string?` entry for the config file (normally
+passed to the `--config` option) or `nil` if none was found, a `resultsPath`
+entry for the destination file for writing json test output (normally passed to
+the `--outputFile` option), and a `testNamePattern` entry for the regex pattern
+for tests (normally passed to the `--testNamePattern` option). It should return
+the final arguments as a `string[]`.
 
 > [!IMPORTANT]  
 > Some arguments are always passed regardless of this option:
 > `--forceExit` (ensure jest and thus the adapter does not hang)
 > `--testLocationInResults` (ensure jest outputs test locations)
->
 
 The default arguments can be obtained by calling `require("neotest-jest.jest-util").getJestArguments`.
 
-Example usage:
-
-```lua
--- TODO:
-```
-
 #### `jestConfigFile`
 
-Type: `string[] | fun(path: string, testNamePattern: string): string[]`
+Type: `string | fun(file_path: string): string`
+
+Path to a jest config file or a function taking the path of the current neotest
+position and returning a path to a jest config file. Defaults to
+`"jest.config.js"`.
 
 #### `env`
 
+Type: `table<string, string> | fun(): table<string, string>`
+
+A key-value map of environment variables to set or a function returning such a map.
+
 #### `cwd`
+
+Type: `string | fun(): string`
+
+The current working directory to use or a function returning the current working
+directory.
 
 ## Usage
 
