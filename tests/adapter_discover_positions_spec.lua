@@ -45,6 +45,10 @@ describe("adapter.discover_positions", function()
           name = "4",
           type = "test",
         },
+        {
+          name = "5",
+          type = "test",
+        },
       },
       {
         {
@@ -67,6 +71,10 @@ describe("adapter.discover_positions", function()
           name = "4",
           type = "test",
         },
+        {
+          name = "5",
+          type = "test",
+        },
       },
     }
 
@@ -76,7 +84,7 @@ describe("adapter.discover_positions", function()
     assert.equals(expected_output[2][1].type, positions[2][1].type)
 
     assert.equals(positions[2][1].is_parameterized, false)
-    assert.equals(5, #positions[2])
+    assert.equals(6, #positions[2])
 
     for i, value in ipairs(expected_output[2][2]) do
       assert.is.truthy(value)
@@ -90,10 +98,10 @@ describe("adapter.discover_positions", function()
     assert.equals(expected_output[3][1].name, positions[3][1].name)
     assert.equals(expected_output[3][1].type, positions[3][1].type)
 
-    assert.equals(5, #positions[2])
+    assert.equals(6, #positions[2])
     assert_test_positions_match(expected_output[2][2], positions[2])
 
-    assert.equals(5, #positions[3])
+    assert.equals(6, #positions[3])
     assert_test_positions_match(expected_output[3][2], positions[3])
   end)
 
