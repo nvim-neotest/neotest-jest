@@ -217,14 +217,14 @@ function adapter.discover_positions(path)
     ; Matches: `test('test') / it('test')`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
     ; Matches: `test.only('test') / it.only('test')`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
     ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
     ((call_expression
@@ -234,7 +234,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
   ]]
 
