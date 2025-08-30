@@ -24,6 +24,9 @@ use({
       adapters = {
         require('neotest-jest')({
           jestCommand = "npm test --",
+          jestArguments = function(defaultArguments, context)
+            return defaultArguments
+          end,
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
@@ -42,6 +45,67 @@ Make sure you have the appropriate `treesitter` language parsers installed other
 :TSInstall javascript
 ```
 You might want to install `tsx` and `typescript` parser as well depending on your project.
+
+## Configuration
+
+#### `jestCommand`
+
+Type: `string | fun(path: string): string`
+
+The jest command to run when running tests. Can also be a function that accepts
+the path to the current neotest position and returns the command to run.
+
+#### `jestArguments`
+
+Type: `fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
+
+The arguments to pass to jest when running tests.
+
+The function is called with the default arguments and a context table that
+contains a `config: string?` entry for the config file (normally passed to the
+`--config` option) or `nil` if none was found, a `resultsPath` entry for the
+destination file for writing json test output (normally passed to the
+`--outputFile` option), and a `testNamePattern` entry for the regex pattern for
+tests (normally passed to the `--testNamePattern` option). It should return the
+final arguments as a `string[]`.
+
+> [!WARNING]  
+> Make sure to always pass the following options:
+
+* `--forceExit`: Ensure jest and thus the adapter does not hang
+* `--testLocationInResults`: Ensure jest outputs test locations
+* `--json`: Output test results in json
+* `--outputFile`: The location for writing json output
+
+The default function for `jestArguments` can be obtained by calling
+`require("neotest-jest.jest-util").getJestArguments`. The test file is
+automatically added to the end of the jest arguments by `neotest-jest`.
+
+#### `jestConfigFile`
+
+Type: `string | fun(file_path: string): string`
+
+Path to a jest config file or a function taking the path of the current neotest
+position and returning a path to a jest config file. Defaults to
+`"jest.config.js"`.
+
+#### `env`
+
+Type: `table<string, string> | fun(): table<string, string>`
+
+A key-value map of environment variables to set or a function returning such a map.
+
+#### `cwd`
+
+Type: `string | fun(): string`
+
+The current working directory to use or a function returning the current working
+directory.
+
+#### `strategy_config`
+
+The [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) strategy
+configuration to use when debugging tests.
 
 ## Usage
 

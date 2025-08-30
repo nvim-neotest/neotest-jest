@@ -41,6 +41,35 @@ function M.getJestCommand(path)
   return "jest"
 end
 
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
+function M.getJestDefaultArguments(context)
+  local arguments = {}
+
+  if util.path.exists(context.config) then
+    -- Only use config if available
+    table.insert(arguments, "--config=" .. context.config)
+  end
+
+  return vim.list_extend(arguments, {
+    "--no-coverage",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. context.resultsPath,
+    "--testNamePattern=" .. context.testNamePattern,
+    "--forceExit", -- Ensure jest and thus the adapter does not hang
+    "--testLocationInResults", -- Ensure jest outputs test locations
+  })
+end
+
+---@param defaultArguments string[]
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
+---@diagnostic disable-next-line: unused-local
+function M.getJestArguments(defaultArguments, context)
+  return defaultArguments
+end
+
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 -- Returns jest config file path if it exists.
