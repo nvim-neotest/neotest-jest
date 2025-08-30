@@ -119,7 +119,7 @@ describe("adapter.build_spec", function()
     end)
 
     local spec =
-        adapter.build_spec({ tree = tree:children()[1]:children()[1]:children()[1]:children()[2] })
+      adapter.build_spec({ tree = tree:children()[1]:children()[1]:children()[1]:children()[2] })
 
     assert.is.truthy(spec)
 
@@ -241,8 +241,8 @@ describe("adapter.build_spec", function()
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
 
     assert
-        .stub(vim.notify)
-        .was_called_with("Extra arguments must be a list, got 'table'", vim.log.levels.ERROR)
+      .stub(vim.notify)
+      .was_called_with("Extra arguments must be a list, got 'table'", vim.log.levels.ERROR)
   end)
 
   async.it("builds command for file test with jestCommand arg", function()
@@ -395,8 +395,8 @@ describe("adapter.build_spec", function()
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
 
     assert
-        .stub(vim.notify)
-        .was_called_with("Jest arguments must be a list, got 'string'", vim.log.levels.ERROR)
+      .stub(vim.notify)
+      .was_called_with("Jest arguments must be a list, got 'string'", vim.log.levels.ERROR)
   end)
 
   async.it("builds command with custom binary and config overrides", function()

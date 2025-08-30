@@ -244,7 +244,7 @@ function adapter.discover_positions(path)
   })
 
   local parameterized_tests_positions =
-      parameterized_tests.get_parameterized_tests_positions(positions)
+    parameterized_tests.get_parameterized_tests_positions(positions)
 
   if adapter.jest_test_discovery and #parameterized_tests_positions > 0 then
     parameterized_tests.enrich_positions_with_parameterized_tests(
@@ -293,10 +293,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+;%d+m", "")
-      :gsub("\x1b%[%d+;%d+m", "")
-      :gsub("\x1b%[%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+;%d+m", "")
+    :gsub("\x1b%[%d+;%d+m", "")
+    :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
@@ -384,7 +384,7 @@ function adapter.build_spec(args)
     testNamePattern = util.escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
-        or testNamePattern
+      or testNamePattern
     testNamePattern = "^" .. testNamePattern
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$"
@@ -402,7 +402,7 @@ function adapter.build_spec(args)
   }
 
   local options =
-      getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
 
   if compat.tbl_islist(options) then
     vim.list_extend(command, options)
