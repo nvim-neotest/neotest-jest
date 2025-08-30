@@ -10,6 +10,16 @@ describe("adapter.build_spec", function()
 
   require("neotest-jest-assertions")
 
+  before_each(function()
+    assert:set_parameter("TableFormatLevel", 10)
+    stub(vim, "notify")
+  end)
+
+  after_each(function()
+    ---@diagnostic disable-next-line: undefined-field
+    vim.notify:revert()
+  end)
+
   async.it("builds command for file test", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
     local path = "./spec/basic.test.ts"
@@ -35,6 +45,8 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
   async.it("builds command for namespace", function()
@@ -62,6 +74,8 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
   async.it("builds command for nested namespace", function()
@@ -91,9 +105,11 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
-  async.it("builds correct command for test name with ' ", function()
+  async.it("builds correct command for test name with '", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
     local path = "./spec/nestedDescribe.test.ts"
     local positions = adapter.discover_positions(path):to_list()
@@ -103,7 +119,7 @@ describe("adapter.build_spec", function()
     end)
 
     local spec =
-      adapter.build_spec({ tree = tree:children()[1]:children()[1]:children()[1]:children()[2] })
+        adapter.build_spec({ tree = tree:children()[1]:children()[1]:children()[1]:children()[2] })
 
     assert.is.truthy(spec)
 
@@ -122,6 +138,8 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
   describe("parameterized test names", function()
@@ -150,6 +168,7 @@ describe("adapter.build_spec", function()
         local spec = adapter.build_spec({ tree = tree:children()[1]:children()[test_data.index] })
 
         assert.contains(spec.command, "--testNamePattern=" .. test_data.expected_name)
+        assert.stub(vim.notify).was_not_called()
       end)
     end
   end)
@@ -185,6 +204,8 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
   async.it("builds command for file test without extra arguments if not a list", function()
@@ -218,6 +239,10 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert
+        .stub(vim.notify)
+        .was_called_with("Extra arguments must be a list, got 'table'", vim.log.levels.ERROR)
   end)
 
   async.it("builds command for file test with jestCommand arg", function()
@@ -246,80 +271,11 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
-  async.it("builds command with overridden jest arguments (string array)", function()
-    local adapter = require("neotest-jest")({
-      jestCommand = "jest",
-      jestArguments = { "--coverage", "--clearCache" },
-    })
-
-    local path = "./spec/basic.test.ts"
-    local positions = adapter.discover_positions(path):to_list()
-    local tree = Tree.from_list(positions, function(pos)
-      return pos.id
-    end)
-    local spec = adapter.build_spec({ tree = tree })
-
-    assert.is.truthy(spec)
-    local command = spec.command
-
-    assert.is.truthy(command)
-    assert.contains(command, "jest")
-    assert._not.contains(command, "--no-coverage")
-    assert.contains(command, "--testLocationInResults")
-    assert._not.contains(command, "--verbose")
-    assert._not.contains(command, "--json")
-    assert._not.contains(command, "--config=./spec/jest.config.ts")
-    assert._not.contains(command, "--testNamePattern=.*")
-    assert.contains(command, "--forceExit")
-    assert.contains(command, "--coverage")
-    assert.contains(command, "--clearCache")
-    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
-
-    assert.are.same(spec.context.file, path)
-    assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
-  end)
-
-  async.it("builds command with overridden jest arguments (string array) and extra_args", function()
-    local adapter = require("neotest-jest")({
-      jestCommand = "jest",
-      jestArguments = { "--coverage", "--clearCache" },
-    })
-
-    local path = "./spec/basic.test.ts"
-    local positions = adapter.discover_positions(path):to_list()
-    local tree = Tree.from_list(positions, function(pos)
-      return pos.id
-    end)
-    local spec = adapter.build_spec({
-      tree = tree,
-      extra_args = { "--useStderr", "--updateSnapshot" },
-    })
-
-    assert.is.truthy(spec)
-    local command = spec.command
-
-    assert.is.truthy(command)
-    assert.contains(command, "jest")
-    assert._not.contains(command, "--no-coverage")
-    assert.contains(command, "--testLocationInResults")
-    assert._not.contains(command, "--verbose")
-    assert._not.contains(command, "--json")
-    assert._not.contains(command, "--config=./spec/jest.config.ts")
-    assert._not.contains(command, "--testNamePattern=.*")
-    assert.contains(command, "--forceExit")
-    assert.contains(command, "--coverage")
-    assert.contains(command, "--clearCache")
-    assert.contains(command, "--useStderr")
-    assert.contains(command, "--updateSnapshot")
-    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
-
-    assert.are.same(spec.context.file, path)
-    assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
-  end)
-
-  async.it("builds command with overridden jest arguments (function)", function()
+  async.it("builds command with overridden jest arguments", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
       jestArguments = function(defaultArguments)
@@ -356,9 +312,11 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
-  async.it("builds command with overridden jest arguments (function) and extra_args", function()
+  async.it("builds command with overridden jest arguments and extra_args", function()
     local adapter = require("neotest-jest")({
       jestCommand = "jest",
       jestArguments = function(defaultArguments)
@@ -400,47 +358,46 @@ describe("adapter.build_spec", function()
 
     assert.are.same(spec.context.file, path)
     assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert.stub(vim.notify).was_not_called()
   end)
 
-  -- async.it("builds command with overridden jest arguments (function) and extra_args without duplicated options", function()
-  --   local path = "./spec/basic.test.ts"
-  --   local positions = adapter.discover_positions(path):to_list()
-  --   local tree = Tree.from_list(positions, function(pos)
-  --     return pos.id
-  --   end)
-  --   local spec = adapter.build_spec({
-  --     tree = tree,
-  --     jestArguments = function(defaultArguments)
-  --       local options = vim.tbl_filter(function(arg)
-  --         return arg ~= "--no-coverage"
-  --       end, defaultArguments)
-  --
-  --       return vim.list_extend(options, { "--coverage", "--clearCache" })
-  --     end,
-  --     extra_args = { "--useStderr", "--updateSnapshot" },
-  --   })
-  --
-  --   assert.is.truthy(spec)
-  --   local command = spec.command
-  --
-  --   assert.is.truthy(command)
-  --   assert.contains(command, "jest")
-  --   assert._not.contains(command, "--no-coverage")
-  --   assert.contains(command, "--testLocationInResults")
-  --   assert.contains(command, "--verbose")
-  --   assert.contains(command, "--json")
-  --   assert.contains(command, "--config=./spec/jest.config.ts")
-  --   assert.contains(command, "--testNamePattern=.*")
-  --   assert.contains(command, "--forceExit")
-  --   assert.contains(command, "--coverage")
-  --   assert.contains(command, "--clearCache")
-  --   assert.contains(command, "--useStderr")
-  --   assert.contains(command, "--updateSnapshot")
-  --   assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
-  --
-  --   assert.are.same(spec.context.file, path)
-  --   assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
-  -- end)
+  async.it("handles incorrect jest arguments returned by function", function()
+    local adapter = require("neotest-jest")({
+      jestCommand = "jest",
+      jestArguments = function()
+        return "hello"
+      end,
+    })
+
+    local path = "./spec/basic.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
+    local tree = Tree.from_list(positions, function(pos)
+      return pos.id
+    end)
+    local spec = adapter.build_spec({ tree = tree })
+
+    assert.is.truthy(spec)
+    local command = spec.command
+
+    assert.is.truthy(command)
+    assert.contains(command, "jest")
+    assert.contains(command, "--no-coverage")
+    assert.contains(command, "--testLocationInResults")
+    assert.contains(command, "--verbose")
+    assert.contains(command, "--json")
+    assert.contains(command, "--config=./spec/jest.config.ts")
+    assert.contains(command, "--testNamePattern=.*")
+    assert.contains(command, "--forceExit")
+    assert.contains(command, util.escapeTestPattern(vim.fs.normalize(path)))
+
+    assert.are.same(spec.context.file, path)
+    assert.is.truthy(vim.endswith(spec.context.results_path, ".json"))
+
+    assert
+        .stub(vim.notify)
+        .was_called_with("Jest arguments must be a list, got 'string'", vim.log.levels.ERROR)
+  end)
 
   async.it("builds command with custom binary and config overrides", function()
     local binary_override = function()
@@ -486,5 +443,7 @@ describe("adapter.build_spec", function()
       spec.env,
       { override = "override", adapter_override = true, spec_override = true }
     )
+
+    assert.stub(vim.notify).was_not_called()
   end)
 end)

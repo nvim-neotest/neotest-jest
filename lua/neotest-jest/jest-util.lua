@@ -57,6 +57,8 @@ function M.getJestDefaultArguments(context)
     "--json",
     "--outputFile=" .. context.resultsPath,
     "--testNamePattern=" .. context.testNamePattern,
+    "--forceExit", -- Ensure jest and thus the adapter does not hang
+    "--testLocationInResults", -- Ensure jest outputs test locations
   })
 end
 

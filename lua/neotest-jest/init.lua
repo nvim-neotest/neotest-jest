@@ -14,7 +14,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 
 ---@class neotest.JestOptions
 ---@field jestCommand? string | fun(): string
----@field jestArguments? string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
+---@field jestArguments? fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
 ---@field jestConfigFile? string | fun(file_path: string): string
 ---@field env? table<string, string> | fun(): table<string, string>
 ---@field cwd? string | fun(): string
@@ -244,7 +244,7 @@ function adapter.discover_positions(path)
   })
 
   local parameterized_tests_positions =
-    parameterized_tests.get_parameterized_tests_positions(positions)
+      parameterized_tests.get_parameterized_tests_positions(positions)
 
   if adapter.jest_test_discovery and #parameterized_tests_positions > 0 then
     parameterized_tests.enrich_positions_with_parameterized_tests(
@@ -293,10 +293,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
@@ -384,7 +384,7 @@ function adapter.build_spec(args)
     testNamePattern = util.escapeTestPattern(testName)
     testNamePattern = pos.is_parameterized
         and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
-      or testNamePattern
+        or testNamePattern
     testNamePattern = "^" .. testNamePattern
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$"
@@ -402,24 +402,30 @@ function adapter.build_spec(args)
   }
 
   local options =
-    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+      getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
 
   if compat.tbl_islist(options) then
     vim.list_extend(command, options)
   else
-    vim.notify("Jest arguments must be a list", vim.log.levels.ERROR)
+    vim.notify(
+      ("Jest arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
+
+    -- Add the default arugments to allow neotest to run
+    vim.list_extend(command, jest_util.getJestDefaultArguments(jestArgsContext))
   end
 
   if compat.tbl_islist(args.extra_args) then
     vim.list_extend(command, args.extra_args)
+  elseif args.extra_args then
+    vim.notify(
+      ("Extra arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
   end
 
-  -- We need to pass a few options regardless of any user specific options
-  vim.list_extend(command, {
-    "--forceExit", -- Ensure jest and thus the adapter does not hang
-    "--testLocationInResults", -- Ensure jest outputs test locations
-    util.escapeTestPattern(vim.fs.normalize(pos.path)),
-  })
+  table.insert(command, util.escapeTestPattern(vim.fs.normalize(pos.path)))
 
   local cwd = getCwd(pos.path)
 
@@ -487,11 +493,12 @@ end
 ---@generic T
 ---@param value T | fun(any): T
 ---@param default fun(any): T
+---@param reject_value boolean?
 ---@return fun(any): T
-local function resolve_config_option(value, default)
+local function resolve_config_option(value, default, reject_value)
   if util.is_callable(value) then
     return value
-  elseif value then
+  elseif value and not reject_value then
     return function()
       return value
     end
@@ -504,7 +511,7 @@ setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
     getJestCommand = resolve_config_option(opts.jestCommand, getJestCommand)
-    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments)
+    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments, true)
     getJestConfig = resolve_config_option(opts.jestConfigFile, getJestConfig)
     getCwd = resolve_config_option(opts.cwd, getCwd)
     getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)

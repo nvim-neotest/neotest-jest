@@ -24,7 +24,9 @@ use({
       adapters = {
         require('neotest-jest')({
           jestCommand = "npm test --",
-          jestArguments = { "--clearCache", "--useStderr" },
+          jestArguments = function(defaultArguments, context)
+            return defaultArguments
+          end,
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
@@ -55,27 +57,29 @@ the path to the current neotest position and returns the command to run.
 
 #### `jestArguments`
 
-Type: `string[] | fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
+Type: `fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
 
-The arguments to pass to jest when running tests. Can either be a list of
-strings or a function.
+The arguments to pass to jest when running tests.
 
-In the case of a list of string, the arguments replace the default arguments.
+The function is called with the default arguments and a context table that
+contains a `config: string?` entry for the config file (normally passed to the
+`--config` option) or `nil` if none was found, a `resultsPath` entry for the
+destination file for writing json test output (normally passed to the
+`--outputFile` option), and a `testNamePattern` entry for the regex pattern for
+tests (normally passed to the `--testNamePattern` option). It should return the
+final arguments as a `string[]`.
 
-In the case of a function, it is called with the default arguments and a context
-table that contains a `config: string?` entry for the config file (normally
-passed to the `--config` option) or `nil` if none was found, a `resultsPath`
-entry for the destination file for writing json test output (normally passed to
-the `--outputFile` option), and a `testNamePattern` entry for the regex pattern
-for tests (normally passed to the `--testNamePattern` option). It should return
-the final arguments as a `string[]`.
+> [!WARNING]  
+> Make sure to always pass the following options:
 
-> [!IMPORTANT]  
-> Some arguments are always passed regardless of this option:
-> `--forceExit` (ensure jest and thus the adapter does not hang)
-> `--testLocationInResults` (ensure jest outputs test locations)
+* `--forceExit`: Ensure jest and thus the adapter does not hang
+* `--testLocationInResults`: Ensure jest outputs test locations
+* `--json`: Output test results in json
+* `--outputFile`: The location for writing json output
 
-The default arguments can be obtained by calling `require("neotest-jest.jest-util").getJestArguments`.
+The default function for `jestArguments` can be obtained by calling
+`require("neotest-jest.jest-util").getJestArguments`. The test file is
+automatically added to the end of the jest arguments by `neotest-jest`.
 
 #### `jestConfigFile`
 
