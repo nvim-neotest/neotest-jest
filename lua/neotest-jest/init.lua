@@ -37,7 +37,7 @@ local isTestFile = jest_util.defaultIsTestFile
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
-  return isTestFile(file_path) and jest_util.hasJestDependency(file_path)
+  return isTestFile(file_path)
 end
 
 function adapter.filter_dir(name)
