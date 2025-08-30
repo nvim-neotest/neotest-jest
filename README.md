@@ -102,6 +102,11 @@ Type: `string | fun(): string`
 The current working directory to use or a function returning the current working
 directory.
 
+#### `strategy_config`
+
+The [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) strategy
+configuration to use when debugging tests.
+
 ## Usage
 
 See neotest's documentation for more information on how to run tests.
