@@ -1,10 +1,10 @@
-local util = require("neotest-jest.util")
-
 local M = {}
 
 local lib = require("neotest.lib")
+local util = require("neotest-jest.util")
 
-local rootPackageJson = vim.fn.getcwd() .. "/package.json"
+local rootPackageJsonPath = vim.fn.getcwd() .. "/package.json"
+local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
@@ -74,8 +74,6 @@ function M.getJestArguments(defaultArguments, context)
   return defaultArguments
 end
 
-local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
-
 -- Returns jest config file path if it exists.
 ---@param path string
 ---@return string|nil
@@ -96,20 +94,14 @@ function M.getJestConfig(path)
   return jestJs
 end
 
-function M.packageJsonHasJestDependency(packageJsonContent)
-  local success, parsedPackageJson = pcall(vim.json.decode, packageJsonContent)
+---@return boolean
+local function checkPackageFieldsForJest(parsedPackageJson)
+  local fields = { "dependencies", "devDependencies" }
 
-  if not success then
-    print("cannot parse package.json")
-    return false
-  end
-
-  local keys = { "dependencies", "devDependencies" }
-
-  for _, key in ipairs(keys) do
-    if parsedPackageJson[key] then
-      for subkey, _ in pairs(parsedPackageJson[key]) do
-        if subkey == "jest" then
+  for _, field in ipairs(fields) do
+    if parsedPackageJson[field] then
+      for key, _ in pairs(parsedPackageJson[field]) do
+        if key == "jest" then
           return true
         end
       end
@@ -127,36 +119,24 @@ function M.packageJsonHasJestDependency(packageJsonContent)
   return false
 end
 
+---@param path string
 ---@return boolean
-function M.rootProjectHasJestDependency()
-  local path = rootPackageJson
+function M.packageJsonHasJestDependency(path)
+  local read_success, packageJsonContent = pcall(lib.files.read, path)
 
-  local success, packageJsonContent = pcall(lib.files.read, path)
-
-  if not success then
-    print("cannot read package.json")
+  if not read_success then
+    vim.notify("cannot read package.json", vim.log.levels.ERROR)
     return false
   end
 
-  local parsedPackageJson = vim.json.decode(packageJsonContent)
+  local parse_success, parsedPackageJson = pcall(vim.json.decode, packageJsonContent)
 
-  if parsedPackageJson["dependencies"] then
-    for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
+  if not parse_success then
+    vim.notify("cannot parse package.json", vim.log.levels.ERROR)
+    return false
   end
 
-  if parsedPackageJson["devDependencies"] then
-    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  return false
+  return checkPackageFieldsForJest(parsedPackageJson)
 end
 
 ---@async
@@ -173,25 +153,18 @@ function M.hasJestDependency(path)
     return false
   end
 
-  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
-
-  if not success then
-    print("cannot read package.json")
-    return false
-  end
-
-  if M.packageJsonHasJestDependency(packageJsonContent) then
+  if M.packageJsonHasJestDependency(rootPath .. "/package.json") then
     return true
   end
 
-  return M.rootProjectHasJestDependency()
+  return M.packageJsonHasJestDependency(rootPackageJsonPath)
 end
 
 -- Returns neotest test id from jest test result.
 -- @param testFile string
 -- @param assertionResult table
 -- @return string
-function M.get_test_full_id_from_test_result(testFile, assertionResult)
+function M.getTestFullIdFromTestResult(testFile, assertionResult)
   local keyid = testFile
   local name = assertionResult.title
 
