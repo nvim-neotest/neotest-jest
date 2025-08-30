@@ -7,7 +7,9 @@ local test_utils = {}
 ---
 --- See https://github.com/neovim/neovim/issues/35071 for more details
 function test_utils.prepare_vim_treesitter()
-  vim.treesitter.language.get_lang("lua")
+  if vim.fn.has("nvim-0.11.0") == 1 then
+    vim.treesitter.language.get_lang("lua")
+  end
 end
 
 return test_utils

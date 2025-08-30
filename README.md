@@ -24,6 +24,9 @@ use({
       adapters = {
         require("neotest-jest")({
           jestCommand = "npm test --",
+          jestArguments = function(defaultArguments, context)
+            return defaultArguments
+          end,
           jestConfigFile = "custom.jest.config.ts",
           env = { CI = true },
           cwd = function(path)
@@ -43,6 +46,67 @@ Make sure you have the appropriate `treesitter` language parsers installed other
 :TSInstall javascript
 ```
 You might want to install `tsx` and `typescript` parser as well depending on your project.
+
+## Configuration
+
+#### `jestCommand`
+
+Type: `string | fun(path: string): string`
+
+The jest command to run when running tests. Can also be a function that accepts
+the path to the current neotest position and returns the command to run.
+
+#### `jestArguments`
+
+Type: `fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]`
+
+The arguments to pass to jest when running tests.
+
+The function is called with the default arguments and a context table that
+contains a `config: string?` entry for the config file (normally passed to the
+`--config` option) or `nil` if none was found, a `resultsPath` entry for the
+destination file for writing json test output (normally passed to the
+`--outputFile` option), and a `testNamePattern` entry for the regex pattern for
+tests (normally passed to the `--testNamePattern` option). It should return the
+final arguments as a `string[]`.
+
+> [!WARNING]  
+> Make sure to always pass the following options:
+
+* `--forceExit`: Ensure jest and thus the adapter does not hang
+* `--testLocationInResults`: Ensure jest outputs test locations
+* `--json`: Output test results in json
+* `--outputFile`: The location for writing json output
+
+The default function for `jestArguments` can be obtained by calling
+`require("neotest-jest.jest-util").getJestArguments`. The test file is
+automatically added to the end of the jest arguments by `neotest-jest`.
+
+#### `jestConfigFile`
+
+Type: `string | fun(file_path: string): string`
+
+Path to a jest config file or a function taking the path of the current neotest
+position and returning a path to a jest config file. Defaults to
+`"jest.config.js"`.
+
+#### `env`
+
+Type: `table<string, string> | fun(): table<string, string>`
+
+A key-value map of environment variables to set or a function returning such a map.
+
+#### `cwd`
+
+Type: `string | fun(): string`
+
+The current working directory to use or a function returning the current working
+directory.
+
+#### `strategy_config`
+
+The [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) strategy
+configuration to use when debugging tests.
 
 ## Usage
 
@@ -193,13 +257,19 @@ what tests are inside the file. If `discovery` would be enabled then `neotest-je
 would spawn a lot of procesees.
 
 ### Monorepos
+
 If you have a monorepo setup, you might have to do a little more configuration, especially if
 you have different jest configurations per package.
 
 ```lua
 jestConfigFile = function(file)
-  if string.find(file, "/packages/") then
-    return string.match(file, "(.-/[^/]+/)src") .. "jest.config.ts"
+  if file:find("/packages/") then
+    -- Matches "some/path/" in "some/path/src/"
+    local match = file:match("(.*/[^/]+/)src")
+
+    if match then
+      return match .. "jest.config.ts"
+    end
   end
 
   return vim.fn.getcwd() .. "/jest.config.ts"
@@ -212,9 +282,15 @@ bit:
 
 ```lua
 cwd = function(file)
-  if string.find(file, "/packages/") then
-    return string.match(file, "(.-/[^/]+/)src")
+  if file:find("/packages/") then
+    -- Matches "some/path/" in "some/path/src/"
+    local match = file:match("(.*/[^/]+/)src")
+
+    if match then
+      return match
+    end
   end
+
   return vim.fn.getcwd()
 end
 ```
@@ -231,7 +307,9 @@ To run the tests and styling:
    and make sure it is available as a command in order to run the tests since it
    tests parametrized tests which require running a jest command. It should
    suffice to run `npm install` in the `./spec` directory.
-   * Run tests by running `./scripts/test` in the root directory. Running the tests requires [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim). You may need to update the paths in `./tests/init.vim` to point to your local installation.
+   * Run tests by running `./scripts/test` in the root directory. Running the tests requires [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim). You may need to update the paths in `./tests/minimal_init.lua` to point to your local installation.
+   * If you are testing a new feature that requires running tests then please
+     run `cd spec/`, open a test file, and make sure things work.
    * Install [stylua](https://github.com/JohnnyMorganz/StyLua) and check styling using `stylua --check lua/ tests/`. Omit `--check` in order to fix styling.
 4. Submit a pull request.
 5. Get it approved.

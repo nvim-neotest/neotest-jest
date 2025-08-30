@@ -7,12 +7,18 @@ local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 
+---@class neotest-jest.JestArgumentContext
+---@field config string?
+---@field resultsPath string
+---@field testNamePattern string
+
 ---@class neotest.JestOptions
----@field jestCommand? string|fun(): string
----@field jestConfigFile? string|fun(): string
----@field env? table<string, string>|fun(): table<string, string>
----@field cwd? string|fun(): string
----@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field jestCommand? string | fun(): string
+---@field jestArguments? fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
+---@field jestConfigFile? string | fun(file_path: string): string
+---@field env? table<string, string> | fun(): table<string, string>
+---@field cwd? string | fun(): string
+---@field strategy_config? table<string, unknown> | fun(): table<string, unknown>
 ---@field isTestFile async fun(file_path: string?): boolean
 
 ---@type neotest.Adapter
@@ -23,6 +29,7 @@ adapter.root = function(path)
 end
 
 local getJestCommand = jest_util.getJestCommand
+local getJestArguments = jest_util.getJestArguments
 local getJestConfig = jest_util.getJestConfig
 local isTestFile = jest_util.defaultIsTestFile
 
@@ -119,14 +126,14 @@ function adapter.discover_positions(path)
     ; Matches: `test('test') / it('test')`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
     ; Matches: `test.only('test') / it.only('test')`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
     ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
     ((call_expression
@@ -136,7 +143,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
     )) @test.definition
   ]]
 
@@ -268,6 +275,7 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
+  ---@type string
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
@@ -296,29 +304,41 @@ function adapter.build_spec(args)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
 
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
+  local jestArgsContext = {
+    config = config,
+    resultsPath = results_path,
+    testNamePattern = testNamePattern,
+  }
+
+  local options =
+    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+
+  if compat.tbl_islist(options) then
+    vim.list_extend(command, options)
+  else
+    vim.notify(
+      ("Jest arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
+
+    -- Add the default arugments to allow neotest to run
+    vim.list_extend(command, jest_util.getJestDefaultArguments(jestArgsContext))
   end
 
   if compat.tbl_islist(args.extra_args) then
     vim.list_extend(command, args.extra_args)
+  elseif args.extra_args then
+    vim.notify(
+      ("Extra arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
   end
 
-  vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    "--forceExit",
-    util.escapeTestPattern(vim.fs.normalize(pos.path)),
-  })
+  table.insert(command, util.escapeTestPattern(vim.fs.normalize(pos.path)))
 
   local cwd = getCwd(pos.path)
 
-  -- creating empty file for streaming results
+  -- Creating empty file for streaming results
   lib.files.write(results_path, "")
   local stream_data, stop_stream = util.stream(results_path)
 
@@ -379,42 +399,37 @@ function adapter.results(spec, result, tree)
   return results
 end
 
+---@generic T
+---@param value T | fun(any): T
+---@param default fun(any): T
+---@param reject_value boolean?
+---@return fun(any): T
+local function resolve_config_option(value, default, reject_value)
+  if util.is_callable(value) then
+    return value
+  elseif value and not reject_value then
+    return function()
+      return value
+    end
+  end
+
+  return default
+end
+
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if util.is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
-    elseif opts.jestCommand then
-      getJestCommand = function()
-        return opts.jestCommand
-      end
-    end
-    if util.is_callable(opts.jestConfigFile) then
-      getJestConfig = opts.jestConfigFile
-    elseif opts.jestConfigFile then
-      getJestConfig = function()
-        return opts.jestConfigFile
-      end
-    end
+    getJestCommand = resolve_config_option(opts.jestCommand, getJestCommand)
+    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments, true)
+    getJestConfig = resolve_config_option(opts.jestConfigFile, getJestConfig)
+    getCwd = resolve_config_option(opts.cwd, getCwd)
+    getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)
+
     if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
       getEnv = function(specEnv)
         return vim.tbl_extend("force", opts.env, specEnv)
-      end
-    end
-    if util.is_callable(opts.cwd) then
-      getCwd = opts.cwd
-    elseif opts.cwd then
-      getCwd = function()
-        return opts.cwd
-      end
-    end
-    if util.is_callable(opts.strategy_config) then
-      getStrategyConfig = opts.strategy_config
-    elseif opts.strategy_config then
-      getStrategyConfig = function()
-        return opts.strategy_config
       end
     end
 
