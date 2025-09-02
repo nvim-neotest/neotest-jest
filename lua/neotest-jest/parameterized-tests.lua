@@ -68,7 +68,7 @@ local function get_tests_ids_at_position(jest_output, position)
       local location, name = assertionResult.location, assertionResult.title
 
       if position[1] <= location.line - 1 and position[3] >= location.line - 1 then
-        local keyid = jest_util.get_test_full_id_from_test_result(testFile, assertionResult)
+        local keyid = jest_util.getTestFullIdFromTestResult(testFile, assertionResult)
 
         test_ids_at_position[#test_ids_at_position + 1] = { keyid = keyid, name = name }
       end

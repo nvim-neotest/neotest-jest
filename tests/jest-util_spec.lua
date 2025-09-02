@@ -1,7 +1,7 @@
 local jest_util = require("neotest-jest.jest-util")
 
 describe("jest-util", function()
-  describe("get_test_full_id_from_test_result", function()
+  describe("getTestFullIdFromTestResult", function()
     it("gets test full id from test result", function()
       local testFile = "some/path/mytest.test.ts"
       local assertionResult = {
@@ -13,7 +13,7 @@ describe("jest-util", function()
       }
 
       assert.are.same(
-        jest_util.get_test_full_id_from_test_result(testFile, assertionResult),
+        jest_util.getTestFullIdFromTestResult(testFile, assertionResult),
         ("%s::describe::nested::test 1"):format(testFile)
       )
     end)

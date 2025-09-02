@@ -13,16 +13,16 @@ Using packer:
 
 ```lua
 use({
-  'nvim-neotest/neotest',
+  "nvim-neotest/neotest",
   requires = {
     ...,
-    'nvim-neotest/neotest-jest',
+    "nvim-neotest/neotest-jest",
   }
   config = function()
-    require('neotest').setup({
+    require("neotest").setup({
       ...,
       adapters = {
-        require('neotest-jest')({
+        require("neotest-jest")({
           jestCommand = "npm test --",
           jestArguments = function(defaultArguments, context)
             return defaultArguments
@@ -32,6 +32,7 @@ use({
           cwd = function(path)
             return vim.fn.getcwd()
           end,
+          isTestFile = require("neotest-jest.jest-util").defaultIsTestFile,
         }),
       }
     })
@@ -54,6 +55,9 @@ Type: `string | fun(path: string): string`
 
 The jest command to run when running tests. Can also be a function that accepts
 the path to the current neotest position and returns the command to run.
+`neotest-jest` will attempt to resolve it automatically if not given.
+
+* Example: `"npm test --"`
 
 #### `jestArguments`
 
@@ -89,11 +93,15 @@ Path to a jest config file or a function taking the path of the current neotest
 position and returning a path to a jest config file. Defaults to
 `"jest.config.js"`.
 
+* Example: `"custom.jest.ts"`
+
 #### `env`
 
 Type: `table<string, string> | fun(): table<string, string>`
 
 A key-value map of environment variables to set or a function returning such a map.
+
+* Example: `{ CI = true }`
 
 #### `cwd`
 
@@ -102,10 +110,53 @@ Type: `string | fun(): string`
 The current working directory to use or a function returning the current working
 directory.
 
+* Example: `function() return vim.fn.getcwd() end`
+
 #### `strategy_config`
 
 The [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) strategy
 configuration to use when debugging tests.
+
+#### `jest_test_discovery`
+
+Whether to discover parametrized tests such as those run with
+`it.each`/`test.each`. See [Parameterized tests](#parameterized-tests) for more
+info.
+
+* Example: `jest_test_discovery = true`
+
+#### `isTestFile`
+
+If set, overrides the check for determining if a file is a test file or not. The
+default behaviour will match the file path with a predefined set of patterns and
+require jest to be installed as a dependency via `dependencies` or
+`devDependencies`, or if a value in `scripts` is exactly `'jest'` in the
+`package.json`.
+
+> [!WARNING]
+> The `isTestFile` function runs in an async context so you cannot call
+> functions that cannot be called in fast events (see `:h vim.in_fast_event()`)
+
+Example:
+
+```lua
+---@async
+---@param file_path string?
+---@return boolean
+isTestFile = function(file_path)
+  if not file_path then
+    return false
+  end
+
+  return vim.fn.fnamemodify(file_path, ":e:e") == "testy.js"
+end
+```
+
+You can access the default `isTestFile` function via
+`require("neotest-jest.jest-util").defaultIsTestFile`, the default test file
+matcher via `require("neotest-jest.util").defaultTestFileMatcher`, and the
+default check for a jest dependency via
+`require("neotest-jest.jest-util").hasJestDependency`
 
 ## Usage
 
