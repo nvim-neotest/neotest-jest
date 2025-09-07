@@ -2,8 +2,8 @@ local M = {}
 
 local lib = require("neotest.lib")
 local util = require("neotest-jest.util")
-
-local rootPackageJsonPath = vim.fn.getcwd() .. "/package.json"
+local uv = vim.loop
+local rootPackageJsonPath = uv.cwd() .. "/package.json"
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
