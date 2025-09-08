@@ -2,7 +2,8 @@ local M = {}
 
 local lib = require("neotest.lib")
 local util = require("neotest-jest.util")
-local uv = vim.loop
+local compat = require("neotest-jest.compat")
+local uv = compat.uv
 local rootPackageJsonPath = uv.cwd() .. "/package.json"
 local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
