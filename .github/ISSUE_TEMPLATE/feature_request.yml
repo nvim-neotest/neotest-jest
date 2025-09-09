@@ -7,10 +7,11 @@ body:
     attributes:
       value: |
         - Documentation ([readme](https://github.com/nvim-neotest/neotest-jest/blob/master/README.md))
+        - [Existing issues](https://github.com/nvim-neotest/neotest-jest/issues)
         - [Existing pull requests](https://github.com/nvim-neotest/neotest-jest/pulls)
   - type: checkboxes
     attributes:
-      label: Did you check the docs and existing pull requests?
+      label: Did you check the docs and existing issues and pull requests?
       description: Please make sure you read all the docs before submitting a feature request
       options:
         - label: I have read the documentation
