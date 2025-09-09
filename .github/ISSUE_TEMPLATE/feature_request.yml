@@ -1,0 +1,44 @@
+name: Feature Request
+description: Suggest a new feature
+title: "feature: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Documentation ([readme](https://github.com/nvim-neotest/neotest-jest/blob/master/README.md))
+        - [Existing issues](https://github.com/nvim-neotest/neotest-jest/issues)
+        - [Existing pull requests](https://github.com/nvim-neotest/neotest-jest/pulls)
+  - type: checkboxes
+    attributes:
+      label: Did you check the docs and existing issues and pull requests?
+      description: Please make sure you read all the docs before submitting a feature request
+      options:
+        - label: I have read the documentation
+          required: true
+        - label: I have searched the existing issues and pull requests
+          required: true
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear and concise description of what the problem is.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe the solution you would like
+      description: A clear and concise description of what you want to happen.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Describe alternatives you have considered
+      description: A clear and concise description of any alternative solutions or features you have considered.
+  - type: textarea
+    validations:
+      required: false
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
