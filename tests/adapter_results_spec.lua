@@ -337,7 +337,7 @@ describe("adapter.results", function()
     local tree = discover_positions(adapter, path, "./spec/array.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
-    -- todo: does not work since test names and positions are the same
+    -- TODO: does not work since test names and positions are the same
     assert.are.same(neotest_results, {
       [path .. "::describe text::Array1"] = {
         status = types.ResultStatus.passed,
