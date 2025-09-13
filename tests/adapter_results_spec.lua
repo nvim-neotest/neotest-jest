@@ -53,7 +53,7 @@ describe("adapter.results", function()
         short = "1: passed",
         output = strategy_result.output,
         location = {
-          line = 2,
+          line = 6,
           column = 3,
         },
       },
@@ -62,7 +62,7 @@ describe("adapter.results", function()
         short = "2: passed",
         output = strategy_result.output,
         location = {
-          line = 6,
+          line = 10,
           column = 3,
         },
       },
@@ -71,7 +71,7 @@ describe("adapter.results", function()
         short = "3: passed",
         output = strategy_result.output,
         location = {
-          line = 10,
+          line = 14,
           column = 3,
         },
       },
@@ -80,7 +80,16 @@ describe("adapter.results", function()
         short = "4: passed",
         output = strategy_result.output,
         location = {
-          line = 14,
+          line = 18,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 22,
           column = 3,
         },
       },
@@ -89,7 +98,7 @@ describe("adapter.results", function()
         short = "1: passed",
         output = strategy_result.output,
         location = {
-          line = 20,
+          line = 28,
           column = 3,
         },
       },
@@ -98,7 +107,7 @@ describe("adapter.results", function()
         short = "2: passed",
         output = strategy_result.output,
         location = {
-          line = 24,
+          line = 32,
           column = 3,
         },
       },
@@ -107,7 +116,7 @@ describe("adapter.results", function()
         short = "3: passed",
         output = strategy_result.output,
         location = {
-          line = 28,
+          line = 36,
           column = 3,
         },
       },
@@ -116,7 +125,16 @@ describe("adapter.results", function()
         short = "4: passed",
         output = strategy_result.output,
         location = {
-          line = 32,
+          line = 40,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 44,
           column = 3,
         },
       },
