@@ -193,8 +193,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results for tests using template strings", function()
     local adapter = require("neotest-jest")({})
-    local path = "./spec/template-strings.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/template-strings.test.json")
+    local path = "./spec/templateStrings.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/templateStrings.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -299,8 +299,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results for tests with backticks in test names", function()
     local adapter = require("neotest-jest")({})
-    local path = "./spec/backtick-in-test-names.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/backtick-in-test-names.test.json")
+    local path = "./spec/backtickInTestNames.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/backtickInTestNames.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {

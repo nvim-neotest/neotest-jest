@@ -108,11 +108,11 @@ describe("adapter.discover_positions", function()
   end)
 
   async.it("provides meaningful names from a spec with template strings", function()
-    local positions = adapter.discover_positions("./spec/template-strings.test.ts"):to_list()
+    local positions = adapter.discover_positions("./spec/templateStrings.test.ts"):to_list()
 
     local expected_output = {
       {
-        name = "template-strings.test.ts",
+        name = "templateStrings.test.ts",
         type = "file",
       },
       {
@@ -197,13 +197,13 @@ describe("adapter.discover_positions", function()
   end)
 
   async.it("provides meaningful names from a spec with backticks in test names", function()
-    local path = "./spec/backtick-in-test-names.test.ts"
+    local path = "./spec/backtickInTestNames.test.ts"
     local positions = adapter.discover_positions(path):to_list()
 
     local expected_output = {
       {
         id = path,
-        name = "backtick-in-test-names.test.ts",
+        name = "backtickInTestNames.test.ts",
         path = path,
         range = { 0, 0, 17, 0 },
         type = "file",
