@@ -6,6 +6,9 @@ local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
+local types = require("neotest.types")
+
+local ResultStatus = types.ResultStatus
 
 ---@class neotest-jest.JestArgumentContext
 ---@field config string?
@@ -108,6 +111,7 @@ function adapter.discover_positions(path)
       function: (call_expression
         function: (member_expression
           object: (identifier) @func_name (#any-of? @func_name "describe")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
@@ -117,6 +121,7 @@ function adapter.discover_positions(path)
       function: (call_expression
         function: (member_expression
           object: (identifier) @func_name (#any-of? @func_name "describe")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
       arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
@@ -152,14 +157,16 @@ function adapter.discover_positions(path)
     build_position = 'require("neotest-jest").build_position',
   })
 
-  local parameterized_tests_positions =
-    parameterized_tests.get_parameterized_tests_positions(positions)
+  if adapter.jest_test_discovery then
+    local parameterized_tests_positions =
+      parameterized_tests.get_parameterized_tests_positions(positions)
 
-  if adapter.jest_test_discovery and #parameterized_tests_positions > 0 then
-    parameterized_tests.enrich_positions_with_parameterized_tests(
-      positions:data().path,
-      parameterized_tests_positions
-    )
+    if #parameterized_tests_positions > 0 then
+      parameterized_tests.enrich_positions_with_parameterized_tests(
+        positions:data().path,
+        parameterized_tests_positions
+      )
+    end
   end
 
   return positions
@@ -291,10 +298,13 @@ function adapter.build_spec(args)
     local testName = pos.id:sub(pos.id:find("::") + 2)
     testName, _ = testName:gsub("::", " ")
     testNamePattern = util.escapeTestPattern(testName)
-    testNamePattern = pos.is_parameterized
-        and parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
-      or testNamePattern
+
+    if parameterized_tests.isPositionParameterized(tree, pos) then
+      testNamePattern = parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
+    end
+
     testNamePattern = "^" .. testNamePattern
+
     if pos.type == "test" then
       testNamePattern = testNamePattern .. "$"
     end
@@ -395,6 +405,35 @@ function adapter.results(spec, result, tree)
   end
 
   local results = parsed_json_to_results(parsed, output_file, result.output)
+  local pos = tree:data()
+
+  -- FIX: Generate results for source-level parametrized namespaces
+  if adapter.jest_test_discovery == true and parameterized_tests.isPositionParameterized(tree, pos) then
+    local status
+
+    -- Aggregate result status and create a result for the target
+    -- (source-level-only) position which was not part of the json
+    -- results
+    -- TODO: Maybe just do this in parsed_json_to_results?
+    for _, test_result in pairs(results) do
+      if test_result.status == ResultStatus.failed then
+        status = test_result.status
+        break
+      elseif test_result.status == ResultStatus.passed then
+        status = test_result.status
+      elseif test_result.status == ResultStatus.skipped then
+        if not status or status == ResultStatus.skipped then
+          status = ResultStatus.skipped
+        end
+      end
+    end
+
+    results[pos.id] = {
+      status = status,
+      short = ("%s: %s"):format(pos.name, status),
+      output = result.output,
+    }
+  end
 
   return results
 end

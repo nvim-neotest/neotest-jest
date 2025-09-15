@@ -13,7 +13,7 @@ describe("jest-util", function()
       }
 
       assert.are.same(
-        jest_util.getTestFullIdFromTestResult(testFile, assertionResult),
+        jest_util.getNeotestPositionIdFromTestResult(testFile, assertionResult),
         ("%s::describe::nested::test 1"):format(testFile)
       )
     end)
