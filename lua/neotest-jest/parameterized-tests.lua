@@ -74,14 +74,14 @@ local function getTestsByPosition(jest_output)
     local testFile = testResult.name
 
     for _, assertionResult in pairs(testResult.assertionResults) do
-      local location, name = assertionResult.location, assertionResult.title
+      local line, name = assertionResult.location.line - 1, assertionResult.title
       local pos_id = jest_util.getNeotestPositionIdFromTestResult(testFile, assertionResult)
 
-      if not tests_by_position[location.line - 1] then
-        tests_by_position[location.line - 1] = {}
+      if not tests_by_position[line] then
+        tests_by_position[line] = {}
       end
 
-      table.insert(tests_by_position[location.line - 1], { pos_id = pos_id, name = name })
+      table.insert(tests_by_position[line], { pos_id = pos_id, name = name })
     end
   end
 
@@ -89,7 +89,6 @@ local function getTestsByPosition(jest_output)
 end
 
 -- Add new tree nodes for parameterized tests to the existing neotest tree
---
 ---@param file_path string
 ---@param parsed_parameterized_tests_positions neotest.Tree[]
 function M.enrich_positions_with_parameterized_tests(
@@ -108,8 +107,8 @@ function M.enrich_positions_with_parameterized_tests(
   -- For each parameterized test, find all tests that were in the same position
   -- as it and add new range-less (range = nil) children to the tree
   for _, tree in pairs(parsed_parameterized_tests_positions) do
-    local data = tree:data()
-    local parameterized_test_results_for_position = tests_by_position[data.range[1]]
+    local pos = tree:data()
+    local parameterized_test_results_for_position = tests_by_position[pos.range[1]] or {}
 
     -- TODO: Can we generate children for namespaces here too?
     for _, test_result in ipairs(parameterized_test_results_for_position) do
@@ -117,15 +116,15 @@ function M.enrich_positions_with_parameterized_tests(
       local new_data = {
         id = test_result.pos_id,
         name = test_result.name,
-        path = data.path,
+        path = pos.path,
         range = nil,
       }
 
       ---@diagnostic disable-next-line: invisible
-      local new_pos = types.Tree:new(new_data, {}, tree._key, nil, nil)
+      local new_tree = types.Tree:new(new_data, {}, tree._key, nil, nil)
 
       ---@diagnostic disable-next-line: invisible
-      tree:add_child(new_data.id, new_pos)
+      tree:add_child(new_data.id, new_tree)
     end
   end
 end
@@ -146,6 +145,9 @@ local JEST_PARAMETER_TYPES = {
 ---@param pos neotest.Position
 ---@return boolean
 function M.isPositionParameterized(tree, pos)
+  ---@type neotest.Tree?
+  local current_tree = tree
+
   -- Look at each parent of the current position to see if it is parameterized
   -- (using `.each`). This is necessary if a test itself is not parameterized
   -- but one of its encloding describe blocks are
@@ -155,13 +157,14 @@ function M.isPositionParameterized(tree, pos)
       return true
     end
 
-    local parent = tree:parent()
+    ---@diagnostic disable-next-line: need-check-nil
+    current_tree = current_tree:parent()
 
-    if not parent then
+    if not current_tree then
       break
     end
 
-    pos = parent:data()
+    pos = current_tree:data()
   end
 
   return false
