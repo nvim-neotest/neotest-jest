@@ -43,8 +43,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results", function()
     local adapter = require("neotest-jest")({})
-    local path = "./spec/basic.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/basic.test.json")
+    local path = "./spec/tests/basic.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/basic.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -136,8 +136,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results for nested describes", function()
     local adapter = require("neotest-jest")({})
-    local path = "./spec/nestedDescribe.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/nestedDescribe.test.json")
+    local path = "./spec/tests/nestedDescribe.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/nestedDescribe.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -175,11 +175,11 @@ describe("adapter.results", function()
 
   async.it("creates neotest results for parametrized tests 1", function()
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
-    local path = "./spec/array.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/array.test.json")
+    local path = "./spec/tests/array.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/array.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
-    -- todo: does not work since test names and positions are the same
+    -- TODO: does not work since test names and positions are the same
     assert.are.same(neotest_results, {
       [path .. "::describe text::Array1"] = {
         status = types.ResultStatus.passed,
@@ -413,8 +413,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results for parametrized tests 2", function()
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
-    local path = "./spec/parameterized.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/parameterized.test.json")
+    local path = "./spec/tests/parameterized.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/parameterized.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -488,8 +488,8 @@ describe("adapter.results", function()
 
   async.it("creates neotest results with failed and skipped results", function()
     local adapter = require("neotest-jest")({})
-    local path = "./spec/basic-skipped-failed.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/basic-skipped-failed.test.json")
+    local path = "./spec/tests/basic-skipped-failed.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/basic-skipped-failed.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -587,9 +587,9 @@ describe("adapter.results", function()
   end)
 
   async.it("handles failure to find parsed test result", function()
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local adapter = require("neotest-jest")({})
-    local tree = discover_positions(adapter, path, "./spec/basic-parse-fail.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/basic-parse-fail.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
     assert.are.same(neotest_results, {})
 

@@ -46,7 +46,8 @@
           },
           "numPassingAsserts": 0,
           "retryReasons": [],
-          "status": "passed"
+          "status": "passed",
+          "title": "1"
         },
         {
           "ancestorTitles": [
@@ -177,7 +178,7 @@
       ],
       "endTime": 1750412852520,
       "message": "",
-      "name": "./spec/basic.test.ts",
+      "name": "./spec/tests/basic.test.ts",
       "startTime": 1750412852330,
       "status": "passed",
       "summary": ""

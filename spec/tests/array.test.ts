@@ -3,7 +3,7 @@ describe("describe text", () => {
     console.log("do test");
   });
 
-  it.each([1, 2, 3])("Array2", async () => {
+  it.each([1, 2, 3])("Array2 %d", async () => {
     console.log("do test");
   });
 

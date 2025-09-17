@@ -17,7 +17,7 @@ describe("adapter.discover_positions", function()
   end
 
   async.it("provides meaningful names from a basic spec", function()
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local positions = adapter.discover_positions("./spec/tests/basic.test.ts"):to_list()
 
     local expected_output = {
       {
@@ -107,7 +107,7 @@ describe("adapter.discover_positions", function()
 
   async.it("provides meaningful names for parametric tests", function()
     stub(require("neotest.lib").process, "run")
-    local positions = adapter.discover_positions("./spec/array.test.ts"):to_list()
+    local positions = adapter.discover_positions("./spec/tests/array.test.ts"):to_list()
 
     local expected_output = {
       {
