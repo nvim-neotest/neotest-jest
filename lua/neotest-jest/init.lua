@@ -161,10 +161,10 @@ function adapter.discover_positions(path)
 
   if adapter.jest_test_discovery then
     local parameterized_tests_positions =
-      parameterized_tests.get_parameterized_tests_positions(positions)
+      parameterized_tests.getParameterizedTestsPositions(positions)
 
     if #parameterized_tests_positions > 0 then
-      parameterized_tests.enrich_positions_with_parameterized_tests(
+      parameterized_tests.enrichPositionsWithParameterizedTests(
         positions:data().path,
         parameterized_tests_positions
       )
@@ -284,30 +284,32 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
-  ---@type string
-  local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
   if not tree then
     return
   end
 
-  local pos = args.tree:data()
+  local pos = tree:data()
   local testNamePattern = ".*"
 
-  if pos.type == "test" or pos.type == "namespace" then
+  if pos.type == types.PositionType.test or pos.type == types.PositionType.namespace then
     -- pos.id in form "path/to/file::Describe text::test text"
     local testName = pos.id:sub(pos.id:find("::") + 2)
     testName, _ = testName:gsub("::", " ")
     testNamePattern = util.escapeTestPattern(testName)
 
+    -- If the position or any of its enclosing blocks are parameterized, replace any
+    -- test parameters with a match-all regex so we can run the test
     if parameterized_tests.isPositionParameterized(tree, pos) then
       testNamePattern = parameterized_tests.replaceTestParametersWithRegex(testNamePattern)
     end
 
     testNamePattern = "^" .. testNamePattern
 
-    if pos.type == "test" then
+    -- Jest's 'testNamePattern' matches against the full test name so if we added
+    -- '$' to a namespace position it would never match any tests
+    if pos.type == types.PositionType.test then
       testNamePattern = testNamePattern .. "$"
     end
   end
@@ -315,6 +317,9 @@ function adapter.build_spec(args)
   local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
+
+  ---@type string
+  local results_path = async.fn.tempname() .. ".json"
 
   local jestArgsContext = {
     config = config,
