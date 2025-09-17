@@ -152,8 +152,10 @@ function adapter.discover_positions(path)
     )) @test.definition
   ]]
 
+  ---@diagnostic disable-next-line: missing-fields
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
+    ---@diagnostic disable-next-line: assign-type-mismatch
     build_position = 'require("neotest-jest").build_position',
   })
 
