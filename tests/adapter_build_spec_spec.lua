@@ -154,7 +154,9 @@ describe("adapter.build_spec", function()
 
     for index, test_data in ipairs({
       { expected_name = "^describe text test with percent .*$" },
-      { expected_name = "^describe text test with all of the parameters .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*$" },
+      {
+        expected_name = "^describe text test with all of the parameters .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*$",
+      },
       { expected_name = "^describe text test with .*$" },
       { expected_name = "^describe text test with .* and .*$" },
       { expected_name = "^describe text test with .*$" },

@@ -415,7 +415,9 @@ function adapter.results(spec, result, tree)
   local pos = tree:data()
 
   -- FIX: Generate results for source-level parametrized namespaces
-  if adapter.jest_test_discovery == true and parameterized_tests.isPositionParameterized(tree, pos) then
+  if
+    adapter.jest_test_discovery == true and parameterized_tests.isPositionParameterized(tree, pos)
+  then
     local status
 
     -- Aggregate result status and create a result for the target
