@@ -435,6 +435,17 @@ function adapter.results(spec, result, tree)
       end
     end
 
+    -- If the position has a source position id (meaning it is
+    -- a parametric test) generate a result for it so it shows
+    -- up for the original source-level position
+    if pos.source_pos_id then
+      results[pos.source_pos_id] = {
+        status = status,
+        short = ("%s: %s"):format(pos.name, status),
+        output = result.output,
+      }
+    end
+
     results[pos.id] = {
       status = status,
       short = ("%s: %s"):format(pos.name, status),

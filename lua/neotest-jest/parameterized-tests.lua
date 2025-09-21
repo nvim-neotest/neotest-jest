@@ -30,22 +30,6 @@ local function isTestOrNamespace(pos)
   return pos.type == types.PositionType.test or pos.type == types.PositionType.namespace
 end
 
----@param pos neotest.Position
----@return boolean
-local function hasTestParameters(pos)
-  if pos.name:match(JEST_NAMED_PARAMETER_REGEX) then
-    return true
-  end
-
-  for _, parameter in ipairs(JEST_PARAMETER_TYPES) do
-    if pos.name:match(parameter) then
-      return true
-    end
-  end
-
-  return false
-end
-
 -- Traverses through whole Tree and returns all parameterized tests positions.
 -- All parameterized test positions should have `is_parameterized` property on it.
 ---@param positions neotest.Tree
@@ -123,15 +107,9 @@ local function getTestsByPosition(jest_output)
         tests_by_position[line] = {}
       end
 
-      -- TODO: Account for top-level tests with no namespace
-      local parts = vim.split(pos_id, "::")
-      local namespace_pos_id = table.concat(vim.list_slice(parts, 1, #parts - 1), "::")
-
       table.insert(tests_by_position[line], {
         pos_id = pos_id,
         name = name,
-        namespace_pos_id = namespace_pos_id,
-        namespace_name = parts[#parts - 1]
       })
     end
   end
@@ -141,32 +119,86 @@ end
 
 --- Create a range-less (range = nil) child node for an existing tree
 ---@param tree neotest.Tree
----@param pos_id string
----@param name string
----@param type neotest.PositionType
----@param path string
+---@param pos neotest.Position
 ---@return neotest.Tree
-local function createNewNeotestChildNode(tree, pos_id, name, type, path)
+local function createNewChildNode(tree, pos)
   -- WARNING: The following code relies on neotest internals
-  local new_data = {
-    id = pos_id,
-    name = name,
-    type = type,
-    path = path,
-    range = nil,
-  }
+  local new_pos = pos
+  new_pos.range = nil
 
   ---@diagnostic disable-next-line: invisible
-  local new_tree = types.Tree:new(new_data, {}, tree._key, nil, nil)
+  local new_tree = types.Tree:new(new_pos, {}, tree._key, nil, nil)
 
   -- FIX: This does not work when the parametric test does not use the
   -- parameters as the position id will be the same and will overwrite
   -- the existing child (the source-level parametric test)
 
   ---@diagnostic disable-next-line: invisible
-  tree:add_child(new_data.id, new_tree)
+  tree:add_child(new_pos.id, new_tree)
 
   return new_tree
+end
+
+--- Creates namespaces nodes for a position if they do not already exist and
+--- returns the namespace node for which to create test nodes under
+---@param tree neotest.Tree
+---@param pos_id string
+---@return neotest.Tree?
+local function tryCreateNamespaceNodes(tree, pos_id)
+  local parts = vim.split(pos_id, "::")
+
+  if #parts <= 2 then
+    -- Only the path and test name
+    return
+  end
+
+  ---@param _tree neotest.Tree?
+  ---@param pos_id_parts string[]
+  ---@return neotest.Tree?
+  local function recurseTree(_tree, pos_id_parts)
+    if not _tree then
+      return
+    end
+
+    -- We are at the top which is the file position
+    if #pos_id_parts == 1 then
+      return _tree
+    end
+
+    local parent_pos_id_parts = vim.list_slice(pos_id_parts, 1, #pos_id_parts - 1)
+    local parent_tree = recurseTree(_tree:parent(), parent_pos_id_parts)
+
+    if not parent_tree then
+      return
+    end
+
+    local cur_pos_id = table.concat(pos_id_parts, "::")
+    local cur_tree = parent_tree:get_key(cur_pos_id)
+
+    -- If the namespace node already exists, another parametric test in the
+    -- same namespace created it before us so just return that tree, otherwise
+    -- create it
+    if cur_tree then
+      return cur_tree
+    else
+      return createNewChildNode(
+        parent_tree,
+        ---@diagnostic disable-next-line: missing-fields
+        {
+          id = cur_pos_id,
+          name = pos_id_parts[#pos_id_parts],
+          type = types.PositionType.namespace,
+          path = tree:data().path,
+        }
+      )
+    end
+  end
+
+  local namespace_pos_id_parts = vim.list_slice(parts, 1, #parts - 1)
+
+  -- Recurse up the current tree and dynamically create new namespace nodes as
+  -- needed, creating top-level nodes before nodes at lower levels
+  return recurseTree(tree:parent(), namespace_pos_id_parts)
 end
 
 -- Add new tree nodes for parameterized tests to the existing neotest tree
@@ -193,18 +225,7 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
       local parameterized_test_results_for_position = tests_by_position[pos.range[1]] or {}
 
       for _, test_result in ipairs(parameterized_test_results_for_position) do
-        local ns_tree = tree:get_key(test_result.namespace_pos_id)
-
-        -- See if there is already a node for the namespace. If not, create it
-        if not ns_tree then
-          ns_tree = createNewNeotestChildNode(
-            tree,
-            test_result.namespace_pos_id,
-            test_result.namespace_name,
-            types.PositionType.namespace,
-            pos.path
-          )
-        end
+        local ns_tree = tryCreateNamespaceNodes(tree, test_result.pos_id)
 
         -- Only create a new node if the test position has any test parameters
         -- ('$param' or '%j') in the name. Otherwise, we would use a position
@@ -214,13 +235,21 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
         -- There is no way for neotest-jest or jest to distinguish between
         -- tests that share the same name anyway so not creating new nodes is
         -- acceptable for now
-        if hasTestParameters(pos) then
-          createNewNeotestChildNode(
-            ns_tree,
-            test_result.pos_id,
-            test_result.name,
-            types.PositionType.test,
-            pos.path
+        -- if hasTestParameters(tree, pos) then
+        if not tree:get_key(test_result.pos_id) then
+          createNewChildNode(
+            ns_tree or tree,
+            ---@diagnostic disable-next-line: missing-fields
+            {
+              id = test_result.pos_id,
+              name = test_result.name,
+              type = types.PositionType.test,
+              path = pos.path,
+              -- Add the position id for the original source-level position id
+              -- from which this parametric (runtime) test was generated so we
+              -- can create a result for it later
+              source_pos_id = pos.id,
+            }
           )
         end
       end

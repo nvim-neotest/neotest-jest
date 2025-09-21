@@ -203,4 +203,7 @@ describe("adapter.discover_positions", function()
     assert.equals(5, #positions[3])
     assert_test_positions_match(expected_output[3][2], positions[3])
   end)
+
+  async.it("provides meaningful names for parametric describe", function()
+  end)
 end)
