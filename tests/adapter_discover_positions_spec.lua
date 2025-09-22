@@ -123,7 +123,7 @@ describe("adapter.discover_positions", function()
         },
         {
           {
-            name = "Array1",
+            name = "Array1 %d",
             type = "test",
             is_parameterized = true,
           },
@@ -137,14 +137,14 @@ describe("adapter.discover_positions", function()
         },
         {
           {
-            name = "Array3",
+            name = "Array3 %d",
             type = "test",
             is_parameterized = true,
           },
         },
         {
           {
-            name = "Array4",
+            name = "Array4 %d",
             type = "test",
           },
         },
@@ -156,19 +156,19 @@ describe("adapter.discover_positions", function()
         },
         {
           {
-            name = "Array1",
+            name = "Array1 %d",
             type = "test",
           },
         },
         {
           {
-            name = "Array2",
+            name = "Array2 %d",
             type = "test",
           },
         },
         {
           {
-            name = "Array3",
+            name = "Array3 %d",
             type = "test",
           },
         },
