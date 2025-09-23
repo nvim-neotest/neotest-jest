@@ -1,0 +1,116 @@
+{
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 1,
+  "numPassedTests": 4,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 4,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1757791982815,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "test names ` containing backticks"
+          ],
+          "duration": 11,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "test names ` containing backticks ` 1",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 2
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "` 1"
+        },
+        {
+          "ancestorTitles": [
+            "test names ` containing backticks"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "test names ` containing backticks 2`",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 6
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "2`"
+        },
+        {
+          "ancestorTitles": [
+            "test names ` containing backticks"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "test names ` containing backticks `` 3",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 10
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "`` 3"
+        },
+        {
+          "ancestorTitles": [
+            "test names ` containing backticks"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "test names ` containing backticks ` 4`",
+          "invocations": 1,
+          "location": {
+            "column": 3,
+            "line": 14
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "` 4`"
+        }
+      ],
+      "endTime": 1757791983235,
+      "message": "",
+      "name": "./spec/backtickInTestNames.test.ts",
+      "startTime": 1757791982860,
+      "status": "passed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}
