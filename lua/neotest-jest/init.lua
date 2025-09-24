@@ -90,8 +90,10 @@ function adapter.discover_positions(path)
     ; ##############
 
     ; Matches: `describe('context', () => {})`
+    ;          `fdescribe('context', () => {})` (alias for describe.only)
+    ;          `xdescribe('context', () => {})` (alias for describe.skip)
     ((call_expression
-        function: (identifier) @func_name (#eq? @func_name "describe")
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
           arguments: (arguments ([
             (string (string_fragment) @namespace.name)
             (template_string (_) @namespace.name)
@@ -99,8 +101,10 @@ function adapter.discover_positions(path)
     )) @namespace.definition
 
     ; Matches: `describe('context', function() {})`
+    ;          `fdescribe('context', function() {})` (alias for describe.only)
+    ;          `xdescribe('context', function() {})` (alias for describe.skip)
     ((call_expression
-        function: (identifier) @func_name (#eq? @func_name "describe")
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
           arguments: (arguments ([
             (string (string_fragment) @namespace.name)
             (template_string (_) @namespace.name)
@@ -108,8 +112,10 @@ function adapter.discover_positions(path)
     )) @namespace.definition
 
     ; Matches: `describe('context', wrapper())`
+    ;          `fdescribe('context', wrapper())`
+    ;          `xdescribe('context', wrapper())`
     ((call_expression
-        function: (identifier) @func_name (#eq? @func_name "describe")
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
           arguments: (arguments ([
             (string (string_fragment) @namespace.name)
             (template_string (_) @namespace.name)
@@ -219,10 +225,10 @@ function adapter.discover_positions(path)
         ]) (call_expression))
     )) @test.definition
 
-    ; Matches: `test.only('test', () => {}) / it.only('test', () => {})`
+    ; Matches: `it.only('test', () => {}) / test.only('test', () => {})`
     ((call_expression
       function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "test" "it")
+        object: (identifier) @func_name (#any-of? @func_name "it" "test")
       )
       arguments: (arguments ([
         (string (string_fragment) @test.name)
@@ -230,10 +236,10 @@ function adapter.discover_positions(path)
       ]) (arrow_function))
     )) @test.definition
 
-    ; Matches: `test.only('test', function() {}) / it.only('test', function() {})`
+    ; Matches: `it.only('test', function() {}) / test.only('test', function() {})`
     ((call_expression
       function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "test" "it")
+        object: (identifier) @func_name (#any-of? @func_name "it" "test")
       )
       arguments: (arguments ([
         (string (string_fragment) @test.name)
