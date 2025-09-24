@@ -1,6 +1,11 @@
-local util = require("neotest-jest.util")
-
 local M = {}
+
+local lib = require("neotest.lib")
+local util = require("neotest-jest.util")
+local compat = require("neotest-jest.compat")
+local uv = compat.uv
+local rootPackageJsonPath = uv.cwd() .. "/package.json"
+local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
 
 -- Returns jest binary from `node_modules` if that binary exists and `jest` otherwise.
 ---@param path string
@@ -41,7 +46,34 @@ function M.getJestCommand(path)
   return "jest"
 end
 
-local jestConfigPattern = util.root_pattern("jest.config.{js,ts}")
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
+function M.getJestDefaultArguments(context)
+  local arguments = {}
+
+  if util.path.exists(context.config) then
+    -- Only use config if available
+    table.insert(arguments, "--config=" .. context.config)
+  end
+
+  return vim.list_extend(arguments, {
+    "--no-coverage",
+    "--verbose",
+    "--json",
+    "--outputFile=" .. context.resultsPath,
+    "--testNamePattern=" .. context.testNamePattern,
+    "--forceExit", -- Ensure jest and thus the adapter does not hang
+    "--testLocationInResults", -- Ensure jest outputs test locations
+  })
+end
+
+---@param defaultArguments string[]
+---@param context neotest-jest.JestArgumentContext
+---@return string[]
+---@diagnostic disable-next-line: unused-local
+function M.getJestArguments(defaultArguments, context)
+  return defaultArguments
+end
 
 -- Returns jest config file path if it exists.
 ---@param path string
@@ -63,11 +95,77 @@ function M.getJestConfig(path)
   return jestJs
 end
 
+---@return boolean
+local function checkPackageFieldsForJest(parsedPackageJson)
+  local fields = { "dependencies", "devDependencies" }
+
+  for _, field in ipairs(fields) do
+    if parsedPackageJson[field] then
+      for key, _ in pairs(parsedPackageJson[field]) do
+        if key == "jest" then
+          return true
+        end
+      end
+    end
+  end
+
+  if parsedPackageJson["scripts"] then
+    for _, value in pairs(parsedPackageJson["scripts"]) do
+      if value == "jest" then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+---@param path string
+---@return boolean
+function M.packageJsonHasJestDependency(path)
+  local read_success, packageJsonContent = pcall(lib.files.read, path)
+
+  if not read_success then
+    vim.notify("cannot read package.json", vim.log.levels.ERROR)
+    return false
+  end
+
+  local parse_success, parsedPackageJson = pcall(vim.json.decode, packageJsonContent)
+
+  if not parse_success then
+    vim.notify("cannot parse package.json", vim.log.levels.ERROR)
+    return false
+  end
+
+  return checkPackageFieldsForJest(parsedPackageJson)
+end
+
+---@async
+---@param path string?
+---@return boolean
+function M.hasJestDependency(path)
+  if not path then
+    return false
+  end
+
+  local rootPath = lib.files.match_root_pattern("package.json")(path)
+
+  if not rootPath then
+    return false
+  end
+
+  if M.packageJsonHasJestDependency(rootPath .. "/package.json") then
+    return true
+  end
+
+  return M.packageJsonHasJestDependency(rootPackageJsonPath)
+end
+
 -- Returns neotest test id from jest test result.
 -- @param testFile string
 -- @param assertionResult table
 -- @return string
-function M.get_test_full_id_from_test_result(testFile, assertionResult)
+function M.getTestFullIdFromTestResult(testFile, assertionResult)
   local keyid = testFile
   local name = assertionResult.title
 
@@ -78,6 +176,17 @@ function M.get_test_full_id_from_test_result(testFile, assertionResult)
   keyid = keyid .. "::" .. name
 
   return keyid
+end
+
+---@async
+---@param file_path string?
+---@return boolean
+function M.defaultIsTestFile(file_path)
+  if not file_path then
+    return false
+  end
+
+  return util.defaultTestFileMatcher(file_path) and M.hasJestDependency(file_path)
 end
 
 return M

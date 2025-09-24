@@ -1,0 +1,61 @@
+name: Bug Report
+description: File a bug/issue
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Documentation ([readme](https://github.com/nvim-neotest/neotest-jest/blob/master/README.md))
+        - [Existing issues](https://github.com/nvim-neotest/neotest-jest/issues)
+  - type: checkboxes
+    attributes:
+      label: Did you check the docs and existing issues?
+      description: Please make sure you checked all of the below before submitting an issue
+      options:
+        - label: I have read the documentation
+          required: true
+        - label: I have searched the existing issues
+          required: true
+        - label: I have searched the existing issues of plugins related to this issue (if relevant)
+          required: true
+        - label: I have tried setting `log_level` to `vim.log.levels.debug` in `neotest.setup` and examined the logs.
+          required: true
+  - type: input
+    attributes:
+      label: "Neovim version (nvim -v)"
+      placeholder: "0.9.0 commit 1234567"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "Operating system/version"
+      placeholder: "MacOS 11.7.6"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is. Please include any related errors you see in Neovim.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: neotest log output if relevant
+      description: Debug log output for neotest-jest.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior or `repro.lua`.
+      placeholder: |
+        1.
+        2. 
+        3.

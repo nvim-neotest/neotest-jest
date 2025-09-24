@@ -1,125 +1,43 @@
 ---@diagnostic disable: undefined-field
 local async = require("neotest.async")
+local compat = require("neotest-jest.compat")
 local lib = require("neotest.lib")
 local logger = require("neotest.logging")
 local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 
+---@class neotest-jest.JestArgumentContext
+---@field config string?
+---@field resultsPath string
+---@field testNamePattern string
+
 ---@class neotest.JestOptions
----@field jestCommand? string|fun(): string
----@field jestConfigFile? string|fun(): string
----@field env? table<string, string>|fun(): table<string, string>
----@field cwd? string|fun(): string
----@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field jestCommand? string | fun(): string
+---@field jestArguments? fun(defaultArguments: string[], jestArgsContext: neotest-jest.JestArgumentContext): string[]
+---@field jestConfigFile? string | fun(file_path: string): string
+---@field env? table<string, string> | fun(): table<string, string>
+---@field cwd? string | fun(): string
+---@field strategy_config? table<string, unknown> | fun(): table<string, unknown>
+---@field isTestFile async fun(file_path: string?): boolean
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
-
-local rootPackageJson = vim.fn.getcwd() .. "/package.json"
-
----@return boolean
-local function rootProjectHasJestDependency()
-  local path = rootPackageJson
-
-  local success, packageJsonContent = pcall(lib.files.read, path)
-  if not success then
-    print("cannot read package.json")
-    return false
-  end
-
-  local parsedPackageJson = vim.json.decode(packageJsonContent)
-
-  if parsedPackageJson["dependencies"] then
-    for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["devDependencies"] then
-    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  return false
-end
-
----@param path string
----@return boolean
-local function hasJestDependency(path)
-  local rootPath = lib.files.match_root_pattern("package.json")(path)
-
-  if not rootPath then
-    return false
-  end
-
-  local success, packageJsonContent = pcall(lib.files.read, rootPath .. "/package.json")
-  if not success then
-    print("cannot read package.json")
-    return false
-  end
-
-  local parsedPackageJson = vim.json.decode(packageJsonContent)
-
-  if parsedPackageJson["dependencies"] then
-    for key, _ in pairs(parsedPackageJson["dependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["devDependencies"] then
-    for key, _ in pairs(parsedPackageJson["devDependencies"]) do
-      if key == "jest" then
-        return true
-      end
-    end
-  end
-
-  if parsedPackageJson["scripts"] then
-    for _, value in pairs(parsedPackageJson["scripts"]) do
-      if value == "jest" then
-        return true
-      end
-    end
-  end
-
-  return rootProjectHasJestDependency()
-end
 
 adapter.root = function(path)
   return lib.files.match_root_pattern("package.json")(path)
 end
 
 local getJestCommand = jest_util.getJestCommand
+local getJestArguments = jest_util.getJestArguments
 local getJestConfig = jest_util.getJestConfig
+local isTestFile = jest_util.defaultIsTestFile
 
+---@async
 ---@param file_path? string
 ---@return boolean
 function adapter.is_test_file(file_path)
-  if file_path == nil then
-    return false
-  end
-  local is_test_file = false
-
-  if file_path:match("__tests__") then
-    is_test_file = true
-  end
-
-  for _, pattern in ipairs(util.getDefaultTestExtensionPatterns()) do
-    if file_path:match(pattern) then
-      is_test_file = true
-      break
-    end
-  end
-
-  return is_test_file and hasJestDependency(file_path)
+  return isTestFile(file_path)
 end
 
 function adapter.filter_dir(name)
@@ -159,76 +77,188 @@ end
 ---@async
 ---@return neotest.Tree | nil
 function adapter.discover_positions(path)
+  -- NOTE: Combining queries with a second argument that can be either
+  -- arrow_function, function_expression, or call_expression seems to
+  -- change the order of the matches so that namespaces or listed after
+  -- tests. When neotest builds the tree tests are not properly nested
+  -- under their namespace. This might be because the range of a combined
+  -- query can end later that a test, changing the order that matches are
+  -- iterated
   local query = [[
-    ; -- Namespaces --
+    ; ##############
+    ; # Namespaces #
+    ; ##############
+
     ; Matches: `describe('context', () => {})`
     ;          `fdescribe('context', () => {})` (alias for describe.only)
     ;          `xdescribe('context', () => {})` (alias for describe.skip)
     ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe('context', function() {})`
     ;          `fdescribe('context', function() {})` (alias for describe.only)
     ;          `xdescribe('context', function() {})` (alias for describe.skip)
     ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (function_expression))
+    )) @namespace.definition
+
+    ; Matches: `describe('context', wrapper())`
+    ;          `fdescribe('context', wrapper())`
+    ;          `xdescribe('context', wrapper())`
+    ((call_expression
+        function: (identifier) @func_name (#any-of? @func_name "describe" "fdescribe" "xdescribe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (call_expression))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', () => {})`
     ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "describe")
-      )
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', function() {})`
     ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "describe")
-      )
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (function_expression))
+    )) @namespace.definition
+
+    ; Matches: `describe.only('context', wrapper())`
+    ((call_expression
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (call_expression))
     )) @namespace.definition
 
     ; Matches: `describe.each(['data'])('context', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "describe")
+          object: (identifier) @func_name (#eq? @func_name "describe")
         )
       )
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe.each(['data'])('context', function() {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "describe")
+          object: (identifier) @func_name (#eq? @func_name "describe")
         )
       )
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (function_expression))
     )) @namespace.definition
 
-    ; -- Tests --
-    ; Matches: `test('test') / it('test')`
+    ; Matches: `describe.each(['data'])('context', wrapper())`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (call_expression))
+    )) @namespace.definition
+
+    ; #########
+    ; # Tests #
+    ; #########
+
+    ; Matches: `it('test', () => {}) / test('test', () => {})`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (arrow_function))
     )) @test.definition
 
-    ; Matches: `test.only('test') / it.only('test')`
+    ; Matches: `it('test', function() {}) / test('test', function() {})`
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `it('test', wrapper()) / test('test', wrapper())`
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (call_expression))
+    )) @test.definition
+
+    ; Matches: `it.only('test', () => {}) / test.only('test', () => {})`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "it" "test")
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (arrow_function))
+    )) @test.definition
+
+    ; Matches: `it.only('test', function() {}) / test.only('test', function() {})`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "it" "test")
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `test.only('test', wrapper()) / it.only('test', wrapper())`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (call_expression))
     )) @test.definition
 
-    ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
+    ; Matches: `test.each(['data'])('test', () => {}) / it.each(['data'])('test', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
@@ -236,12 +266,45 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression)])
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (arrow_function))
+    )) @test.definition
+
+    ; Matches: `test.each(['data'])('test', function() {}) / it.each(['data'])('test', function() {})`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `test.each(['data'])('test', wrapper()) / it.each(['data'])('test', wrapper())`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (call_expression))
     )) @test.definition
   ]]
 
+  ---@diagnostic disable-next-line: missing-fields
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
+    ---@diagnostic disable-next-line: assign-type-mismatch
     build_position = 'require("neotest-jest").build_position',
   })
 
@@ -368,6 +431,7 @@ end
 ---@param args neotest.RunArgs
 ---@return neotest.RunSpec | nil
 function adapter.build_spec(args)
+  ---@type string
   local results_path = async.fn.tempname() .. ".json"
   local tree = args.tree
 
@@ -395,25 +459,42 @@ function adapter.build_spec(args)
   local binary = args.jestCommand or getJestCommand(pos.path)
   local config = getJestConfig(pos.path) or "jest.config.js"
   local command = vim.split(binary, "%s+")
-  if util.path.exists(config) then
-    -- only use config if available
-    table.insert(command, "--config=" .. config)
+
+  local jestArgsContext = {
+    config = config,
+    resultsPath = results_path,
+    testNamePattern = testNamePattern,
+  }
+
+  local options =
+    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+
+  if compat.tbl_islist(options) then
+    vim.list_extend(command, options)
+  else
+    vim.notify(
+      ("Jest arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
+
+    -- Add the default arugments to allow neotest to run
+    vim.list_extend(command, jest_util.getJestDefaultArguments(jestArgsContext))
   end
 
-  vim.list_extend(command, {
-    "--no-coverage",
-    "--testLocationInResults",
-    "--verbose",
-    "--json",
-    "--outputFile=" .. results_path,
-    "--testNamePattern=" .. testNamePattern,
-    "--forceExit",
-    util.escapeTestPattern(vim.fs.normalize(pos.path)),
-  })
+  if compat.tbl_islist(args.extra_args) then
+    vim.list_extend(command, args.extra_args)
+  elseif args.extra_args then
+    vim.notify(
+      ("Extra arguments must be a list, got '%s'"):format(type(options)),
+      vim.log.levels.ERROR
+    )
+  end
+
+  table.insert(command, util.escapeTestPattern(vim.fs.normalize(pos.path)))
 
   local cwd = getCwd(pos.path)
 
-  -- creating empty file for streaming results
+  -- Creating empty file for streaming results
   lib.files.write(results_path, "")
   local stream_data, stop_stream = util.stream(results_path)
 
@@ -474,23 +555,32 @@ function adapter.results(spec, result, tree)
   return results
 end
 
+---@generic T
+---@param value T | fun(any): T
+---@param default fun(any): T
+---@param reject_value boolean?
+---@return fun(any): T
+local function resolve_config_option(value, default, reject_value)
+  if util.is_callable(value) then
+    return value
+  elseif value and not reject_value then
+    return function()
+      return value
+    end
+  end
+
+  return default
+end
+
 setmetatable(adapter, {
   ---@param opts neotest.JestOptions
   __call = function(_, opts)
-    if util.is_callable(opts.jestCommand) then
-      getJestCommand = opts.jestCommand
-    elseif opts.jestCommand then
-      getJestCommand = function()
-        return opts.jestCommand
-      end
-    end
-    if util.is_callable(opts.jestConfigFile) then
-      getJestConfig = opts.jestConfigFile
-    elseif opts.jestConfigFile then
-      getJestConfig = function()
-        return opts.jestConfigFile
-      end
-    end
+    getJestCommand = resolve_config_option(opts.jestCommand, getJestCommand)
+    getJestArguments = resolve_config_option(opts.jestArguments, getJestArguments, true)
+    getJestConfig = resolve_config_option(opts.jestConfigFile, getJestConfig)
+    getCwd = resolve_config_option(opts.cwd, getCwd)
+    getStrategyConfig = resolve_config_option(opts.strategy_config, getStrategyConfig)
+
     if util.is_callable(opts.env) then
       getEnv = opts.env
     elseif opts.env then
@@ -498,23 +588,13 @@ setmetatable(adapter, {
         return vim.tbl_extend("force", opts.env, specEnv)
       end
     end
-    if util.is_callable(opts.cwd) then
-      getCwd = opts.cwd
-    elseif opts.cwd then
-      getCwd = function()
-        return opts.cwd
-      end
-    end
-    if util.is_callable(opts.strategy_config) then
-      getStrategyConfig = opts.strategy_config
-    elseif opts.strategy_config then
-      getStrategyConfig = function()
-        return opts.strategy_config
-      end
-    end
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if util.is_callable(opts.isTestFile) then
+      isTestFile = opts.isTestFile
     end
 
     return adapter
