@@ -21,6 +21,8 @@ body:
           required: true
         - label: I have tried setting `log_level` to `vim.log.levels.debug` in `neotest.setup` and examined the logs.
           required: true
+        - label: I have made sure to run against the most recent version of the `main` branch
+          required: true
   - type: input
     attributes:
       label: "Neovim version (nvim -v)"
@@ -31,6 +33,12 @@ body:
     attributes:
       label: "Operating system/version"
       placeholder: "MacOS 11.7.6"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "Jest version (npx jest --version) and versions of other relevant packages"
+      placeholder: "30.0.5"
     validations:
       required: true
   - type: textarea
