@@ -286,7 +286,7 @@ function adapter.discover_positions(path)
       ]) (function_expression))
     )) @test.definition
 
-    ; Matches: `test.each(['data'])('test', wrapper()) / it.each(['data'])('test', wrapper())`
+    ; Matches: `it.each(['data'])('test', wrapper()) / test.each(['data'])('test', wrapper())`
     ((call_expression
       function: (call_expression
         function: (member_expression
