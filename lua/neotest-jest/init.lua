@@ -299,6 +299,17 @@ function adapter.discover_positions(path)
         (template_string (_) @test.name)
       ]) (call_expression))
     )) @test.definition
+
+    ; Matches: `it.todo('test') / test.todo('test')`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "it" "test")
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]))
+    )) @test.definition
   ]]
 
   ---@diagnostic disable-next-line: missing-fields
@@ -393,7 +404,7 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 
       keyid = keyid .. "::" .. name
 
-      if status == "pending" then
+      if status == "pending" or status == "todo" then
         status = "skipped"
       end
 
