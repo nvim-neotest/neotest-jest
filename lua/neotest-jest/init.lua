@@ -85,67 +85,184 @@ end
 ---@async
 ---@return neotest.Tree | nil
 function adapter.discover_positions(path)
+  -- NOTE: Combining queries with a second argument that can be either
+  -- arrow_function, function_expression, or call_expression seems to
+  -- change the order of the matches so that namespaces or listed after
+  -- tests. When neotest builds the tree tests are not properly nested
+  -- under their namespace. This might be because the range of a combined
+  -- query can end later that a test, changing the order that matches are
+  -- iterated
   local query = [[
-    ; -- Namespaces --
+    ; ##############
+    ; # Namespaces #
+    ; ##############
+
     ; Matches: `describe('context', () => {})`
     ((call_expression
-      function: (identifier) @func_name (#eq? @func_name "describe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+        function: (identifier) @func_name (#eq? @func_name "describe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe('context', function() {})`
     ((call_expression
-      function: (identifier) @func_name (#eq? @func_name "describe")
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+        function: (identifier) @func_name (#eq? @func_name "describe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (function_expression))
     )) @namespace.definition
+
+    ; Matches: `describe('context', wrapper())`
+    ((call_expression
+        function: (identifier) @func_name (#eq? @func_name "describe")
+          arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+          ]) (call_expression))
+    )) @namespace.definition
+
     ; Matches: `describe.only('context', () => {})`
     ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "describe")
-      )
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe.only('context', function() {})`
     ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "describe")
-      )
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (function_expression))
     )) @namespace.definition
+
+    ; Matches: `describe.only('context', wrapper())`
+    ((call_expression
+        function: (member_expression
+            object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+        arguments: (arguments ([
+            (string (string_fragment) @namespace.name)
+            (template_string (_) @namespace.name)
+        ]) (call_expression))
+    )) @namespace.definition
+
     ; Matches: `describe.each(['data'])('context', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "describe")
+          object: (identifier) @func_name (#eq? @func_name "describe")
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @namespace.name) (arrow_function))
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (arrow_function))
     )) @namespace.definition
+
     ; Matches: `describe.each(['data'])('context', function() {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "describe")
+          object: (identifier) @func_name (#eq? @func_name "describe")
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @namespace.name) (function_expression))
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (function_expression))
     )) @namespace.definition
 
-    ; -- Tests --
-    ; Matches: `test('test') / it('test')`
+    ; Matches: `describe.each(['data'])('context', wrapper())`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#eq? @func_name "describe")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @namespace.name)
+        (template_string (_) @namespace.name)
+      ]) (call_expression))
+    )) @namespace.definition
+
+    ; #########
+    ; # Tests #
+    ; #########
+
+    ; Matches: `it('test', () => {}) / test('test', () => {})`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (arrow_function))
     )) @test.definition
-    ; Matches: `test.only('test') / it.only('test')`
+
+    ; Matches: `it('test', function() {}) / test('test', function() {})`
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `it('test', wrapper()) / test('test', wrapper())`
+    ((call_expression
+      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+        arguments: (arguments ([
+          (string (string_fragment) @test.name)
+          (template_string (_) @test.name)
+        ]) (call_expression))
+    )) @test.definition
+
+    ; Matches: `test.only('test', () => {}) / it.only('test', () => {})`
     ((call_expression
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (arrow_function))
     )) @test.definition
-    ; Matches: `test.each(['data'])('test') / it.each(['data'])('test')`
+
+    ; Matches: `test.only('test', function() {}) / it.only('test', function() {})`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "test" "it")
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `test.only('test', wrapper()) / it.only('test', wrapper())`
+    ((call_expression
+      function: (member_expression
+        object: (identifier) @func_name (#any-of? @func_name "test" "it")
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (call_expression))
+    )) @test.definition
+
+    ; Matches: `test.each(['data'])('test', () => {}) / it.each(['data'])('test', () => {})`
     ((call_expression
       function: (call_expression
         function: (member_expression
@@ -153,7 +270,38 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments (string (string_fragment) @test.name) [(arrow_function) (function_expression) (call_expression)])
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (arrow_function))
+    )) @test.definition
+
+    ; Matches: `test.each(['data'])('test', function() {}) / it.each(['data'])('test', function() {})`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (function_expression))
+    )) @test.definition
+
+    ; Matches: `test.each(['data'])('test', wrapper()) / it.each(['data'])('test', wrapper())`
+    ((call_expression
+      function: (call_expression
+        function: (member_expression
+          object: (identifier) @func_name (#any-of? @func_name "it" "test")
+          property: (property_identifier) @each_property (#eq? @each_property "each")
+        )
+      )
+      arguments: (arguments ([
+        (string (string_fragment) @test.name)
+        (template_string (_) @test.name)
+      ]) (call_expression))
     )) @test.definition
   ]]
 

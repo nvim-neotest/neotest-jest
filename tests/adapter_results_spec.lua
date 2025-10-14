@@ -53,7 +53,7 @@ describe("adapter.results", function()
         short = "1: passed",
         output = strategy_result.output,
         location = {
-          line = 2,
+          line = 6,
           column = 3,
         },
       },
@@ -62,7 +62,7 @@ describe("adapter.results", function()
         short = "2: passed",
         output = strategy_result.output,
         location = {
-          line = 6,
+          line = 10,
           column = 3,
         },
       },
@@ -71,7 +71,7 @@ describe("adapter.results", function()
         short = "3: passed",
         output = strategy_result.output,
         location = {
-          line = 10,
+          line = 14,
           column = 3,
         },
       },
@@ -80,7 +80,16 @@ describe("adapter.results", function()
         short = "4: passed",
         output = strategy_result.output,
         location = {
-          line = 14,
+          line = 18,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 22,
           column = 3,
         },
       },
@@ -89,7 +98,7 @@ describe("adapter.results", function()
         short = "1: passed",
         output = strategy_result.output,
         location = {
-          line = 20,
+          line = 28,
           column = 3,
         },
       },
@@ -98,7 +107,7 @@ describe("adapter.results", function()
         short = "2: passed",
         output = strategy_result.output,
         location = {
-          line = 24,
+          line = 32,
           column = 3,
         },
       },
@@ -107,7 +116,7 @@ describe("adapter.results", function()
         short = "3: passed",
         output = strategy_result.output,
         location = {
-          line = 28,
+          line = 36,
           column = 3,
         },
       },
@@ -116,7 +125,16 @@ describe("adapter.results", function()
         short = "4: passed",
         output = strategy_result.output,
         location = {
-          line = 32,
+          line = 40,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 44,
           column = 3,
         },
       },
@@ -165,6 +183,164 @@ describe("adapter.results", function()
     --
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
+
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
+  async.it("creates neotest results for tests using template strings", function()
+    local adapter = require("neotest-jest")({})
+    local path = "./spec/templateStrings.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/templateStrings.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::describe text::1"] = {
+        status = types.ResultStatus.passed,
+        short = "1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 6,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::2"] = {
+        status = types.ResultStatus.passed,
+        short = "2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 10,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::3"] = {
+        status = types.ResultStatus.passed,
+        short = "3: passed",
+        output = strategy_result.output,
+        location = {
+          line = 14,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::4"] = {
+        status = types.ResultStatus.passed,
+        short = "4: passed",
+        output = strategy_result.output,
+        location = {
+          line = 18,
+          column = 3,
+        },
+      },
+      [path .. "::describe text::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 22,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::1"] = {
+        status = types.ResultStatus.passed,
+        short = "1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 28,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::2"] = {
+        status = types.ResultStatus.passed,
+        short = "2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 32,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::3"] = {
+        status = types.ResultStatus.passed,
+        short = "3: passed",
+        output = strategy_result.output,
+        location = {
+          line = 36,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::4"] = {
+        status = types.ResultStatus.passed,
+        short = "4: passed",
+        output = strategy_result.output,
+        location = {
+          line = 40,
+          column = 3,
+        },
+      },
+      [path .. "::describe text 2::5"] = {
+        status = types.ResultStatus.passed,
+        short = "5: passed",
+        output = strategy_result.output,
+        location = {
+          line = 44,
+          column = 3,
+        },
+      },
+    })
+
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
+  async.it("creates neotest results for tests with backticks in test names", function()
+    local adapter = require("neotest-jest")({})
+    local path = "./spec/backtickInTestNames.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/backtickInTestNames.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::test names ` containing backticks::` 1"] = {
+        status = types.ResultStatus.passed,
+        short = "` 1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 2,
+          column = 3,
+        },
+      },
+      [path .. "::test names ` containing backticks::2`"] = {
+        status = types.ResultStatus.passed,
+        short = "2`: passed",
+        output = strategy_result.output,
+        location = {
+          line = 6,
+          column = 3,
+        },
+      },
+      [path .. "::test names ` containing backticks::`` 3"] = {
+        status = types.ResultStatus.passed,
+        short = "`` 3: passed",
+        output = strategy_result.output,
+        location = {
+          line = 10,
+          column = 3,
+        },
+      },
+      [path .. "::test names ` containing backticks::` 4`"] = {
+        status = types.ResultStatus.passed,
+        short = "` 4`: passed",
+        output = strategy_result.output,
+        location = {
+          line = 14,
+          column = 3,
+        },
+      },
+    })
 
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
     assert.stub(logger.error).was_not_called()
