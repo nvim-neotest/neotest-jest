@@ -15,7 +15,7 @@ describe("adapter.discover_positions", function()
   async.it("provides meaningful names from a basic spec", function()
     package.loaded["neotest-jest"] = nil
 
-    local path = vim.fs.normalize(vim.fs.abspath("./spec/tests/basic.test.ts"))
+    local path = vim.fs.normalize("./spec/tests/basic.test.ts")
     local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = false })
     local positions = adapter.discover_positions(path):to_list()
 
@@ -389,7 +389,7 @@ describe("adapter.discover_positions", function()
   async.it("provides meaningful names for parametric tests", function()
     package.loaded["neotest-jest"] = nil
 
-    local path = vim.fs.normalize(vim.fs.abspath("./spec/tests/array.test.ts"))
+    local path = vim.fs.normalize("./spec/tests/array.test.ts")
     local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = false })
     local positions = adapter.discover_positions(path):to_list()
 
@@ -519,7 +519,7 @@ describe("adapter.discover_positions", function()
     function()
       package.loaded["neotest-jest"] = nil
 
-      local path = vim.fs.normalize(vim.fs.abspath("./spec/tests/array.test.ts"))
+      local path = vim.fs.normalize("./spec/tests/array.test.ts")
       local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
 
       nio.fn.chdir("./spec")
@@ -818,7 +818,7 @@ describe("adapter.discover_positions", function()
   async.it("provides meaningful names for parametric describe", function()
     package.loaded["neotest-jest"] = nil
 
-    local path = vim.fs.normalize(vim.fs.abspath("./spec/tests/parametric-describes-only.test.ts"))
+    local path = vim.fs.normalize("./spec/tests/parametric-describes-only.test.ts")
     local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
 
     nio.fn.chdir("./spec")
