@@ -163,95 +163,159 @@ describe("adapter.discover_positions", function()
   end)
 
   async.it("provides meaningful names from a spec with template strings", function()
-    local positions = adapter.discover_positions("./spec/templateStrings.test.ts"):to_list()
+    package.loaded["neotest-jest"] = nil
+
+    local path = "./spec/templateStrings.test.ts"
+    local adapter = require("neotest-jest")({ jestCommand = "jest" })
+    local positions = adapter.discover_positions(path):to_list()
 
     local expected_output = {
       {
+        id = path,
         name = "templateStrings.test.ts",
-        type = "file",
+        path = path,
+        range = { 0, 0, 47, 0 },
+        type = PositionType.file,
       },
       {
         {
+          id = path .. "::describe text",
+          is_parameterized = false,
           name = "describe text",
-          type = "namespace",
+          path = path,
+          range = { 4, 0, 24, 2 },
+          type = PositionType.namespace,
         },
         {
-          name = "1",
-          type = "test",
+          {
+            id = path .. "::describe text::1",
+            is_parameterized = false,
+            name = "1",
+            path = path,
+            range = { 5, 2, 7, 4 },
+            test_name_range = { 5, 6, 5, 7 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "2",
-          type = "test",
+          {
+            id = path .. "::describe text::2",
+            is_parameterized = false,
+            name = "2",
+            path = path,
+            range = { 9, 2, 11, 4 },
+            test_name_range = { 9, 6, 9, 7 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "3",
-          type = "test",
+          {
+            id = path .. "::describe text::3",
+            is_parameterized = false,
+            name = "3",
+            path = path,
+            range = { 13, 2, 15, 4 },
+            test_name_range = { 13, 8, 13, 9 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "4",
-          type = "test",
+          {
+            id = path .. "::describe text::4",
+            is_parameterized = false,
+            name = "4",
+            path = path,
+            range = { 17, 2, 19, 4 },
+            test_name_range = { 17, 8, 17, 9 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "5",
-          type = "test",
+          {
+            id = "./spec/templateStrings.test.ts::describe text::5",
+            is_parameterized = false,
+            name = "5",
+            path = path,
+            range = { 21, 2, 23, 5 },
+            test_name_range = { 21, 6, 21, 7 },
+            type = PositionType.test,
+          },
         },
       },
       {
         {
+          id = path .. "::describe text 2",
+          is_parameterized = false,
           name = "describe text 2",
-          type = "namespace",
+          path = path,
+          range = { 26, 0, 46, 2 },
+          type = PositionType.namespace,
         },
         {
-          name = "1",
-          type = "test",
+          {
+            id = path .. "::describe text 2::1",
+            is_parameterized = false,
+            name = "1",
+            path = path,
+            range = { 27, 2, 29, 4 },
+            test_name_range = { 27, 6, 27, 7 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "2",
-          type = "test",
+          {
+            id = path .. "::describe text 2::2",
+            is_parameterized = false,
+            name = "2",
+            path = path,
+            range = { 31, 2, 33, 4 },
+            test_name_range = { 31, 6, 31, 7 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "3",
-          type = "test",
+          {
+            id = path .. "::describe text 2::3",
+            is_parameterized = false,
+            name = "3",
+            path = path,
+            range = { 35, 2, 37, 4 },
+            test_name_range = { 35, 8, 35, 9 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "4",
-          type = "test",
+          {
+            id = path .. "::describe text 2::4",
+            is_parameterized = false,
+            name = "4",
+            path = path,
+            range = { 39, 2, 41, 4 },
+            test_name_range = { 39, 8, 39, 9 },
+            type = PositionType.test,
+          },
         },
         {
-          name = "5",
-          type = "test",
+          {
+            id = path .. "::describe text 2::5",
+            is_parameterized = false,
+            name = "5",
+            path = path,
+            range = { 43, 2, 45, 5 },
+            test_name_range = { 43, 6, 43, 7 },
+            type = PositionType.test,
+          },
         },
       },
     }
 
-    assert.equals(expected_output[1].name, positions[1].name)
-    assert.equals(expected_output[1].type, positions[1].type)
-    assert.equals(expected_output[2][1].name, positions[2][1].name)
-    assert.equals(expected_output[2][1].type, positions[2][1].type)
-
-    assert.equals(positions[2][1].is_parameterized, false)
-    assert.equals(6, #positions[2])
-
-    for i, value in ipairs(expected_output[2][2]) do
-      assert.is.truthy(value)
-      local position = positions[2][i + 1][1]
-      assert.is.truthy(position)
-      assert.equals(value.name, position.name)
-      assert.equals(value.type, position.type)
-      assert.equals(position.is_parameterized, false)
-    end
-
-    assert.equals(expected_output[3][1].name, positions[3][1].name)
-    assert.equals(expected_output[3][1].type, positions[3][1].type)
-
-    assert.equals(6, #positions[2])
-    assert_test_positions_match(expected_output[2][2], positions[2])
-
-    assert.equals(6, #positions[3])
-    assert_test_positions_match(expected_output[3][2], positions[3])
+    assert.are.same(positions, expected_output)
   end)
 
   async.it("provides meaningful names from a spec with backticks in test names", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({ jestCommand = "jest" })
     local path = "./spec/backtickInTestNames.test.ts"
     local positions = adapter.discover_positions(path):to_list()
 
@@ -261,7 +325,7 @@ describe("adapter.discover_positions", function()
         name = "backtickInTestNames.test.ts",
         path = path,
         range = { 0, 0, 17, 0 },
-        type = "file",
+        type = PositionType.file,
       },
       {
         {
@@ -270,7 +334,7 @@ describe("adapter.discover_positions", function()
           name = "test names ` containing backticks",
           path = path,
           range = { 0, 0, 16, 2 },
-          type = "namespace",
+          type = PositionType.namespace,
         },
         {
           {
@@ -279,7 +343,8 @@ describe("adapter.discover_positions", function()
             name = "` 1",
             path = path,
             range = { 1, 2, 3, 4 },
-            type = "test",
+            test_name_range = { 1, 6, 1, 9 },
+            type = PositionType.test,
           },
         },
         {
@@ -289,7 +354,8 @@ describe("adapter.discover_positions", function()
             name = "2`",
             path = path,
             range = { 5, 2, 7, 4 },
-            type = "test",
+            test_name_range = { 5, 8, 5, 10 },
+            type = PositionType.test,
           },
         },
         {
@@ -299,7 +365,8 @@ describe("adapter.discover_positions", function()
             name = "`` 3",
             path = path,
             range = { 9, 2, 11, 4 },
-            type = "test",
+            test_name_range = { 9, 6, 9, 10 },
+            type = PositionType.test,
           },
         },
         {
@@ -309,7 +376,8 @@ describe("adapter.discover_positions", function()
             name = "` 4`",
             path = path,
             range = { 13, 2, 15, 4 },
-            type = "test",
+            test_name_range = { 13, 8, 13, 12 },
+            type = PositionType.test,
           },
         },
       },
