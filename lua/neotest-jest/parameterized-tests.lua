@@ -224,6 +224,24 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
       -- neotest tree
       local parameterized_test_results_for_position = tests_by_position[pos.range[1]] or {}
 
+      -- If we didn't find any test results, it might be because the test is
+      -- defined on multiple lines (common with test.each). Since jest reports
+      -- test lines at the position of the string name of the test, not the
+      -- position of the 'it' or 'test', we try to lookup using that position
+      -- instead. The position of a test in the neotest tree is usually the
+      -- start and end of the entire test definition which might not be the
+      -- same as the line where the string name occurs for multi-line test
+      --
+      -- test.each([ // <-- Start of neotest match
+      --     'a',
+      --     'b'
+      -- ])('test name') // <-- Position reported by jest
+      if #parameterized_test_results_for_position == 0 then
+        ---@diagnostic disable-next-line: undefined-field
+        local test_name_line = pos.test_name_range[1]
+        parameterized_test_results_for_position = tests_by_position[test_name_line] or {}
+      end
+
       for _, test_result in ipairs(parameterized_test_results_for_position) do
         local ns_tree = tryCreateNamespaceNodes(tree, test_result.pos_id)
 

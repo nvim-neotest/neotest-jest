@@ -47,6 +47,8 @@ function adapter.filter_dir(name)
   return name ~= "node_modules"
 end
 
+---@param captured_nodes TSNode[]
+---@return ("test" | "namespace")?
 local function get_match_type(captured_nodes)
   if captured_nodes["test.name"] then
     return "test"
@@ -64,8 +66,9 @@ function adapter.build_position(file_path, source, captured_nodes)
     return
   end
 
-  ---@type string
-  local name = vim.treesitter.get_node_text(captured_nodes[match_type .. ".name"], source)
+  ---@type TSNode
+  local test_name_node = captured_nodes[match_type .. ".name"]
+  local name = vim.treesitter.get_node_text(test_name_node, source)
   local definition = captured_nodes[match_type .. ".definition"]
 
   return {
@@ -73,6 +76,8 @@ function adapter.build_position(file_path, source, captured_nodes)
     path = file_path,
     name = name,
     range = { definition:range() },
+    -- Record the position of the line where the string name occurs
+    test_name_range = match_type == "test" and { test_name_node:range() } or nil,
     is_parameterized = captured_nodes["each_property"] and true or false,
   }
 end
