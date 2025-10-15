@@ -5,3 +5,7 @@ vim.opt.rtp:append("~/.local/share/nvim/lazy/nvim-nio")
 vim.opt.rtp:append("~/.local/share/nvim/lazy/nvim-treesitter")
 
 vim.cmd.runtime({ "plugin/plenary.vim", bang = true })
+
+require("neotest").setup({
+  log_level = vim.log.levels.DEBUG
+})
