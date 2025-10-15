@@ -80,3 +80,5 @@ jobs:
           export VIM="${PWD}/_neovim/share/nvim/runtime"
           nvim --version
           ./scripts/test
+      - name: Dump neotest log
+        run: cat ~/.local/state/nvim/neotest.log

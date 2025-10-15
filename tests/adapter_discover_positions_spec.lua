@@ -537,303 +537,299 @@ describe("adapter.discover_positions", function()
       nio.fn.chdir("..")
     end)
 
-    async.it(
-      "provides meaningful names for parametric tests with parametric test discovery",
-      function()
-        package.loaded["neotest-jest"] = nil
+    async.it("provides meaningful names for parametric tests", function()
+      package.loaded["neotest-jest"] = nil
 
-        local path = get_test_absolute_path("array.test.ts")
-        local adapter =
-          require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
-        local positions = adapter.discover_positions(path):to_list()
+      local path = get_test_absolute_path("array.test.ts")
+      local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
+      local positions = adapter.discover_positions(path):to_list()
 
-        -- NOTE: This does not work when the parametric test does not use the
-        -- parameters as the position id for the generated runtime positions will
-        -- be the same as the existing source-level test and will overwrite the
-        -- existing position. Consequently, there are "missing" tests below.
-        local expected_output = {
+      -- NOTE: This does not work when the parametric test does not use the
+      -- parameters as the position id for the generated runtime positions will
+      -- be the same as the existing source-level test and will overwrite the
+      -- existing position. Consequently, there are "missing" tests below.
+      local expected_output = {
+        {
+          id = path,
+          name = "array.test.ts",
+          path = path,
+          range = { 0, 0, 35, 0 },
+          type = PositionType.file,
+        },
+        {
           {
-            id = path,
-            name = "array.test.ts",
+            id = path .. "::describe text",
+            is_parameterized = false,
+            name = "describe text",
             path = path,
-            range = { 0, 0, 35, 0 },
-            type = PositionType.file,
+            range = { 0, 0, 16, 2 },
+            type = PositionType.namespace,
           },
           {
             {
-              id = path .. "::describe text",
-              is_parameterized = false,
-              name = "describe text",
+              id = path .. "::describe text::Array1 %d",
+              is_parameterized = true,
+              name = "Array1 %d",
               path = path,
-              range = { 0, 0, 16, 2 },
-              type = PositionType.namespace,
-            },
-            {
-              {
-                id = path .. "::describe text::Array1 %d",
-                is_parameterized = true,
-                name = "Array1 %d",
-                path = path,
-                range = { 1, 2, 3, 4 },
-                test_name_range = { 1, 22, 1, 31 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array2",
-                is_parameterized = true,
-                name = "Array2",
-                path = path,
-                range = { 5, 2, 7, 4 },
-                test_name_range = { 5, 22, 5, 28 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array3 %d",
-                is_parameterized = true,
-                name = "Array3 %d",
-                path = path,
-                range = { 9, 2, 11, 4 },
-                test_name_range = { 9, 24, 9, 33 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array4 %d",
-                is_parameterized = true,
-                name = "Array4 %d",
-                path = path,
-                range = { 13, 2, 15, 4 },
-                test_name_range = { 13, 24, 13, 33 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array1 1",
-                name = "Array1 1",
-                path = path,
-                source_pos_id = path .. "::describe text::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array1 2",
-                name = "Array1 2",
-                path = path,
-                source_pos_id = path .. "::describe text::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array1 3",
-                name = "Array1 3",
-                path = path,
-                source_pos_id = path .. "::describe text::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array3 1",
-                name = "Array3 1",
-                path = path,
-                source_pos_id = path .. "::describe text::Array3 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array3 2",
-                name = "Array3 2",
-                path = path,
-                source_pos_id = path .. "::describe text::Array3 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array3 3",
-                name = "Array3 3",
-                path = path,
-                source_pos_id = path .. "::describe text::Array3 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array4 1",
-                name = "Array4 1",
-                path = path,
-                source_pos_id = path .. "::describe text::Array4 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array4 2",
-                name = "Array4 2",
-                path = path,
-                source_pos_id = path .. "::describe text::Array4 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text::Array4 3",
-                name = "Array4 3",
-                path = path,
-                source_pos_id = path .. "::describe text::Array4 %d",
-                type = PositionType.test,
-              },
+              range = { 1, 2, 3, 4 },
+              test_name_range = { 1, 22, 1, 31 },
+              type = PositionType.test,
             },
           },
           {
             {
-              id = path .. "::describe text 2",
-              is_parameterized = false,
-              name = "describe text 2",
+              id = path .. "::describe text::Array2",
+              is_parameterized = true,
+              name = "Array2",
               path = path,
-              range = { 18, 0, 34, 2 },
-              type = PositionType.namespace,
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array1 %d",
-                is_parameterized = true,
-                name = "Array1 %d",
-                path = path,
-                range = { 19, 2, 21, 4 },
-                test_name_range = { 19, 22, 19, 31 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array2 %d",
-                is_parameterized = true,
-                name = "Array2 %d",
-                path = path,
-                range = { 23, 2, 25, 4 },
-                test_name_range = { 23, 22, 23, 31 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array3 %d",
-                is_parameterized = true,
-                name = "Array3 %d",
-                path = path,
-                range = { 27, 2, 29, 4 },
-                test_name_range = { 27, 24, 27, 33 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array4",
-                is_parameterized = true,
-                name = "Array4",
-                path = path,
-                range = { 31, 2, 33, 4 },
-                test_name_range = { 31, 24, 31, 30 },
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array1 1",
-                name = "Array1 1",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array1 2",
-                name = "Array1 2",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array1 3",
-                name = "Array1 3",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array1 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array2 1",
-                name = "Array2 1",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array2 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array2 2",
-                name = "Array2 2",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array2 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array2 3",
-                name = "Array2 3",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array2 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array3 1",
-                name = "Array3 1",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array3 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array3 2",
-                name = "Array3 2",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array3 %d",
-                type = PositionType.test,
-              },
-            },
-            {
-              {
-                id = path .. "::describe text 2::Array3 3",
-                name = "Array3 3",
-                path = path,
-                source_pos_id = path .. "::describe text 2::Array3 %d",
-                type = PositionType.test,
-              },
+              range = { 5, 2, 7, 4 },
+              test_name_range = { 5, 22, 5, 28 },
+              type = PositionType.test,
             },
           },
-        }
+          {
+            {
+              id = path .. "::describe text::Array3 %d",
+              is_parameterized = true,
+              name = "Array3 %d",
+              path = path,
+              range = { 9, 2, 11, 4 },
+              test_name_range = { 9, 24, 9, 33 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array4 %d",
+              is_parameterized = true,
+              name = "Array4 %d",
+              path = path,
+              range = { 13, 2, 15, 4 },
+              test_name_range = { 13, 24, 13, 33 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array1 1",
+              name = "Array1 1",
+              path = path,
+              source_pos_id = path .. "::describe text::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array1 2",
+              name = "Array1 2",
+              path = path,
+              source_pos_id = path .. "::describe text::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array1 3",
+              name = "Array1 3",
+              path = path,
+              source_pos_id = path .. "::describe text::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array3 1",
+              name = "Array3 1",
+              path = path,
+              source_pos_id = path .. "::describe text::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array3 2",
+              name = "Array3 2",
+              path = path,
+              source_pos_id = path .. "::describe text::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array3 3",
+              name = "Array3 3",
+              path = path,
+              source_pos_id = path .. "::describe text::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array4 1",
+              name = "Array4 1",
+              path = path,
+              source_pos_id = path .. "::describe text::Array4 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array4 2",
+              name = "Array4 2",
+              path = path,
+              source_pos_id = path .. "::describe text::Array4 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text::Array4 3",
+              name = "Array4 3",
+              path = path,
+              source_pos_id = path .. "::describe text::Array4 %d",
+              type = PositionType.test,
+            },
+          },
+        },
+        {
+          {
+            id = path .. "::describe text 2",
+            is_parameterized = false,
+            name = "describe text 2",
+            path = path,
+            range = { 18, 0, 34, 2 },
+            type = PositionType.namespace,
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array1 %d",
+              is_parameterized = true,
+              name = "Array1 %d",
+              path = path,
+              range = { 19, 2, 21, 4 },
+              test_name_range = { 19, 22, 19, 31 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array2 %d",
+              is_parameterized = true,
+              name = "Array2 %d",
+              path = path,
+              range = { 23, 2, 25, 4 },
+              test_name_range = { 23, 22, 23, 31 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array3 %d",
+              is_parameterized = true,
+              name = "Array3 %d",
+              path = path,
+              range = { 27, 2, 29, 4 },
+              test_name_range = { 27, 24, 27, 33 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array4",
+              is_parameterized = true,
+              name = "Array4",
+              path = path,
+              range = { 31, 2, 33, 4 },
+              test_name_range = { 31, 24, 31, 30 },
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array1 1",
+              name = "Array1 1",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array1 2",
+              name = "Array1 2",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array1 3",
+              name = "Array1 3",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array1 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array2 1",
+              name = "Array2 1",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array2 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array2 2",
+              name = "Array2 2",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array2 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array2 3",
+              name = "Array2 3",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array2 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array3 1",
+              name = "Array3 1",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array3 2",
+              name = "Array3 2",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+          {
+            {
+              id = path .. "::describe text 2::Array3 3",
+              name = "Array3 3",
+              path = path,
+              source_pos_id = path .. "::describe text 2::Array3 %d",
+              type = PositionType.test,
+            },
+          },
+        },
+      }
 
-        assert.are.same(positions, expected_output)
-      end
-    )
+      assert.are.same(positions, expected_output)
+    end)
 
     async.it("provides meaningful names for parametric describe", function()
       package.loaded["neotest-jest"] = nil
