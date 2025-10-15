@@ -214,7 +214,7 @@
       ],
       "endTime": 1757792106082,
       "message": "",
-      "name": "./spec/templateStrings.test.ts",
+      "name": "./spec/tests/templateStrings.test.ts",
       "startTime": 1757792105699,
       "status": "passed",
       "summary": ""

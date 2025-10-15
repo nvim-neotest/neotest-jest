@@ -171,7 +171,7 @@ describe("adapter.discover_positions", function()
   async.it("provides meaningful names from a spec with template strings", function()
     package.loaded["neotest-jest"] = nil
 
-    local path = "./spec/templateStrings.test.ts"
+    local path = "./spec/tests/templateStrings.test.ts"
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
     local positions = adapter.discover_positions(path):to_list()
 
@@ -238,7 +238,7 @@ describe("adapter.discover_positions", function()
         },
         {
           {
-            id = "./spec/templateStrings.test.ts::describe text::5",
+            id = path .. "::describe text::5",
             is_parameterized = false,
             name = "5",
             path = path,
@@ -322,7 +322,7 @@ describe("adapter.discover_positions", function()
     package.loaded["neotest-jest"] = nil
 
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/backtickInTestNames.test.ts"
+    local path = "./spec/tests/backtickInTestNames.test.ts"
     local positions = adapter.discover_positions(path):to_list()
 
     local expected_output = {
