@@ -519,7 +519,9 @@ describe("adapter.discover_positions", function()
     function()
       package.loaded["neotest-jest"] = nil
 
-      local path = vim.fs.normalize("./spec/tests/array.test.ts")
+      -- vim.fs.abspath is 0.11.0+ so use vim.fs.find to get an absolute path. Do not use the
+      -- 'path' option since then it returns a relative path
+      local path = vim.fs.find("array.test.ts", { type = "file", limit = 1, upward = false })[1]
       local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
 
       nio.fn.chdir("./spec")
@@ -818,7 +820,9 @@ describe("adapter.discover_positions", function()
   async.it("provides meaningful names for parametric describe", function()
     package.loaded["neotest-jest"] = nil
 
-    local path = vim.fs.normalize("./spec/tests/parametric-describes-only.test.ts")
+      -- vim.fs.abspath is 0.11.0+ so use vim.fs.find to get an absolute path. Do not use the
+      -- 'path' option since then it returns a relative path
+    local path = vim.fs.find("parametric-describes-only.test.ts", { type = "file", limit = 1, upward = false })[1]
     local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
 
     nio.fn.chdir("./spec")
