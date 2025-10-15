@@ -544,7 +544,7 @@ describe("adapter.discover_positions", function()
 
         local path = get_test_absolute_path("array.test.ts")
         local adapter =
-            require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
+          require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
         local positions = adapter.discover_positions(path):to_list()
 
         -- NOTE: This does not work when the parametric test does not use the
