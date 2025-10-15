@@ -1,6 +1,7 @@
 local lib = require("neotest.lib")
 local jest_util = require("neotest-jest.jest-util")
 local types = require("neotest.types")
+local logger = require("neotest.logging")
 
 local M = {}
 
@@ -207,6 +208,8 @@ end
 function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized_tests_positions)
   -- Get all runtime test information for path
   local jest_test_discovery_output = runJestTestDiscovery(file_path)
+
+  logger.warn(jest_test_discovery_output)
 
   if jest_test_discovery_output == nil then
     return
