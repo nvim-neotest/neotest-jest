@@ -81,4 +81,5 @@ jobs:
           nvim --version
           ./scripts/test
       - name: Dump neotest log
+        if: '!cancelled()'
         run: cat ~/.local/state/nvim/neotest.log
