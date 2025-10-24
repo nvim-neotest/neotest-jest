@@ -166,24 +166,15 @@ local function tryCreateNamespaceNodes(tree, pos_id)
       return _tree
     end
 
-    local parent_pos_id_parts = vim.list_slice(pos_id_parts, 1, #pos_id_parts - 1)
-    local parent_tree = recurseTree(_tree:parent(), parent_pos_id_parts)
-
-    if not parent_tree then
-      return
-    end
-
     local cur_pos_id = table.concat(pos_id_parts, "::")
-    local cur_tree = parent_tree:get_key(cur_pos_id)
+    local cur_tree = _tree:get_key(cur_pos_id)
 
     -- If the namespace node already exists, another parametric test in the
     -- same namespace created it before us so just return that tree, otherwise
     -- create it
-    if cur_tree then
-      return cur_tree
-    else
-      return createNewChildNode(
-        parent_tree,
+    if not cur_tree then
+      createNewChildNode(
+        _tree,
         ---@diagnostic disable-next-line: missing-fields
         {
           id = cur_pos_id,
@@ -192,6 +183,13 @@ local function tryCreateNamespaceNodes(tree, pos_id)
           path = tree:data().path,
         }
       )
+    end
+
+    local parent_pos_id_parts = vim.list_slice(pos_id_parts, 1, #pos_id_parts - 1)
+    local parent_tree = recurseTree(_tree:parent(), parent_pos_id_parts)
+
+    if not parent_tree then
+      return
     end
   end
 
@@ -246,7 +244,7 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
       end
 
       for _, test_result in ipairs(parameterized_test_results_for_position) do
-        local ns_tree = tryCreateNamespaceNodes(tree, test_result.pos_id)
+        tryCreateNamespaceNodes(tree, test_result.pos_id)
 
         -- Only create a new node if the test position has any test parameters
         -- ('$param' or '%j') in the name. Otherwise, we would use a position
@@ -259,7 +257,7 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
         -- if hasTestParameters(tree, pos) then
         if not tree:get_key(test_result.pos_id) then
           createNewChildNode(
-            ns_tree or tree,
+            tree,
             ---@diagnostic disable-next-line: missing-fields
             {
               id = test_result.pos_id,
