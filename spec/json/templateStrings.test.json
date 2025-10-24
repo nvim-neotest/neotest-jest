@@ -26,7 +26,7 @@
     "unmatched": 0,
     "updated": 0
   },
-  "startTime": 1757792930315,
+  "startTime": 1757792105653,
   "success": true,
   "testResults": [
     {
@@ -89,7 +89,7 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 1,
+          "duration": 2,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text 4",
@@ -107,7 +107,7 @@
           "ancestorTitles": [
             "describe text"
           ],
-          "duration": 1,
+          "duration": 2,
           "failureDetails": [],
           "failureMessages": [],
           "fullName": "describe text 5",
@@ -212,10 +212,10 @@
           "title": "5"
         }
       ],
-      "endTime": 1757792930740,
+      "endTime": 1757792106082,
       "message": "",
-      "name": "./spec/basic.test.ts",
-      "startTime": 1757792930363,
+      "name": "./spec/tests/templateStrings.test.ts",
+      "startTime": 1757792105699,
       "status": "passed",
       "summary": ""
     }

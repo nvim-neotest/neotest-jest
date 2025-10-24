@@ -1,0 +1,312 @@
+{
+  "numFailedTestSuites": 1,
+  "numFailedTests": 4,
+  "numPassedTestSuites": 0,
+  "numPassedTests": 8,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 12,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1760552876222,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 1"
+          ],
+          "duration": 2,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [true] how many?: 1 test 1",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 3
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876560,
+          "status": "passed",
+          "title": "test 1"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 1"
+          ],
+          "duration": 1,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [true] how many?: 1 test 2",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 7
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876566,
+          "status": "passed",
+          "title": "test 2"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 1"
+          ],
+          "duration": 1,
+          "failing": false,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "Error: I have failed you"
+          ],
+          "fullName": "is it enabled? [true] how many?: 1 test 3",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 11
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "startAt": 1760552876567,
+          "status": "failed",
+          "title": "test 3"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 2"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [true] how many?: 2 test 1",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 3
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876569,
+          "status": "passed",
+          "title": "test 1"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 2"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [true] how many?: 2 test 2",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 7
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876570,
+          "status": "passed",
+          "title": "test 2"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [true]",
+            "how many?: 2"
+          ],
+          "duration": 1,
+          "failing": false,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "Error: I have failed you"
+          ],
+          "fullName": "is it enabled? [true] how many?: 2 test 3",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 11
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "startAt": 1760552876570,
+          "status": "failed",
+          "title": "test 3"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 1"
+          ],
+          "duration": 1,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [false] how many?: 1 test 1",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 3
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876572,
+          "status": "passed",
+          "title": "test 1"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 1"
+          ],
+          "duration": 1,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [false] how many?: 1 test 2",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 7
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876573,
+          "status": "passed",
+          "title": "test 2"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 1"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "Error: I have failed you"
+          ],
+          "fullName": "is it enabled? [false] how many?: 1 test 3",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 11
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "startAt": 1760552876578,
+          "status": "failed",
+          "title": "test 3"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 2"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [false] how many?: 2 test 1",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 3
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876579,
+          "status": "passed",
+          "title": "test 1"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 2"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "is it enabled? [false] how many?: 2 test 2",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 7
+          },
+          "numPassingAsserts": 1,
+          "retryReasons": [],
+          "startAt": 1760552876580,
+          "status": "passed",
+          "title": "test 2"
+        },
+        {
+          "ancestorTitles": [
+            "is it enabled? [false]",
+            "how many?: 2"
+          ],
+          "duration": 0,
+          "failing": false,
+          "failureDetails": [
+            {}
+          ],
+          "failureMessages": [
+            "Error: I have failed you"
+          ],
+          "fullName": "is it enabled? [false] how many?: 2 test 3",
+          "invocations": 1,
+          "location": {
+            "column": 5,
+            "line": 11
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "startAt": 1760552876581,
+          "status": "failed",
+          "title": "test 3"
+        }
+      ],
+      "endTime": 1760552876597,
+      "message": "  ? is it enabled? [true] Ý how many?: 1 Ý test 3\n\n    I have failed you\n\n      10 |\n      11 |     it('test 3', () => {\n    > 12 |       throw new Error('I have failed you');\n         |             ^\n      13 |     });\n      14 |   });\n      15 | });\n\n      at Object.<anonymous> (tests/parametricDescribesOnly.test.ts:12:13)\n\n  ? is it enabled? [true] Ý how many?: 2 Ý test 3\n\n    I have failed you\n\n      10 |\n      11 |     it('test 3', () => {\n    > 12 |       throw new Error('I have failed you');\n         |             ^\n      13 |     });\n      14 |   });\n      15 | });\n\n      at Object.<anonymous> (tests/parametricDescribesOnly.test.ts:12:13)\n\n  ? is it enabled? [false] Ý how many?: 1 Ý test 3\n\n    I have failed you\n\n      10 |\n      11 |     it('test 3', () => {\n    > 12 |       throw new Error('I have failed you');\n         |             ^\n      13 |     });\n      14 |   });\n      15 | });\n\n      at Object.<anonymous> (tests/parametricDescribesOnly.test.ts:12:13)\n\n  ? is it enabled? [false] Ý how many?: 2 Ý test 3\n\n    I have failed you\n\n      10 |\n      11 |     it('test 3', () => {\n    > 12 |       throw new Error('I have failed you');\n         |             ^\n      13 |     });\n      14 |   });\n      15 | });\n\n      at Object.<anonymous> (tests/parametricDescribesOnly.test.ts:12:13)\n",
+      "name": "./spec/tests/parametricDescribesOnly.test.ts",
+      "startTime": 1760552876259,
+      "status": "failed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}

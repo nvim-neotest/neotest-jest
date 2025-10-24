@@ -182,7 +182,7 @@
       ],
       "endTime": 1751198748669,
       "message": "\u001b[1m\u001b[31m  \u001b[1m? \u001b[22m\u001b[1mdescribe text � 3\u001b[39m\u001b[22m\n\n    ReferenceError: assert is not defined",
-      "name": "./spec/basic-skipped-failed.test.ts",
+      "name": "./spec/tests/basic-skipped-failed.test.ts",
       "startTime": 1751198748377,
       "status": "failed",
       "summary": ""

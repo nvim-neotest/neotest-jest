@@ -165,7 +165,7 @@ end
 -- @param testFile string
 -- @param assertionResult table
 -- @return string
-function M.getTestFullIdFromTestResult(testFile, assertionResult)
+function M.getNeotestPositionIdFromTestResult(testFile, assertionResult)
   local keyid = testFile
   local name = assertionResult.title
 

@@ -23,9 +23,9 @@ describe("adapter.results", function()
     return tree
   end
 
-  before_each(function()
-    assert:set_parameter("TableFormatLevel", 10)
+  assert:set_parameter("TableFormatLevel", 10)
 
+  before_each(function()
     spec = {
       context = {
         results_path = "test_output.json",
@@ -42,9 +42,10 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results", function()
+    package.loaded["neotest-jest"] = nil
     local adapter = require("neotest-jest")({})
-    local path = "./spec/basic.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/basic.test.json")
+    local path = "./spec/tests/basic.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/basic.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -145,7 +146,9 @@ describe("adapter.results", function()
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
@@ -153,9 +156,11 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results for nested describes", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({})
-    local path = "./spec/nestedDescribe.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/nestedDescribe.test.json")
+    local path = "./spec/tests/nestedDescribe.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/nestedDescribe.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -184,7 +189,9 @@ describe("adapter.results", function()
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
@@ -192,9 +199,11 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results for tests using template strings", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({})
-    local path = "./spec/templateStrings.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/templateStrings.test.json")
+    local path = "./spec/tests/templateStrings.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/templateStrings.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -290,7 +299,9 @@ describe("adapter.results", function()
       },
     })
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
@@ -298,9 +309,11 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results for tests with backticks in test names", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({})
-    local path = "./spec/backtickInTestNames.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/backtickInTestNames.test.json")
+    local path = "./spec/tests/backtickInTestNames.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/backtickInTestNames.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -342,17 +355,21 @@ describe("adapter.results", function()
       },
     })
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
     lib.files.read:revert()
   end)
 
-  async.it("creates neotest results for parametrized tests 1", function()
+  async.it("creates neotest results for parametrized tests", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
-    local path = "./spec/array.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/array.test.json")
+    local path = "./spec/tests/array.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/array.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     -- TODO: does not work since test names and positions are the same
@@ -580,17 +597,21 @@ describe("adapter.results", function()
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
     lib.files.read:revert()
   end)
 
-  async.it("creates neotest results for parametrized tests 2", function()
+  async.it("creates neotest results for parametrized tests with placeholders", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
-    local path = "./spec/parameterized.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/parameterized.test.json")
+    local path = "./spec/tests/parameterized.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/parameterized.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -655,7 +676,232 @@ describe("adapter.results", function()
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
+  async.it("creates neotest results for parametrized describes", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({ jest_test_discovery = true })
+    local path = "./spec/tests/parametricDescribesOnly.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/parametricDescribesOnly.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::is it enabled? [true]::how many?: 1::test 1"] = {
+        status = types.ResultStatus.passed,
+        short = "test 1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 3,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [true]::how many?: 1::test 2"] = {
+        status = types.ResultStatus.passed,
+        short = "test 2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 7,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [true]::how many?: 1::test 3"] = {
+        status = types.ResultStatus.failed,
+        short = "test 3: failed\nError: I have failed you",
+        output = strategy_result.output,
+        location = {
+          line = 11,
+          column = 5,
+        },
+        errors = {
+          {
+            line = 10,
+            column = 0,
+            message = "Error: I have failed you",
+          },
+        },
+      },
+      [path .. "::is it enabled? [true]::how many?: 2::test 1"] = {
+        status = types.ResultStatus.passed,
+        short = "test 1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 3,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [true]::how many?: 2::test 2"] = {
+        status = types.ResultStatus.passed,
+        short = "test 2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 7,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [true]::how many?: 2::test 3"] = {
+        status = types.ResultStatus.failed,
+        short = "test 3: failed\nError: I have failed you",
+        output = strategy_result.output,
+        location = {
+          line = 11,
+          column = 5,
+        },
+        errors = {
+          {
+            line = 10,
+            column = 0,
+            message = "Error: I have failed you",
+          },
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 1::test 1"] = {
+        status = types.ResultStatus.passed,
+        short = "test 1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 3,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 1::test 2"] = {
+        status = types.ResultStatus.passed,
+        short = "test 2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 7,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 1::test 3"] = {
+        status = types.ResultStatus.failed,
+        short = "test 3: failed\nError: I have failed you",
+        output = strategy_result.output,
+        location = {
+          line = 11,
+          column = 5,
+        },
+        errors = {
+          {
+            line = 10,
+            column = 0,
+            message = "Error: I have failed you",
+          },
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 2::test 1"] = {
+        status = types.ResultStatus.passed,
+        short = "test 1: passed",
+        output = strategy_result.output,
+        location = {
+          line = 3,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 2::test 2"] = {
+        status = types.ResultStatus.passed,
+        short = "test 2: passed",
+        output = strategy_result.output,
+        location = {
+          line = 7,
+          column = 5,
+        },
+      },
+      [path .. "::is it enabled? [false]::how many?: 2::test 3"] = {
+        status = types.ResultStatus.failed,
+        short = "test 3: failed\nError: I have failed you",
+        output = strategy_result.output,
+        location = {
+          line = 11,
+          column = 5,
+        },
+        errors = {
+          {
+            line = 10,
+            column = 0,
+            message = "Error: I have failed you",
+          },
+        },
+      },
+    })
+
+    -- local expected_tree = require("./spec/basic.test.expected_tree")
+    --
+    -- -- tree remains unchanged
+    -- assert.are.same(tree:to_list(), expected_tree)
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
+  async.it("creates neotest results for parametrized describes and tests", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({ jest_test_discovery = true })
+    local path = "./spec/tests/parametricDescribeAndTest.test.ts"
+    local tree =
+      discover_positions(adapter, path, "./spec/json/parametricDescribeAndTest.test.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::greeting Alice::should greet using Hello!"] = {
+        status = types.ResultStatus.passed,
+        short = "should greet using Hello!: passed",
+        output = strategy_result.output,
+        location = {
+          line = 9,
+          column = 5,
+        },
+      },
+      [path .. "::greeting Alice::should greet using Hi!"] = {
+        status = types.ResultStatus.passed,
+        short = "should greet using Hi!: passed",
+        output = strategy_result.output,
+        location = {
+          line = 9,
+          column = 5,
+        },
+      },
+      [path .. "::greeting Bob::should greet using Hello!"] = {
+        status = types.ResultStatus.passed,
+        short = "should greet using Hello!: passed",
+        output = strategy_result.output,
+        location = {
+          line = 9,
+          column = 5,
+        },
+      },
+      [path .. "::greeting Bob::should greet using Hi!"] = {
+        status = types.ResultStatus.passed,
+        short = "should greet using Hi!: passed",
+        output = strategy_result.output,
+        location = {
+          line = 9,
+          column = 5,
+        },
+      },
+    })
+
+    -- local expected_tree = require("./spec/basic.test.expected_tree")
+    --
+    -- -- tree remains unchanged
+    -- assert.are.same(tree:to_list(), expected_tree)
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
@@ -663,9 +909,11 @@ describe("adapter.results", function()
   end)
 
   async.it("creates neotest results with failed and skipped results", function()
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({})
-    local path = "./spec/basic-skipped-failed.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/basic-skipped-failed.test.json")
+    local path = "./spec/tests/basic-skipped-failed.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/basic-skipped-failed.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -755,7 +1003,9 @@ describe("adapter.results", function()
     -- -- tree remains unchanged
     -- assert.are.same(tree:to_list(), expected_tree)
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
     assert.stub(logger.error).was_not_called()
 
     ---@diagnostic disable-next-line: undefined-field
@@ -763,13 +1013,17 @@ describe("adapter.results", function()
   end)
 
   async.it("handles failure to find parsed test result", function()
-    local path = "./spec/basic.test.ts"
+    package.loaded["neotest-jest"] = nil
+
+    local path = "./spec/tests/basic.test.ts"
     local adapter = require("neotest-jest")({})
-    local tree = discover_positions(adapter, path, "./spec/basic-parse-fail.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/basic-parse-fail.test.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
     assert.are.same(neotest_results, {})
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(logger.error).was.called_with("Failed to find parsed test result ", {
       ancestorTitles = {
         "describe text",
@@ -794,11 +1048,15 @@ describe("adapter.results", function()
       error("Could not read file", 0)
     end)
 
+    package.loaded["neotest-jest"] = nil
+
     local adapter = require("neotest-jest")({})
     local neotest_results = adapter.results(spec, strategy_result)
     assert.are.same(neotest_results, {})
 
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(logger.error).was.called_with("No test output file found ", "test_output.json")
 
     ---@diagnostic disable-next-line: undefined-field
@@ -808,16 +1066,24 @@ describe("adapter.results", function()
   it("handles failure to decode json", function()
     stub(lib.files, "read", '{"a".}')
 
+    package.loaded["neotest-jest"] = nil
     local adapter = require("neotest-jest")({})
 
     ---@diagnostic disable-next-line: missing-parameter
     local neotest_results = adapter.results(spec, strategy_result)
 
     assert.are.same(neotest_results, {})
+
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+
     assert
-      .stub(logger.error).was
+      ---@diagnostic disable-next-line: param-type-mismatch
+      .stub(logger.error)
+      .was
       .called_with("Failed to parse test output json ", "test_output.json")
+
+    ---@diagnostic disable-next-line: param-type-mismatch
     assert.stub(lib.files.read).was.called_with(spec.context.results_path)
 
     ---@diagnostic disable-next-line: undefined-field
