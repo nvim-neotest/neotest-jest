@@ -7,8 +7,6 @@ local M = {}
 ---@class neotest-jest.RuntimeTestInfo
 ---@field pos_id           string
 ---@field name             string
----@field namespace_pos_id string
----@field namespace_name   string
 
 ---@type table<string, table<string, string>>
 local parametricTestToSourceLevelTest = {}
@@ -214,8 +212,6 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
   end
 
   local tests_by_position = getTestsByPosition(jest_test_discovery_output)
-
-  -- Reset map
   parametricTestToSourceLevelTest[file_path] = {}
 
   -- For each parameterized test, find all tests that were in the same position
@@ -249,15 +245,6 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
       for _, test_result in ipairs(parameterized_test_results_for_position) do
         tryCreateNamespaceNodes(tree, test_result.pos_id)
 
-        -- Only create a new node if the test position has any test parameters
-        -- ('$param' or '%j') in the name. Otherwise, we would use a position
-        -- id that matches the source-level test name which would overwrite
-        -- the real position id in the tree.
-        --
-        -- There is no way for neotest-jest or jest to distinguish between
-        -- tests that share the same name anyway so not creating new nodes is
-        -- acceptable for now
-        -- if hasTestParameters(tree, pos) then
         if not tree:get_key(test_result.pos_id) then
           createNewChildNode(
             tree,
@@ -336,9 +323,11 @@ function M.replaceTestParametersWithRegex(test_name)
   return result
 end
 
-function M.getParametricTestToSourceLevelTest(path, pos_id)
-  if parametricTestToSourceLevelTest[path] then
-    return parametricTestToSourceLevelTest[path][pos_id]
+---@param pos neotest.Position
+---@return string?
+function M.getParametricTestToSourceLevelTest(pos)
+  if parametricTestToSourceLevelTest[pos.path] then
+    return parametricTestToSourceLevelTest[pos.path][pos.id]
   end
 
   return nil

@@ -75,8 +75,8 @@ function adapter.build_position(file_path, source, captured_nodes)
 
   if type == "string" then
     -- If the node is a string then strip the quotes from the name by getting
-    -- it's first named child (string_fragment). This works for single-, double-,
-    -- and literal quotes and is necessary since we match anything in the queries
+    -- it's first named child (string_fragment). This works for single- and
+    -- double-quotes and is necessary since we match anything in the queries
     -- used in discover_positions
     local content = node:named_child(0)
 
@@ -421,7 +421,9 @@ function adapter.build_spec(args)
   local testNamePattern = ".*"
 
   if pos.type == types.PositionType.test or pos.type == types.PositionType.namespace then
-    local sourceLevelTest = parameterized_tests.getParametricTestToSourceLevelTest(pos.path, pos.id)
+    -- Check if the position is a parametric (runtime) test by seeing if there is a corresponding
+    -- source-level test
+    local sourceLevelTest = parameterized_tests.getParametricTestToSourceLevelTest(pos)
     local testName = sourceLevelTest or pos.id
 
     testName, _ = testName:sub(pos.id:find("::") + 2):gsub("::", " ")
