@@ -364,6 +364,71 @@ describe("adapter.results", function()
     lib.files.read:revert()
   end)
 
+  async.it("creates neotest results for tests with non-string test names", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({})
+    local path = "./spec/tests/nonStringTestNames.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/nonStringTestNames.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::non-string test names::Test"] = {
+        status = types.ResultStatus.passed,
+        short = "Test: passed",
+        output = strategy_result.output,
+        location = {
+          line = 16,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::name"] = {
+        status = types.ResultStatus.passed,
+        short = "name: passed",
+        output = strategy_result.output,
+        location = {
+          line = 20,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::arrow"] = {
+        status = types.ResultStatus.passed,
+        short = "arrow: passed",
+        output = strategy_result.output,
+        location = {
+          line = 24,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::func"] = {
+        status = types.ResultStatus.passed,
+        short = "func: passed",
+        output = strategy_result.output,
+        location = {
+          line = 28,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::123"] = {
+        status = types.ResultStatus.passed,
+        short = "123: passed",
+        output = strategy_result.output,
+        location = {
+          line = 32,
+          column = 3,
+        },
+      },
+    })
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
   async.it("creates neotest results for parametrized tests", function()
     package.loaded["neotest-jest"] = nil
 

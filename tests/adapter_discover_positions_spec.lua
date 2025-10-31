@@ -392,6 +392,91 @@ describe("adapter.discover_positions", function()
     assert.are.same(positions, expected_output)
   end)
 
+  async.it("provides meaningful names from a spec with non-string test names", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({ jestCommand = "jest" })
+    local path = "./spec/tests/nonStringTestNames.test.ts"
+    local positions = adapter.discover_positions(path):to_list()
+
+    local expected_output = {
+      {
+        id = path,
+        name = "nonStringTestNames.test.ts",
+        path = path,
+        range = { 0, 0, 35, 0 },
+        type = PositionType.file,
+      },
+      {
+        {
+          id = path .. "::non-string test names",
+          is_parameterized = false,
+          name = "non-string test names",
+          path = path,
+          range = { 14, 0, 34, 2 },
+          type = PositionType.namespace,
+        },
+        {
+          {
+            id = path .. "::non-string test names::Test",
+            is_parameterized = true,
+            name = "Test",
+            path = path,
+            range = { 15, 2, 17, 4 },
+            test_name_range = { 15, 5, 15, 9 },
+            type = PositionType.test,
+          },
+        },
+        {
+          {
+            id = path .. "::non-string test names::test.name",
+            is_parameterized = true,
+            name = "test.name",
+            path = path,
+            range = { 19, 2, 21, 4 },
+            test_name_range = { 19, 5, 19, 14 },
+            type = PositionType.test,
+          },
+        },
+        {
+          {
+            id = path .. "::non-string test names::arrow",
+            is_parameterized = true,
+            name = "arrow",
+            path = path,
+            range = { 23, 2, 25, 4 },
+            test_name_range = { 23, 5, 23, 10 },
+            type = PositionType.test,
+          },
+        },
+        {
+          {
+            id = path .. "::non-string test names::func",
+            is_parameterized = true,
+            name = "func",
+            path = path,
+            range = { 27, 2, 29, 4 },
+            test_name_range = { 27, 5, 27, 9 },
+            type = PositionType.test,
+          },
+        },
+        {
+          {
+            id = path .. "::non-string test names::123",
+            is_parameterized = true,
+            name = "123",
+            path = path,
+            range = { 31, 2, 33, 4 },
+            test_name_range = { 31, 5, 31, 8 },
+            type = PositionType.test,
+          },
+        },
+      },
+    }
+
+    assert.are.same(positions, expected_output)
+  end)
+
   async.it("provides meaningful names for parametric tests", function()
     package.loaded["neotest-jest"] = nil
 
