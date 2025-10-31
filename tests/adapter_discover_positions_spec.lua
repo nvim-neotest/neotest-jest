@@ -49,7 +49,7 @@ describe("adapter.discover_positions", function()
             name = "1",
             path = path,
             range = { 5, 2, 7, 4 },
-            test_name_range = { 5, 6, 5, 7 },
+            test_name_range = { 5, 5, 5, 8 },
             type = PositionType.test,
           },
         },
@@ -60,7 +60,7 @@ describe("adapter.discover_positions", function()
             name = "2",
             path = path,
             range = { 9, 2, 11, 4 },
-            test_name_range = { 9, 6, 9, 7 },
+            test_name_range = { 9, 5, 9, 8 },
             type = PositionType.test,
           },
         },
@@ -71,7 +71,7 @@ describe("adapter.discover_positions", function()
             name = "3",
             path = path,
             range = { 13, 2, 15, 4 },
-            test_name_range = { 13, 8, 13, 9 },
+            test_name_range = { 13, 7, 13, 10 },
             type = PositionType.test,
           },
         },
@@ -82,7 +82,7 @@ describe("adapter.discover_positions", function()
             name = "4",
             path = path,
             range = { 17, 2, 19, 4 },
-            test_name_range = { 17, 8, 17, 9 },
+            test_name_range = { 17, 7, 17, 10 },
             type = PositionType.test,
           },
         },
@@ -93,7 +93,7 @@ describe("adapter.discover_positions", function()
             name = "5",
             path = path,
             range = { 21, 2, 23, 5 },
-            test_name_range = { 21, 6, 21, 7 },
+            test_name_range = { 21, 5, 21, 8 },
             type = PositionType.test,
           },
         },
@@ -114,7 +114,7 @@ describe("adapter.discover_positions", function()
             name = "1",
             path = path,
             range = { 27, 2, 29, 4 },
-            test_name_range = { 27, 6, 27, 7 },
+            test_name_range = { 27, 5, 27, 8 },
             type = PositionType.test,
           },
         },
@@ -125,7 +125,7 @@ describe("adapter.discover_positions", function()
             name = "2",
             path = path,
             range = { 31, 2, 33, 4 },
-            test_name_range = { 31, 6, 31, 7 },
+            test_name_range = { 31, 5, 31, 8 },
             type = PositionType.test,
           },
         },
@@ -136,7 +136,7 @@ describe("adapter.discover_positions", function()
             name = "3",
             path = path,
             range = { 35, 2, 37, 4 },
-            test_name_range = { 35, 8, 35, 9 },
+            test_name_range = { 35, 7, 35, 10 },
             type = PositionType.test,
           },
         },
@@ -147,7 +147,7 @@ describe("adapter.discover_positions", function()
             name = "4",
             path = path,
             range = { 39, 2, 41, 4 },
-            test_name_range = { 39, 8, 39, 9 },
+            test_name_range = { 39, 7, 39, 10 },
             type = PositionType.test,
           },
         },
@@ -158,7 +158,7 @@ describe("adapter.discover_positions", function()
             name = "5",
             path = path,
             range = { 43, 2, 45, 5 },
-            test_name_range = { 43, 6, 43, 7 },
+            test_name_range = { 43, 5, 43, 8 },
             type = PositionType.test,
           },
         },
@@ -199,7 +199,7 @@ describe("adapter.discover_positions", function()
             name = "1",
             path = path,
             range = { 5, 2, 7, 4 },
-            test_name_range = { 5, 6, 5, 7 },
+            test_name_range = { 5, 5, 5, 8 },
             type = PositionType.test,
           },
         },
@@ -210,7 +210,7 @@ describe("adapter.discover_positions", function()
             name = "2",
             path = path,
             range = { 9, 2, 11, 4 },
-            test_name_range = { 9, 6, 9, 7 },
+            test_name_range = { 9, 5, 9, 8 },
             type = PositionType.test,
           },
         },
@@ -221,7 +221,7 @@ describe("adapter.discover_positions", function()
             name = "3",
             path = path,
             range = { 13, 2, 15, 4 },
-            test_name_range = { 13, 8, 13, 9 },
+            test_name_range = { 13, 7, 13, 10 },
             type = PositionType.test,
           },
         },
@@ -232,7 +232,7 @@ describe("adapter.discover_positions", function()
             name = "4",
             path = path,
             range = { 17, 2, 19, 4 },
-            test_name_range = { 17, 8, 17, 9 },
+            test_name_range = { 17, 7, 17, 10 },
             type = PositionType.test,
           },
         },
@@ -243,7 +243,7 @@ describe("adapter.discover_positions", function()
             name = "5",
             path = path,
             range = { 21, 2, 23, 5 },
-            test_name_range = { 21, 6, 21, 7 },
+            test_name_range = { 21, 5, 21, 8 },
             type = PositionType.test,
           },
         },
@@ -264,7 +264,7 @@ describe("adapter.discover_positions", function()
             name = "1",
             path = path,
             range = { 27, 2, 29, 4 },
-            test_name_range = { 27, 6, 27, 7 },
+            test_name_range = { 27, 5, 27, 8 },
             type = PositionType.test,
           },
         },
@@ -275,7 +275,7 @@ describe("adapter.discover_positions", function()
             name = "2",
             path = path,
             range = { 31, 2, 33, 4 },
-            test_name_range = { 31, 6, 31, 7 },
+            test_name_range = { 31, 5, 31, 8 },
             type = PositionType.test,
           },
         },
@@ -286,7 +286,7 @@ describe("adapter.discover_positions", function()
             name = "3",
             path = path,
             range = { 35, 2, 37, 4 },
-            test_name_range = { 35, 8, 35, 9 },
+            test_name_range = { 35, 7, 35, 10 },
             type = PositionType.test,
           },
         },
@@ -297,7 +297,7 @@ describe("adapter.discover_positions", function()
             name = "4",
             path = path,
             range = { 39, 2, 41, 4 },
-            test_name_range = { 39, 8, 39, 9 },
+            test_name_range = { 39, 7, 39, 10 },
             type = PositionType.test,
           },
         },
@@ -308,7 +308,7 @@ describe("adapter.discover_positions", function()
             name = "5",
             path = path,
             range = { 43, 2, 45, 5 },
-            test_name_range = { 43, 6, 43, 7 },
+            test_name_range = { 43, 5, 43, 8 },
             type = PositionType.test,
           },
         },
@@ -349,7 +349,7 @@ describe("adapter.discover_positions", function()
             name = "` 1",
             path = path,
             range = { 1, 2, 3, 4 },
-            test_name_range = { 1, 6, 1, 9 },
+            test_name_range = { 1, 5, 1, 10 },
             type = PositionType.test,
           },
         },
@@ -360,7 +360,7 @@ describe("adapter.discover_positions", function()
             name = "2`",
             path = path,
             range = { 5, 2, 7, 4 },
-            test_name_range = { 5, 8, 5, 10 },
+            test_name_range = { 5, 7, 5, 11 },
             type = PositionType.test,
           },
         },
@@ -371,7 +371,7 @@ describe("adapter.discover_positions", function()
             name = "`` 3",
             path = path,
             range = { 9, 2, 11, 4 },
-            test_name_range = { 9, 6, 9, 10 },
+            test_name_range = { 9, 5, 9, 11 },
             type = PositionType.test,
           },
         },
@@ -382,7 +382,7 @@ describe("adapter.discover_positions", function()
             name = "` 4`",
             path = path,
             range = { 13, 2, 15, 4 },
-            test_name_range = { 13, 8, 13, 12 },
+            test_name_range = { 13, 7, 13, 13 },
             type = PositionType.test,
           },
         },
@@ -423,7 +423,7 @@ describe("adapter.discover_positions", function()
             name = "Array1 %d",
             path = path,
             range = { 1, 2, 3, 4 },
-            test_name_range = { 1, 22, 1, 31 },
+            test_name_range = { 1, 21, 1, 32 },
             type = PositionType.test,
           },
         },
@@ -434,7 +434,7 @@ describe("adapter.discover_positions", function()
             name = "Array2",
             path = path,
             range = { 5, 2, 7, 4 },
-            test_name_range = { 5, 22, 5, 28 },
+            test_name_range = { 5, 21, 5, 29 },
             type = PositionType.test,
           },
         },
@@ -445,7 +445,7 @@ describe("adapter.discover_positions", function()
             name = "Array3 %d",
             path = path,
             range = { 9, 2, 11, 4 },
-            test_name_range = { 9, 24, 9, 33 },
+            test_name_range = { 9, 23, 9, 34 },
             type = PositionType.test,
           },
         },
@@ -456,7 +456,7 @@ describe("adapter.discover_positions", function()
             name = "Array4 %d",
             path = path,
             range = { 13, 2, 15, 4 },
-            test_name_range = { 13, 24, 13, 33 },
+            test_name_range = { 13, 23, 13, 34 },
             type = PositionType.test,
           },
         },
@@ -477,7 +477,7 @@ describe("adapter.discover_positions", function()
             name = "Array1 %d",
             path = path,
             range = { 19, 2, 21, 4 },
-            test_name_range = { 19, 22, 19, 31 },
+            test_name_range = { 19, 21, 19, 32 },
             type = PositionType.test,
           },
         },
@@ -488,7 +488,7 @@ describe("adapter.discover_positions", function()
             name = "Array2 %d",
             path = path,
             range = { 23, 2, 25, 4 },
-            test_name_range = { 23, 22, 23, 31 },
+            test_name_range = { 23, 21, 23, 32 },
             type = PositionType.test,
           },
         },
@@ -499,7 +499,7 @@ describe("adapter.discover_positions", function()
             name = "Array3 %d",
             path = path,
             range = { 27, 2, 29, 4 },
-            test_name_range = { 27, 24, 27, 33 },
+            test_name_range = { 27, 23, 27, 34 },
             type = PositionType.test,
           },
         },
@@ -510,7 +510,7 @@ describe("adapter.discover_positions", function()
             name = "Array4",
             path = path,
             range = { 31, 2, 33, 4 },
-            test_name_range = { 31, 24, 31, 30 },
+            test_name_range = { 31, 23, 31, 31 },
             type = PositionType.test,
           },
         },
@@ -572,7 +572,7 @@ describe("adapter.discover_positions", function()
               name = "Array1 %d",
               path = path,
               range = { 1, 2, 3, 4 },
-              test_name_range = { 1, 22, 1, 31 },
+              test_name_range = { 1, 21, 1, 32 },
               type = PositionType.test,
             },
             {
@@ -610,7 +610,7 @@ describe("adapter.discover_positions", function()
               name = "Array2",
               path = path,
               range = { 5, 2, 7, 4 },
-              test_name_range = { 5, 22, 5, 28 },
+              test_name_range = { 5, 21, 5, 29 },
               type = PositionType.test,
             },
           },
@@ -621,7 +621,7 @@ describe("adapter.discover_positions", function()
               name = "Array3 %d",
               path = path,
               range = { 9, 2, 11, 4 },
-              test_name_range = { 9, 24, 9, 33 },
+              test_name_range = { 9, 23, 9, 34 },
               type = PositionType.test,
             },
             {
@@ -659,7 +659,7 @@ describe("adapter.discover_positions", function()
               name = "Array4 %d",
               path = path,
               range = { 13, 2, 15, 4 },
-              test_name_range = { 13, 24, 13, 33 },
+              test_name_range = { 13, 23, 13, 34 },
               type = PositionType.test,
             },
             {
@@ -707,7 +707,7 @@ describe("adapter.discover_positions", function()
               name = "Array1 %d",
               path = path,
               range = { 19, 2, 21, 4 },
-              test_name_range = { 19, 22, 19, 31 },
+              test_name_range = { 19, 21, 19, 32 },
               type = PositionType.test,
             },
             {
@@ -745,7 +745,7 @@ describe("adapter.discover_positions", function()
               name = "Array2 %d",
               path = path,
               range = { 23, 2, 25, 4 },
-              test_name_range = { 23, 22, 23, 31 },
+              test_name_range = { 23, 21, 23, 32 },
               type = PositionType.test,
             },
             {
@@ -783,7 +783,7 @@ describe("adapter.discover_positions", function()
               name = "Array3 %d",
               path = path,
               range = { 27, 2, 29, 4 },
-              test_name_range = { 27, 24, 27, 33 },
+              test_name_range = { 27, 23, 27, 34 },
               type = PositionType.test,
             },
             {
@@ -821,7 +821,7 @@ describe("adapter.discover_positions", function()
               name = "Array4",
               path = path,
               range = { 31, 2, 33, 4 },
-              test_name_range = { 31, 24, 31, 30 },
+              test_name_range = { 31, 23, 31, 31 },
               type = PositionType.test,
             },
           },
@@ -871,7 +871,7 @@ describe("adapter.discover_positions", function()
                 name = "test 1",
                 path = path,
                 range = { 2, 4, 4, 6 },
-                test_name_range = { 2, 8, 2, 14 },
+                test_name_range = { 2, 7, 2, 15 },
                 type = PositionType.test,
               },
               {
@@ -918,7 +918,7 @@ describe("adapter.discover_positions", function()
                 name = "test 2",
                 path = path,
                 range = { 6, 4, 8, 6 },
-                test_name_range = { 6, 8, 6, 14 },
+                test_name_range = { 6, 7, 6, 15 },
                 type = PositionType.test,
               },
               {
@@ -965,7 +965,7 @@ describe("adapter.discover_positions", function()
                 name = "test 3",
                 path = path,
                 range = { 10, 4, 12, 6 },
-                test_name_range = { 10, 8, 10, 14 },
+                test_name_range = { 10, 7, 10, 15 },
                 type = PositionType.test,
               },
               {
@@ -1060,97 +1060,97 @@ describe("adapter.discover_positions", function()
       assert.are.same(positions, expected_output)
     end)
 
-    --   async.it("provides meaningful names for parametric describes and tests", function()
-    --     package.loaded["neotest-jest"] = nil
-    --
-    --     local path = get_test_absolute_path("parametricDescribeAndTest.test.ts")
-    --     local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
-    --     local positions = adapter.discover_positions(path):to_list()
-    --
-    --     local expected_output = {
-    --       {
-    --         id = path,
-    --         name = "parametricDescribeAndTest.test.ts",
-    --         path = path,
-    --         range = { 0, 0, 12, 0 },
-    --         type = PositionType.file,
-    --       },
-    --       {
-    --         {
-    --           id = path .. "::greeting %s",
-    --           is_parameterized = true,
-    --           name = "greeting %s",
-    --           path = path,
-    --           range = { 4, 0, 11, 2 },
-    --           type = PositionType.namespace,
-    --         },
-    --         {
-    --           {
-    --             id = path .. "::greeting %s::should greet using %s!",
-    --             is_parameterized = true,
-    --             name = "should greet using %s!",
-    --             path = path,
-    --             range = { 5, 2, 10, 4 },
-    --             test_name_range = { 8, 6, 8, 28 },
-    --             type = PositionType.test,
-    --           },
-    --         },
-    --       },
-    --       {
-    --         {
-    --           id = path .. "::greeting Alice",
-    --           name = "greeting Alice",
-    --           path = path,
-    --           type = PositionType.namespace,
-    --         },
-    --         {
-    --           {
-    --             id = path .. "::greeting Alice::should greet using Hello!",
-    --             name = "should greet using Hello!",
-    --             path = path,
-    --             source_pos_id = path .. "::greeting %s::should greet using %s!",
-    --             type = PositionType.test,
-    --           },
-    --         },
-    --         {
-    --           {
-    --             id = path .. "::greeting Alice::should greet using Hi!",
-    --             name = "should greet using Hi!",
-    --             path = path,
-    --             source_pos_id = path .. "::greeting %s::should greet using %s!",
-    --             type = PositionType.test,
-    --           },
-    --         },
-    --       },
-    --       {
-    --         {
-    --           id = path .. "::greeting Bob",
-    --           name = "greeting Bob",
-    --           path = path,
-    --           type = PositionType.namespace,
-    --         },
-    --         {
-    --           {
-    --             id = path .. "::greeting Bob::should greet using Hello!",
-    --             name = "should greet using Hello!",
-    --             path = path,
-    --             source_pos_id = path .. "::greeting %s::should greet using %s!",
-    --             type = PositionType.test,
-    --           },
-    --         },
-    --         {
-    --           {
-    --             id = path .. "::greeting Bob::should greet using Hi!",
-    --             name = "should greet using Hi!",
-    --             path = path,
-    --             source_pos_id = path .. "::greeting %s::should greet using %s!",
-    --             type = PositionType.test,
-    --           },
-    --         },
-    --       },
-    --     }
-    --
-    --     assert.are.same(positions, expected_output)
-    --   end)
+    async.it("provides meaningful names for parametric describes and tests", function()
+      package.loaded["neotest-jest"] = nil
+
+      local path = get_test_absolute_path("parametricDescribeAndTest.test.ts")
+      local adapter = require("neotest-jest")({ jestCommand = "jest", jest_test_discovery = true })
+      local positions = adapter.discover_positions(path):to_list()
+
+      local expected_output = {
+        {
+          id = path,
+          name = "parametricDescribeAndTest.test.ts",
+          path = path,
+          range = { 0, 0, 12, 0 },
+          type = PositionType.file,
+        },
+        {
+          {
+            id = path .. "::greeting %s",
+            is_parameterized = true,
+            name = "greeting %s",
+            path = path,
+            range = { 4, 0, 11, 2 },
+            type = PositionType.namespace,
+          },
+          {
+            {
+              id = path .. "::greeting %s::should greet using %s!",
+              is_parameterized = true,
+              name = "should greet using %s!",
+              path = path,
+              range = { 5, 2, 10, 4 },
+              test_name_range = { 8, 5, 8, 29 },
+              type = PositionType.test,
+            },
+            {
+              {
+                id = path .. "::greeting Alice::should greet using Hello!",
+                name = "should greet using Hello!",
+                path = path,
+                source_pos_id = path .. "::greeting %s::should greet using %s!",
+                type = PositionType.test,
+              },
+            },
+            {
+              {
+                id = path .. "::greeting Alice::should greet using Hi!",
+                name = "should greet using Hi!",
+                path = path,
+                source_pos_id = path .. "::greeting %s::should greet using %s!",
+                type = PositionType.test,
+              },
+            },
+            {
+              {
+                id = path .. "::greeting Bob::should greet using Hello!",
+                name = "should greet using Hello!",
+                path = path,
+                source_pos_id = path .. "::greeting %s::should greet using %s!",
+                type = PositionType.test,
+              },
+            },
+            {
+              {
+                id = path .. "::greeting Bob::should greet using Hi!",
+                name = "should greet using Hi!",
+                path = path,
+                source_pos_id = path .. "::greeting %s::should greet using %s!",
+                type = PositionType.test,
+              },
+            },
+          },
+          {
+            {
+              id = path .. "::greeting Alice",
+              name = "greeting Alice",
+              path = path,
+              type = PositionType.namespace,
+            },
+          },
+          {
+            {
+              id = path .. "::greeting Bob",
+              name = "greeting Bob",
+              path = path,
+              type = PositionType.namespace,
+            },
+          },
+        },
+      }
+
+      assert.are.same(positions, expected_output)
+    end)
   end)
 end)

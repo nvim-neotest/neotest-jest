@@ -1,7 +1,6 @@
 local lib = require("neotest.lib")
 local jest_util = require("neotest-jest.jest-util")
 local types = require("neotest.types")
-local logger = require("neotest.logging")
 
 local M = {}
 
@@ -10,6 +9,9 @@ local M = {}
 ---@field name             string
 ---@field namespace_pos_id string
 ---@field namespace_name   string
+
+---@type table<string, table<string, string>>
+local parametricTestToSourceLevelTest = {}
 
 local JEST_PARAMETER_TYPES = {
   "%%p",
@@ -207,13 +209,14 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
   -- Get all runtime test information for path
   local jest_test_discovery_output = runJestTestDiscovery(file_path)
 
-  logger.warn(jest_test_discovery_output)
-
   if jest_test_discovery_output == nil then
     return
   end
 
   local tests_by_position = getTestsByPosition(jest_test_discovery_output)
+
+  -- Reset map
+  parametricTestToSourceLevelTest[file_path] = {}
 
   -- For each parameterized test, find all tests that were in the same position
   -- as it and add new range-less (range = nil) children to the tree
@@ -270,6 +273,12 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
               source_pos_id = pos.id,
             }
           )
+
+          if not parametricTestToSourceLevelTest[file_path] then
+            parametricTestToSourceLevelTest[file_path] = {}
+          end
+
+          parametricTestToSourceLevelTest[file_path][pos.id] = test_result.pos_id
         end
       end
     end
@@ -325,6 +334,14 @@ function M.replaceTestParametersWithRegex(test_name)
   end
 
   return result
+end
+
+function M.getParametricTestToSourceLevelTest(path, pos_id)
+  if parametricTestToSourceLevelTest[path] then
+    return parametricTestToSourceLevelTest[path][pos_id]
+  end
+
+  return nil
 end
 
 return M
