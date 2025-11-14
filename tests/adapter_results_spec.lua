@@ -45,7 +45,7 @@ describe("adapter.results", function()
     package.loaded["neotest-jest"] = nil
     local adapter = require("neotest-jest")({})
     local path = "./spec/tests/basic.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/basic.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/basic.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -160,7 +160,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({})
     local path = "./spec/tests/nestedDescribe.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/nestedDescribe.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/nestedDescribe.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -203,7 +203,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({})
     local path = "./spec/tests/templateStrings.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/templateStrings.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/templateStrings.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -313,7 +313,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({})
     local path = "./spec/tests/backtickInTestNames.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/backtickInTestNames.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/backtickInTestNames.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -364,12 +364,77 @@ describe("adapter.results", function()
     lib.files.read:revert()
   end)
 
+  async.it("creates neotest results for tests with non-string test names", function()
+    package.loaded["neotest-jest"] = nil
+
+    local adapter = require("neotest-jest")({})
+    local path = "./spec/tests/nonStringTestNames.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/nonStringTestNames.json")
+    local neotest_results = adapter.results(spec, strategy_result, tree)
+
+    assert.are.same(neotest_results, {
+      [path .. "::non-string test names::Test"] = {
+        status = types.ResultStatus.passed,
+        short = "Test: passed",
+        output = strategy_result.output,
+        location = {
+          line = 16,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::name"] = {
+        status = types.ResultStatus.passed,
+        short = "name: passed",
+        output = strategy_result.output,
+        location = {
+          line = 20,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::arrow"] = {
+        status = types.ResultStatus.passed,
+        short = "arrow: passed",
+        output = strategy_result.output,
+        location = {
+          line = 24,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::func"] = {
+        status = types.ResultStatus.passed,
+        short = "func: passed",
+        output = strategy_result.output,
+        location = {
+          line = 28,
+          column = 3,
+        },
+      },
+      [path .. "::non-string test names::123"] = {
+        status = types.ResultStatus.passed,
+        short = "123: passed",
+        output = strategy_result.output,
+        location = {
+          line = 32,
+          column = 3,
+        },
+      },
+    })
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    assert.stub(lib.files.read).was.called_with(spec.context.results_path)
+    ---@diagnostic disable-next-line: param-type-mismatch, undefined-field
+    assert.stub(logger.error).was_not_called()
+
+    ---@diagnostic disable-next-line: undefined-field
+    lib.files.read:revert()
+  end)
+
   async.it("creates neotest results for parametrized tests", function()
     package.loaded["neotest-jest"] = nil
 
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/tests/array.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/array.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/array.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     -- TODO: does not work since test names and positions are the same
@@ -611,7 +676,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/tests/parameterized.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/parameterized.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/parameterized.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -690,7 +755,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/tests/parametricDescribesOnly.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/parametricDescribesOnly.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/parametricDescribesOnly.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -851,8 +916,7 @@ describe("adapter.results", function()
 
     local adapter = require("neotest-jest")({ jest_test_discovery = true })
     local path = "./spec/tests/parametricDescribeAndTest.test.ts"
-    local tree =
-      discover_positions(adapter, path, "./spec/json/parametricDescribeAndTest.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/parametricDescribeAndTest.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -912,8 +976,8 @@ describe("adapter.results", function()
     package.loaded["neotest-jest"] = nil
 
     local adapter = require("neotest-jest")({})
-    local path = "./spec/tests/basic-skipped-failed.test.ts"
-    local tree = discover_positions(adapter, path, "./spec/json/basic-skipped-failed.test.json")
+    local path = "./spec/tests/basicSkippedFailed.test.ts"
+    local tree = discover_positions(adapter, path, "./spec/json/basicSkippedFailed.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
 
     assert.are.same(neotest_results, {
@@ -1017,7 +1081,7 @@ describe("adapter.results", function()
 
     local path = "./spec/tests/basic.test.ts"
     local adapter = require("neotest-jest")({})
-    local tree = discover_positions(adapter, path, "./spec/json/basic-parse-fail.test.json")
+    local tree = discover_positions(adapter, path, "./spec/json/basicParseFail.json")
     local neotest_results = adapter.results(spec, strategy_result, tree)
     assert.are.same(neotest_results, {})
 

@@ -1,15 +1,15 @@
 local lib = require("neotest.lib")
 local jest_util = require("neotest-jest.jest-util")
 local types = require("neotest.types")
-local logger = require("neotest.logging")
 
 local M = {}
 
 ---@class neotest-jest.RuntimeTestInfo
 ---@field pos_id           string
 ---@field name             string
----@field namespace_pos_id string
----@field namespace_name   string
+
+---@type table<string, table<string, string>>
+local parametricTestToSourceLevelTest = {}
 
 local JEST_PARAMETER_TYPES = {
   "%%p",
@@ -207,13 +207,12 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
   -- Get all runtime test information for path
   local jest_test_discovery_output = runJestTestDiscovery(file_path)
 
-  logger.warn(jest_test_discovery_output)
-
   if jest_test_discovery_output == nil then
     return
   end
 
   local tests_by_position = getTestsByPosition(jest_test_discovery_output)
+  parametricTestToSourceLevelTest[file_path] = {}
 
   -- For each parameterized test, find all tests that were in the same position
   -- as it and add new range-less (range = nil) children to the tree
@@ -246,15 +245,6 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
       for _, test_result in ipairs(parameterized_test_results_for_position) do
         tryCreateNamespaceNodes(tree, test_result.pos_id)
 
-        -- Only create a new node if the test position has any test parameters
-        -- ('$param' or '%j') in the name. Otherwise, we would use a position
-        -- id that matches the source-level test name which would overwrite
-        -- the real position id in the tree.
-        --
-        -- There is no way for neotest-jest or jest to distinguish between
-        -- tests that share the same name anyway so not creating new nodes is
-        -- acceptable for now
-        -- if hasTestParameters(tree, pos) then
         if not tree:get_key(test_result.pos_id) then
           createNewChildNode(
             tree,
@@ -270,6 +260,12 @@ function M.enrichPositionsWithParameterizedTests(file_path, parsed_parameterized
               source_pos_id = pos.id,
             }
           )
+
+          if not parametricTestToSourceLevelTest[file_path] then
+            parametricTestToSourceLevelTest[file_path] = {}
+          end
+
+          parametricTestToSourceLevelTest[file_path][pos.id] = test_result.pos_id
         end
       end
     end
@@ -325,6 +321,16 @@ function M.replaceTestParametersWithRegex(test_name)
   end
 
   return result
+end
+
+---@param pos neotest.Position
+---@return string?
+function M.getParametricTestToSourceLevelTest(pos)
+  if parametricTestToSourceLevelTest[pos.path] then
+    return parametricTestToSourceLevelTest[pos.path][pos.id]
+  end
+
+  return nil
 end
 
 return M

@@ -67,9 +67,37 @@ function adapter.build_position(file_path, source, captured_nodes)
   end
 
   ---@type TSNode
-  local test_name_node = captured_nodes[match_type .. ".name"]
-  local name = vim.treesitter.get_node_text(test_name_node, source)
+  local node = captured_nodes[match_type .. ".name"]
+  local name = vim.treesitter.get_node_text(node, source)
   local definition = captured_nodes[match_type .. ".definition"]
+  local type = node:type()
+  local nonStringNode = false
+
+  if type == "string" then
+    -- If the node is a string then strip the quotes from the name by getting
+    -- it's first named child (string_fragment). This works for single- and
+    -- double-quotes and is necessary since we match anything in the queries
+    -- used in discover_positions
+    local content = node:named_child(0)
+
+    if content then
+      name = vim.treesitter.get_node_text(content, source)
+    end
+  elseif type == "template_string" then
+    -- If the node is a template string then concatenate its named children
+    -- which is essentially the inner part of the backticks thus stripping
+    -- backticks. This is necessary since we match anything in the queries used
+    -- in discover_positions
+    local new_name = {}
+
+    for _, named_child in ipairs(node:named_children()) do
+      table.insert(new_name, vim.treesitter.get_node_text(named_child, source))
+    end
+
+    name = table.concat(new_name, "")
+  else
+    nonStringNode = true
+  end
 
   return {
     type = match_type,
@@ -77,8 +105,8 @@ function adapter.build_position(file_path, source, captured_nodes)
     name = name,
     range = { definition:range() },
     -- Record the position of the line where the string name occurs
-    test_name_range = match_type == "test" and { test_name_node:range() } or nil,
-    is_parameterized = captured_nodes["each_property"] and true or false,
+    test_name_range = match_type == "test" and { node:range() } or nil,
+    is_parameterized = (captured_nodes["each_property"] or nonStringNode) and true or false,
   }
 end
 
@@ -100,28 +128,19 @@ function adapter.discover_positions(path)
     ; Matches: `describe('context', () => {})`
     ((call_expression
         function: (identifier) @func_name (#eq? @func_name "describe")
-          arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-          ]) (arrow_function))
+          arguments: (arguments ((_) @namespace.name) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe('context', function() {})`
     ((call_expression
         function: (identifier) @func_name (#eq? @func_name "describe")
-          arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-          ]) (function_expression))
+          arguments: (arguments ((_) @namespace.name) (function_expression))
     )) @namespace.definition
 
     ; Matches: `describe('context', wrapper())`
     ((call_expression
         function: (identifier) @func_name (#eq? @func_name "describe")
-          arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-          ]) (call_expression))
+          arguments: (arguments ((_) @namespace.name) (call_expression))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', () => {})`
@@ -129,10 +148,7 @@ function adapter.discover_positions(path)
         function: (member_expression
             object: (identifier) @func_name (#eq? @func_name "describe")
         )
-        arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-        ]) (arrow_function))
+        arguments: (arguments ((_) @namespace.name) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', function() {})`
@@ -140,10 +156,7 @@ function adapter.discover_positions(path)
         function: (member_expression
             object: (identifier) @func_name (#eq? @func_name "describe")
         )
-        arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-        ]) (function_expression))
+        arguments: (arguments ((_) @namespace.name) (function_expression))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', wrapper())`
@@ -151,10 +164,7 @@ function adapter.discover_positions(path)
         function: (member_expression
             object: (identifier) @func_name (#eq? @func_name "describe")
         )
-        arguments: (arguments ([
-            (string (string_fragment) @namespace.name)
-            (template_string (_) @namespace.name)
-        ]) (call_expression))
+        arguments: (arguments ((_) @namespace.name) (call_expression))
     )) @namespace.definition
 
     ; Matches: `describe.each(['data'])('context', () => {})`
@@ -165,10 +175,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @namespace.name)
-        (template_string (_) @namespace.name)
-      ]) (arrow_function))
+      arguments: (arguments ((_) @namespace.name) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe.each(['data'])('context', function() {})`
@@ -179,10 +186,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @namespace.name)
-        (template_string (_) @namespace.name)
-      ]) (function_expression))
+      arguments: (arguments ((_) @namespace.name) (function_expression))
     )) @namespace.definition
 
     ; Matches: `describe.each(['data'])('context', wrapper())`
@@ -192,10 +196,7 @@ function adapter.discover_positions(path)
           object: (identifier) @func_name (#eq? @func_name "describe")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @namespace.name)
-        (template_string (_) @namespace.name)
-      ]) (call_expression))
+      arguments: (arguments ((_) @namespace.name) (call_expression))
     )) @namespace.definition
 
     ; #########
@@ -205,28 +206,19 @@ function adapter.discover_positions(path)
     ; Matches: `it('test', () => {}) / test('test', () => {})`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-        arguments: (arguments ([
-          (string (string_fragment) @test.name)
-          (template_string (_) @test.name)
-        ]) (arrow_function))
+        arguments: (arguments ((_) @test.name) (arrow_function))
     )) @test.definition
 
     ; Matches: `it('test', function() {}) / test('test', function() {})`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-        arguments: (arguments ([
-          (string (string_fragment) @test.name)
-          (template_string (_) @test.name)
-        ]) (function_expression))
+        arguments: (arguments ((_) @test.name) (function_expression))
     )) @test.definition
 
     ; Matches: `it('test', wrapper()) / test('test', wrapper())`
     ((call_expression
       function: (identifier) @func_name (#any-of? @func_name "it" "test")
-        arguments: (arguments ([
-          (string (string_fragment) @test.name)
-          (template_string (_) @test.name)
-        ]) (call_expression))
+        arguments: (arguments ((_) @test.name) (call_expression))
     )) @test.definition
 
     ; Matches: `test.only('test', () => {}) / it.only('test', () => {})`
@@ -234,10 +226,7 @@ function adapter.discover_positions(path)
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (arrow_function))
+      arguments: (arguments ((_) @test.name) (arrow_function))
     )) @test.definition
 
     ; Matches: `test.only('test', function() {}) / it.only('test', function() {})`
@@ -245,10 +234,7 @@ function adapter.discover_positions(path)
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (function_expression))
+      arguments: (arguments ((_) @test.name) (function_expression))
     )) @test.definition
 
     ; Matches: `test.only('test', wrapper()) / it.only('test', wrapper())`
@@ -256,10 +242,7 @@ function adapter.discover_positions(path)
       function: (member_expression
         object: (identifier) @func_name (#any-of? @func_name "test" "it")
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (call_expression))
+      arguments: (arguments ((_) @test.name) (call_expression))
     )) @test.definition
 
     ; Matches: `test.each(['data'])('test', () => {}) / it.each(['data'])('test', () => {})`
@@ -270,10 +253,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (arrow_function))
+      arguments: (arguments ((_) @test.name) (arrow_function))
     )) @test.definition
 
     ; Matches: `test.each(['data'])('test', function() {}) / it.each(['data'])('test', function() {})`
@@ -284,10 +264,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (function_expression))
+      arguments: (arguments ((_) @test.name) (function_expression))
     )) @test.definition
 
     ; Matches: `test.each(['data'])('test', wrapper()) / it.each(['data'])('test', wrapper())`
@@ -298,10 +275,7 @@ function adapter.discover_positions(path)
           property: (property_identifier) @each_property (#eq? @each_property "each")
         )
       )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]) (call_expression))
+      arguments: (arguments ((_) @test.name) (call_expression))
     )) @test.definition
   ]]
 
@@ -447,9 +421,12 @@ function adapter.build_spec(args)
   local testNamePattern = ".*"
 
   if pos.type == types.PositionType.test or pos.type == types.PositionType.namespace then
-    -- pos.id in form "path/to/file::Describe text::test text"
-    local testName = pos.id:sub(pos.id:find("::") + 2)
-    testName, _ = testName:gsub("::", " ")
+    -- Check if the position is a parametric (runtime) test by seeing if there is a corresponding
+    -- source-level test
+    local sourceLevelTest = parameterized_tests.getParametricTestToSourceLevelTest(pos)
+    local testName = sourceLevelTest or pos.id
+
+    testName, _ = testName:sub(pos.id:find("::") + 2):gsub("::", " ")
     testNamePattern = util.escapeTestPattern(testName)
 
     -- If the position or any of its enclosing blocks are parameterized, replace any
