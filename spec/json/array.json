@@ -466,7 +466,7 @@
       ],
       "endTime": 1750416517229,
       "message": "",
-      "name": "./spec/array.test.ts",
+      "name": "./spec/tests/array.test.ts",
       "startTime": 1750416517011,
       "status": "passed",
       "summary": ""

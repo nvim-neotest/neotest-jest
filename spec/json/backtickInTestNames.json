@@ -106,7 +106,7 @@
       ],
       "endTime": 1757791983235,
       "message": "",
-      "name": "./spec/backtickInTestNames.test.ts",
+      "name": "./spec/tests/backtickInTestNames.test.ts",
       "startTime": 1757791982860,
       "status": "passed",
       "summary": ""

@@ -22,7 +22,7 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for file test", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -51,7 +51,7 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for namespace", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -80,7 +80,7 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for nested namespace", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/nestedDescribe.test.ts"
+    local path = "./spec/tests/nestedDescribe.test.ts"
     local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -111,7 +111,7 @@ describe("adapter.build_spec", function()
 
   async.it("builds correct command for test name with '", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/nestedDescribe.test.ts"
+    local path = "./spec/tests/nestedDescribe.test.ts"
     local positions = adapter.discover_positions(path):to_list()
 
     local tree = Tree.from_list(positions, function(pos)
@@ -143,29 +143,33 @@ describe("adapter.build_spec", function()
   end)
 
   describe("parameterized test names", function()
-    for _, test_data in ipairs({
-      { index = 1, expected_name = "^describe text test with percent .*$" },
+    before_each(function()
+      -- Mock neotest process run to not run jest test discovery
+      stub(require("neotest.lib").process, "run")
+    end)
+
+    after_each(function()
+      require("neotest.lib").process.run:revert()
+    end)
+
+    for index, test_data in ipairs({
+      { expected_name = "^describe text test with percent .*$" },
       {
-        index = 2,
         expected_name = "^describe text test with all of the parameters .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*$",
       },
-      { index = 3, expected_name = "^describe text test with .*$" },
-      { index = 4, expected_name = "^describe text test with .* and .*$" },
-      { index = 5, expected_name = "^describe text test with .*$" },
-      { index = 6, expected_name = "^describe text test with .* and \\(parenthesis\\)$" },
+      { expected_name = "^describe text test with .*$" },
+      { expected_name = "^describe text test with .* and .*$" },
+      { expected_name = "^describe text test with .*$" },
+      { expected_name = "^describe text test with .* and \\(parenthesis\\)$" },
     }) do
-      async.it("builds command with correct test name pattern " .. test_data.index, function()
+      async.it("builds command with correct test name pattern " .. index, function()
         local adapter = require("neotest-jest")({ jestCommand = "jest" })
-        -- Mock neotest process run to not run jest test discovery
-        stub(require("neotest.lib").process, "run")
-
-        local positions = adapter.discover_positions("./spec/parameterized.test.ts"):to_list()
-
+        local positions = adapter.discover_positions("./spec/tests/parameterized.test.ts"):to_list()
         local tree = Tree.from_list(positions, function(pos)
           return pos.id
         end)
 
-        local spec = adapter.build_spec({ tree = tree:children()[1]:children()[test_data.index] })
+        local spec = adapter.build_spec({ tree = tree:children()[1]:children()[index] })
 
         assert.contains(spec.command, "--testNamePattern=" .. test_data.expected_name)
         assert.stub(vim.notify).was_not_called()
@@ -175,8 +179,8 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for file test with extra arguments", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/basic.test.ts"
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/tests/basic.test.ts"
+    local positions = adapter.discover_positions("./spec/tests/basic.test.ts"):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
@@ -210,8 +214,8 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for file test without extra arguments if not a list", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/basic.test.ts"
-    local positions = adapter.discover_positions("./spec/basic.test.ts"):to_list()
+    local path = "./spec/tests/basic.test.ts"
+    local positions = adapter.discover_positions("./spec/tests/basic.test.ts"):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
     end)
@@ -247,7 +251,7 @@ describe("adapter.build_spec", function()
 
   async.it("builds command for file test with jestCommand arg", function()
     local adapter = require("neotest-jest")({ jestCommand = "jest" })
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -287,7 +291,7 @@ describe("adapter.build_spec", function()
       end,
     })
 
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -328,7 +332,7 @@ describe("adapter.build_spec", function()
       end,
     })
 
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -370,7 +374,7 @@ describe("adapter.build_spec", function()
       end,
     })
 
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id
@@ -415,7 +419,7 @@ describe("adapter.build_spec", function()
       env = { override = "override", adapter_override = true },
     })
 
-    local path = "./spec/basic.test.ts"
+    local path = "./spec/tests/basic.test.ts"
     local positions = adapter.discover_positions(path):to_list()
     local tree = Tree.from_list(positions, function(pos)
       return pos.id

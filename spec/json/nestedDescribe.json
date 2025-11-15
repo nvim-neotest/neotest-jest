@@ -74,7 +74,7 @@
       ],
       "endTime": 1750414513443,
       "message": "",
-      "name": "./spec/nestedDescribe.test.ts",
+      "name": "./spec/tests/nestedDescribe.test.ts",
       "startTime": 1750414513084,
       "status": "passed",
       "summary": ""

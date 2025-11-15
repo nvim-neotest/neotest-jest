@@ -1,0 +1,152 @@
+{
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 1,
+  "numPassedTests": 6,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 6,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1749985512027,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 18,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with percent %",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 2
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with percent %"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with all of the parameters \"string\" %s %d %i %f %j %o 0 % %p %s %d %i %f %j %o %# %",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 6
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with all of the parameters \"string\" %s %d %i %f %j %o 0 % %p %s %d %i %f %j %o %# %"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with $namedParameter",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 13
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with $namedParameter"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with $namedParameter and $anotherNamedParameter",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 17
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with $namedParameter and $anotherNamedParameter"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 2,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with $variable.field.otherField",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 24
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with $variable.field.otherField"
+        },
+        {
+          "ancestorTitles": [
+            "describe text"
+          ],
+          "duration": 1,
+          "failureDetails": [],
+          "failureMessages": [],
+          "fullName": "describe text test with $variable.field.otherField and (parenthesis)",
+          "invocations": 1,
+          "location": {
+            "column": 22,
+            "line": 28
+          },
+          "numPassingAsserts": 0,
+          "retryReasons": [],
+          "status": "passed",
+          "title": "test with $variable.field.otherField and (parenthesis)"
+        }
+      ],
+      "endTime": 1749985512460,
+      "message": "",
+      "name": "./spec/tests/parameterized.test.ts",
+      "startTime": 1749985512089,
+      "status": "passed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}
