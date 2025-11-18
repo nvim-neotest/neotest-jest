@@ -151,24 +151,24 @@ function adapter.discover_positions(path)
 
     ; Matches: `describe.only('context', () => {})`
     ((call_expression
-        function: (member_expression
-            object: (identifier) @func_name (#eq? @func_name "describe")
+        function: (member_expression) @func_name (
+          #any-of? @func_name "describe.only" "describe.skip"
         )
         arguments: (arguments ((_) @namespace.name) (arrow_function))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', function() {})`
     ((call_expression
-        function: (member_expression
-            object: (identifier) @func_name (#eq? @func_name "describe")
+        function: (member_expression) @func_name (
+          #any-of? @func_name "describe.only" "describe.skip"
         )
         arguments: (arguments ((_) @namespace.name) (function_expression))
     )) @namespace.definition
 
     ; Matches: `describe.only('context', wrapper())`
     ((call_expression
-        function: (member_expression
-            object: (identifier) @func_name (#eq? @func_name "describe")
+        function: (member_expression) @func_name (
+          #any-of? @func_name "describe.only" "describe.skip"
         )
         arguments: (arguments ((_) @namespace.name) (call_expression))
     )) @namespace.definition
@@ -209,90 +209,172 @@ function adapter.discover_positions(path)
     ; # Tests #
     ; #########
 
-    ; Matches: `it('test', () => {}) / test('test', () => {})`
+    ; Matches "it" "test" "xit" "xtest" "fit" with arrow functions
     ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+      function: (identifier) @func_name (#any-of? @func_name "it" "test" "xit" "xtest" "fit")
         arguments: (arguments ((_) @test.name) (arrow_function))
     )) @test.definition
 
-    ; Matches: `it('test', function() {}) / test('test', function() {})`
+    ; Matches "it" "test" "xit" "xtest" "fit" with function expressions
     ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+      function: (identifier) @func_name (#any-of? @func_name "it" "test" "xit" "xtest" "fit")
         arguments: (arguments ((_) @test.name) (function_expression))
     )) @test.definition
 
-    ; Matches: `it('test', wrapper()) / test('test', wrapper())`
+    ; Matches "it" "test" "xit" "xtest" "fit" with call expressions
     ((call_expression
-      function: (identifier) @func_name (#any-of? @func_name "it" "test")
+      function: (identifier) @func_name (#any-of? @func_name "it" "test" "xit" "xtest" "fit")
         arguments: (arguments ((_) @test.name) (call_expression))
     )) @test.definition
 
-    ; Matches: `it.only('test', () => {}) / test.only('test', () => {})`
+    ; Matches different aliases with arrow functions
     ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "it" "test")
+      function: (member_expression) @func_name (
+        #any-of? @func_name
+          "it.only"
+          "it.failing"
+          "it.concurrent"
+          "it.only.failing"
+          "it.skip.failing"
+          "it.todo"
+          "fit.failing"
+          "xit.failing"
+          "test.failing"
+          "test.concurrent"
+          "test.only"
+          "test.only.failing"
+          "test.skip.failing"
+          "test.todo"
+          "xtest.failing"
+        )
+      arguments: (arguments ((_) @test.name) (arrow_function))
+    )) @test.definition
+
+    ; Matches different aliases with function expressions
+    ((call_expression
+      function: (member_expression) @func_name (
+        #any-of? @func_name
+          "it.only"
+          "it.failing"
+          "it.concurrent"
+          "it.only.failing"
+          "it.skip.failing"
+          "it.todo"
+          "fit.failing"
+          "xit.failing"
+          "test.failing"
+          "test.concurrent"
+          "test.only"
+          "test.only.failing"
+          "test.skip.failing"
+          "test.todo"
+          "xtest.failing"
+        )
+      arguments: (arguments ((_) @test.name) (function_expression))
+    )) @test.definition
+
+    ; Matches different aliases with call expressions
+    ((call_expression
+      function: (member_expression) @func_name (
+        #any-of? @func_name
+          "it.only"
+          "it.failing"
+          "it.concurrent"
+          "it.only.failing"
+          "it.skip.failing"
+          "it.todo"
+          "fit.failing"
+          "xit.failing"
+          "test.failing"
+          "test.concurrent"
+          "test.only"
+          "test.only.failing"
+          "test.skip.failing"
+          "test.todo"
+          "xtest.failing"
+        )
+      arguments: (arguments ((_) @test.name) (call_expression))
+    )) @test.definition
+
+    ; Matches all test.each aliases with arrow functions
+    ((call_expression
+      function: (call_expression
+        function: (member_expression) @func_name @each_property (
+          #any-of? @func_name
+          "it.each"
+          "it.only.each"
+          "it.failing.each"
+          "it.skip.each"
+          "it.concurrent.each"
+          "it.concurrent.only.each"
+          "it.concurrent.skip.each"
+          "fit.each"
+          "xit.each"
+          "test.each"
+          "test.only.each"
+          "test.failing.each"
+          "test.skip.each"
+          "test.concurrent.each"
+          "test.concurrent.only.each"
+          "test.concurrent.skip.each"
+          "xtest.each"
+        )
       )
       arguments: (arguments ((_) @test.name) (arrow_function))
     )) @test.definition
 
-    ; Matches: `it.only('test', function() {}) / test.only('test', function() {})`
-    ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "it" "test")
-      )
-      arguments: (arguments ((_) @test.name) (function_expression))
-    )) @test.definition
-
-    ; Matches: `test.only('test', wrapper()) / it.only('test', wrapper())`
-    ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "test" "it")
-      )
-      arguments: (arguments ((_) @test.name) (call_expression))
-    )) @test.definition
-
-    ; Matches: `test.each(['data'])('test', () => {}) / it.each(['data'])('test', () => {})`
+    ; Matches all test.each aliases with function expressions
     ((call_expression
       function: (call_expression
-        function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "it" "test")
-          property: (property_identifier) @each_property (#eq? @each_property "each")
-        )
-      )
-      arguments: (arguments ((_) @test.name) (arrow_function))
-    )) @test.definition
-
-    ; Matches: `test.each(['data'])('test', function() {}) / it.each(['data'])('test', function() {})`
-    ((call_expression
-      function: (call_expression
-        function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "it" "test")
-          property: (property_identifier) @each_property (#eq? @each_property "each")
+        function: (member_expression) @func_name @each_property (
+          #any-of? @func_name
+          "it.each"
+          "it.only.each"
+          "it.failing.each"
+          "it.skip.each"
+          "it.concurrent.each"
+          "it.concurrent.only.each"
+          "it.concurrent.skip.each"
+          "fit.each"
+          "xit.each"
+          "test.each"
+          "test.only.each"
+          "test.failing.each"
+          "test.skip.each"
+          "test.concurrent.each"
+          "test.concurrent.only.each"
+          "test.concurrent.skip.each"
+          "xtest.each"
         )
       )
       arguments: (arguments ((_) @test.name) (function_expression))
     )) @test.definition
 
-    ; Matches: `it.each(['data'])('test', wrapper()) / test.each(['data'])('test', wrapper())`
+    ; Matches all test.each aliases with call expressions
     ((call_expression
       function: (call_expression
-        function: (member_expression
-          object: (identifier) @func_name (#any-of? @func_name "it" "test")
-          property: (property_identifier) @each_property (#eq? @each_property "each")
+        function: (member_expression) @func_name @each_property (
+          #any-of? @func_name
+          "it.each"
+          "it.only.each"
+          "it.failing.each"
+          "it.skip.each"
+          "it.concurrent.each"
+          "it.concurrent.only.each"
+          "it.concurrent.skip.each"
+          "fit.each"
+          "xit.each"
+          "test.each"
+          "test.only.each"
+          "test.failing.each"
+          "test.skip.each"
+          "test.concurrent.each"
+          "test.concurrent.only.each"
+          "test.concurrent.skip.each"
+          "xtest.each"
         )
       )
       arguments: (arguments ((_) @test.name) (call_expression))
-    )) @test.definition
-
-    ; Matches: `it.todo('test') / test.todo('test')`
-    ((call_expression
-      function: (member_expression
-        object: (identifier) @func_name (#any-of? @func_name "it" "test")
-      )
-      arguments: (arguments ([
-        (string (string_fragment) @test.name)
-        (template_string (_) @test.name)
-      ]))
     )) @test.definition
   ]]
 
