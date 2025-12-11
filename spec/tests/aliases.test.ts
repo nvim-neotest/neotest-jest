@@ -132,6 +132,16 @@ xdescribe('xdescribe', () => {
   })
 })
 
-describe.only('describe.only', () => {})
+// Apparently there has to be tests inside a namespace in order to
+// jump to a test
+describe.only('describe.only', () => {
+  it('it', () => {
+    expect(true).toBe(true)
+  }) 
+})
 
-describe.skip('describe.skip', () => {})
+describe.skip('describe.skip', () => {
+  it('it', () => {
+    expect(true).toBe(true)
+  }) 
+})
