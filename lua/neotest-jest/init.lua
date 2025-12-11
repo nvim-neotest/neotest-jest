@@ -236,7 +236,6 @@ function adapter.discover_positions(path)
           "it.concurrent"
           "it.only.failing"
           "it.skip.failing"
-          "it.todo"
           "fit.failing"
           "xit.failing"
           "test.failing"
@@ -244,7 +243,6 @@ function adapter.discover_positions(path)
           "test.only"
           "test.only.failing"
           "test.skip.failing"
-          "test.todo"
           "xtest.failing"
         )
       arguments: (arguments ((_) @test.name) (arrow_function))
@@ -259,7 +257,6 @@ function adapter.discover_positions(path)
           "it.concurrent"
           "it.only.failing"
           "it.skip.failing"
-          "it.todo"
           "fit.failing"
           "xit.failing"
           "test.failing"
@@ -267,7 +264,6 @@ function adapter.discover_positions(path)
           "test.only"
           "test.only.failing"
           "test.skip.failing"
-          "test.todo"
           "xtest.failing"
         )
       arguments: (arguments ((_) @test.name) (function_expression))
@@ -282,7 +278,6 @@ function adapter.discover_positions(path)
           "it.concurrent"
           "it.only.failing"
           "it.skip.failing"
-          "it.todo"
           "fit.failing"
           "xit.failing"
           "test.failing"
@@ -290,7 +285,6 @@ function adapter.discover_positions(path)
           "test.only"
           "test.only.failing"
           "test.skip.failing"
-          "test.todo"
           "xtest.failing"
         )
       arguments: (arguments ((_) @test.name) (call_expression))
@@ -375,6 +369,16 @@ function adapter.discover_positions(path)
         )
       )
       arguments: (arguments ((_) @test.name) (call_expression))
+    )) @test.definition
+
+    ; Matches all todo tests
+    ((call_expression
+      function: (member_expression) @func_name (
+        #any-of? @func_name
+          "it.todo"
+          "test.todo"
+        )
+      arguments: (arguments ((_) @test.name))
     )) @test.definition
   ]]
 
