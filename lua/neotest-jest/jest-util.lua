@@ -162,9 +162,9 @@ function M.hasJestDependency(path)
 end
 
 -- Returns neotest test id from jest test result.
--- @param testFile string
--- @param assertionResult table
--- @return string
+---@param testFile string
+---@param assertionResult table
+---@return string
 function M.getNeotestPositionIdFromTestResult(testFile, assertionResult)
   local keyid = testFile
   local name = assertionResult.title

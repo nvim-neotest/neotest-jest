@@ -288,7 +288,7 @@ function adapter.discover_positions(path)
 
   if adapter.jest_test_discovery then
     local parameterized_tests_positions =
-      parameterized_tests.getParameterizedTestsPositions(positions)
+        parameterized_tests.getParameterizedTestsPositions(positions)
 
     if #parameterized_tests_positions > 0 then
       parameterized_tests.enrichPositionsWithParameterizedTests(
@@ -338,10 +338,10 @@ end
 
 local function cleanAnsi(s)
   return s:gsub("\x1b%[%d+;%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+;%d+m", "")
-    :gsub("\x1b%[%d+;%d+m", "")
-    :gsub("\x1b%[%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+;%d+m", "")
+      :gsub("\x1b%[%d+;%d+m", "")
+      :gsub("\x1b%[%d+m", "")
 end
 
 local function findErrorPosition(file, errStr)
@@ -352,11 +352,52 @@ local function findErrorPosition(file, errStr)
   return errLine, errColumn
 end
 
-local function parsed_json_to_results(data, output_file, consoleOut)
+---@param message string
+local function try_parse_error_position(message)
+  -- There should be a single "(line:column)" reference in the message, most of
+  -- the rest of it is a stack trace
+  local subMessage, line, column = message:match("^(.+)%((%d+):(%d+)%)")
+
+  if subMessage and line and column then
+    return {
+      message = subMessage,
+      line = line,
+      column = column,
+    }
+  end
+end
+
+---@param data       neotest-jest.JestJson
+---@param consoleOut string
+---@return table<string, neotest.Result>
+local function parsed_json_to_results(data, consoleOut)
   local tests = {}
 
   for _, testResult in pairs(data.testResults) do
     local testFn = testResult.name
+
+    if vim.tbl_count(testResult.assertionResults) == 0 then
+      -- This can happen for syntax errors in the test file
+      local result = try_parse_error_position(testResult.message)
+
+      if not result then
+        logger.error(
+          "Found no assertion results in test output and could not parse error message",
+          testResult.message
+        )
+
+        return tests
+      end
+
+      tests[testResult.name] = {
+        status = ResultStatus.failed,
+        short = testResult.name .. ": " .. ResultStatus.failed,
+        output = consoleOut,
+      }
+
+      return tests
+    end
+
     for _, assertionResult in pairs(testResult.assertionResults) do
       local status, name = assertionResult.status, assertionResult.title
 
@@ -458,7 +499,7 @@ function adapter.build_spec(args)
   }
 
   local options =
-    getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
+      getJestArguments(jest_util.getJestDefaultArguments(jestArgsContext), jestArgsContext)
 
   if compat.tbl_islist(options) then
     vim.list_extend(command, options)
@@ -506,7 +547,7 @@ function adapter.build_spec(args)
           return {}
         end
 
-        return parsed_json_to_results(parsed, results_path, nil)
+        return parsed_json_to_results(parsed, results_path)
       end
     end,
     strategy = getStrategyConfig(
@@ -541,12 +582,12 @@ function adapter.results(spec, result, tree)
     return {}
   end
 
-  local results = parsed_json_to_results(parsed, output_file, result.output)
+  local results = parsed_json_to_results(parsed, result.output)
   local pos = tree:data()
 
   -- FIX: Generate results for source-level parametrized namespaces
   if
-    adapter.jest_test_discovery == true and parameterized_tests.isPositionParameterized(tree, pos)
+      adapter.jest_test_discovery == true and parameterized_tests.isPositionParameterized(tree, pos)
   then
     local status
 

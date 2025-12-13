@@ -1,0 +1,45 @@
+---@class neotest-jest.JestSnapshot
+---@field added integer
+---@field didUpdate boolean
+---@field failure boolean
+---@field filesAdded integer
+---@field filesRemoved integer
+---@field filesRemovedList unknown
+---@field filesUnmatched integer
+---@field filesUpdated integer
+---@field matched integer
+---@field total integer
+---@field unchecked integer
+---@field uncheckedKeysByFile unknown
+---@field unmatched integer
+---@field updated integer
+
+---@class neotest-jest.JestAssertionResult
+
+---@class neotest-jest.JestTestResult
+---@field assertionResults neotest-jest.JestAssertionResult[]
+---@field coverage         table
+---@field endTime          integer
+---@field message          string
+---@field name             string
+---@field startTime        integer
+---@field status           boolean
+---@field summary          string
+
+---@class neotest-jest.JestJson
+---@field numFailedTestSuites       integer
+---@field numFailedTests            integer
+---@field numPassedTestSuites       integer
+---@field numPassedTests            integer
+---@field numPendingTestSuites      integer
+---@field numPendingTests           integer
+---@field numRuntimeErrorTestSuites integer
+---@field numTodoTests              integer
+---@field numTotalTestSuites        integer
+---@field numTotalTests             integer
+---@field openHandles               integer
+---@field snapshot                  neotest-jest.JestSnapshot
+---@field startTime                 integer
+---@field success                   boolean
+---@field wasInterrupted            boolean
+---@field testResults               neotest-jest.JestTestResult[]
