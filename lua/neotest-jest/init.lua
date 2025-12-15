@@ -7,6 +7,7 @@ local util = require("neotest-jest.util")
 local jest_util = require("neotest-jest.jest-util")
 local parameterized_tests = require("neotest-jest.parameterized-tests")
 local types = require("neotest.types")
+local nio = require("nio")
 
 local ResultStatus = types.ResultStatus
 
@@ -591,6 +592,9 @@ function adapter.build_spec(args)
   -- Creating empty file for streaming results
   lib.files.write(results_path, "")
   local stream_data, stop_stream = util.stream(results_path)
+
+  -- synchronize with main thread to safely load dap
+  nio.scheduler()
 
   return {
     command = command,
