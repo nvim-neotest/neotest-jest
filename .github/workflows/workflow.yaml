@@ -69,11 +69,10 @@ jobs:
           git clone --depth 1 https://github.com/nvim-neotest/neotest.git ~/.local/share/nvim/site/pack/vendor/start/neotest
           git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter.git ~/.local/share/nvim/site/pack/vendor/start/nvim-treesitter
           git clone --depth 1 https://github.com/nvim-neotest/nvim-nio ~/.local/share/nvim/site/pack/vendor/start/nvim-nio
-          # git clone --depth 1 https://github.com/neovim/nvim-lspconfig.git ~/.local/share/nvim/site/pack/vendor/start/nvim-lspconfig
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
-          nvim --headless -c 'TSInstallSync javascript typescript | quit'
+          nvim --headless -c 'TSInstall javascript typescript | quit'
       - name: Run tests
         run: |
           export PATH="${PWD}/_neovim/bin:${PATH}"
