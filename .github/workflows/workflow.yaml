@@ -76,6 +76,9 @@ jobs:
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
+          mkdir -p ~/.local/share/nvim/site/parser
+          mkdir -p ~/.local/share/nvim/site/parser-info
+          mkdir -p ~/.local/share/nvim/site/queries
           nvim --headless -c 'lua require("nvim-treesitter").setup({ install_dir = "~/.local/share/nvim/site" }); require("nvim-treesitter").install({ "javascript", "typescript" }, { force = true, summary = true }):wait(1800000); vim.cmd.quitall()'
       - name: Run tests
         run: |
