@@ -11,5 +11,3 @@ require("neotest").setup({
 })
 
 vim.print(vim.inspect(require("nvim-treesitter.config").get_installed("parsers")))
-
-vim.print(vim.inspect(vim.system({ "ls", "-la", "~/.local/share/nvim/site"}):wait(5000)))
