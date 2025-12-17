@@ -6,6 +6,10 @@ vim.opt.rtp:append("~/.local/share/nvim/lazy/nvim-treesitter")
 
 vim.cmd.runtime({ "plugin/plenary.vim", bang = true })
 
+require("nvim-treesitter")
+    .install({ "javascript", "typescript" }, { summary = true })
+    :wait(1 * 60 * 1000)
+
 require("neotest").setup({
   log_level = vim.log.levels.WARN,
 })

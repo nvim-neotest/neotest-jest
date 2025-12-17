@@ -81,7 +81,6 @@ jobs:
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
           nvim --version
-          nvim --headless -c 'lua require("nvim-treesitter").install({ "javascript", "typescript" }, { summary = true }):wait(1 * 60 * 1000); vim.cmd.quit()'
           ./scripts/test
       - name: Dump neotest log
         if: '!cancelled()'
