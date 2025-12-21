@@ -80,6 +80,8 @@ jobs:
           mkdir -p ~/.local/share/nvim/site/parser-info
           mkdir -p ~/.local/share/nvim/site/queries
           nvim --headless -c 'lua require("nvim-treesitter").setup({ install_dir = "~/.local/share/nvim/site" }); require("nvim-treesitter").install({ "javascript", "typescript" }, { force = true, summary = true }):wait(1800000); vim.cmd("TSLog"); vim.cmd.quitall()'
+          mv /home/runner/.cache/nvim/tree-sitter-javascript/ ~/.local/share/nvim/site/parser
+          mv /home/runner/.cache/nvim/tree-sitter-typescript/ ~/.local/share/nvim/site/parser
           ls -la ~/.local/share/nvim/site/parser
       - name: Run tests
         run: |
