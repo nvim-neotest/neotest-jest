@@ -56,7 +56,6 @@ jobs:
       - name: Install npm packages
         run: |
           cd ./spec
-          npm install -g tree-sitter-cli@latest
           npm ci
           cd ..
       - name: Check build tools
