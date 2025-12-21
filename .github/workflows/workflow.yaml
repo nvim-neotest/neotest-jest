@@ -81,7 +81,6 @@ jobs:
           mkdir -p ~/.local/share/nvim/site/parser-info
           mkdir -p ~/.local/share/nvim/site/queries
           nvim --headless -c 'lua require("nvim-treesitter").setup({ install_dir = "~/.local/share/nvim/site" }); local ok, result = require("nvim-treesitter").install({ "javascript", "typescript" }, { force = true, summary = true }):pwait(1800000); vim.print(vim.inspect({ ok, result })); vim.cmd("TSLog"); vim.cmd.quitall()'
-          ls -la ~/.local/share/nvim/site/parser/tree-sitter-typescript
       - name: Run tests
         run: |
           export PATH="${PWD}/_neovim/bin:${PATH}"
