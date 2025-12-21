@@ -79,10 +79,7 @@ jobs:
           mkdir -p ~/.local/share/nvim/site/parser
           mkdir -p ~/.local/share/nvim/site/parser-info
           mkdir -p ~/.local/share/nvim/site/queries
-          nvim --headless -c 'lua require("nvim-treesitter").setup({ install_dir = "~/.local/share/nvim/site" }); require("nvim-treesitter").install({ "javascript", "typescript" }, { force = true, summary = true }):wait(1800000); vim.cmd("TSLog"); vim.cmd.quitall()'
-          ls -la /home/runner/.cache/nvim/tree-sitter-typescript/typescript
-          mv /home/runner/.cache/nvim/tree-sitter-javascript/javascript/parser.so ~/.local/share/nvim/site/parser
-          mv /home/runner/.cache/nvim/tree-sitter-typescript/typescript/parser.so ~/.local/share/nvim/site/parser
+          nvim --headless -c 'lua require("nvim-treesitter").setup({ install_dir = "~/.local/share/nvim/site" }); local ok, result = require("nvim-treesitter").install({ "javascript", "typescript" }, { force = true, summary = true }):pwait(1800000); vim.print(vim.inspect({ ok, result })); vim.cmd("TSLog"); vim.cmd.quitall()'
           ls -la ~/.local/share/nvim/site/parser/tree-sitter-typescript
       - name: Run tests
         run: |
