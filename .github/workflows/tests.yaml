@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        version: [0.9.0, 0.10.0, 0.11.0, stable, nightly]
+        version: ['v0.9.0', 'v0.10.0', 'v0.11.0', 'stable', 'nightly']
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
