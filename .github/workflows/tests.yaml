@@ -1,0 +1,62 @@
+name: tests
+on:
+  push:
+    branches:
+      - main
+  pull_request: ~
+
+# Cancel any in-progress CI runs for a PR if it is updated
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        version: [0.9.0, 0.10.0, 0.11.0, stable, nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - run: date +%F > todays-date
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: _neovim
+          key: ${{ runner.os }}-${{ matrix.version }}-${{ hashFiles('todays-date') }}
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install npm packages
+        run: |
+          npm install -g tree-sitter-cli@latest
+          cd ./spec
+          npm ci
+          cd ..
+      - name: Verify tree-sitter-cli installation
+        run: tree-sitter --version
+      - name: Neovim setup
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.version }}
+      - name: Install neotest-jest dependencies
+        run: |
+          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim.git ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          git clone --depth 1 https://github.com/nvim-neotest/neotest.git ~/.local/share/nvim/site/pack/vendor/start/neotest
+          git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter.git ~/.local/share/nvim/site/pack/vendor/start/nvim-treesitter
+          git clone --depth 1 https://github.com/nvim-neotest/nvim-nio ~/.local/share/nvim/site/pack/vendor/start/nvim-nio
+          nvim --headless -c 'lua require("nvim-treesitter").install({ "javascript", "typescript" }, { summary = true }):pwait(5 * 60 * 1000); vim.cmd("TSLog"); vim.cmd.quitall()'
+      - name: Run tests
+        run: |
+          nvim --version
+          ./scripts/test
+      - name: Dump neotest log
+        if: '!cancelled()'
+        run: cat ~/.local/state/nvim/neotest.log
