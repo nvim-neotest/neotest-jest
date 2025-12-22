@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   tests:
-    name: tests
     strategy:
       fail-fast: false
       matrix:
