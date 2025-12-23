@@ -51,7 +51,7 @@ jobs:
           git clone --depth 1 https://github.com/nvim-neotest/neotest.git ~/.local/share/nvim/site/pack/vendor/start/neotest
           git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter.git ~/.local/share/nvim/site/pack/vendor/start/nvim-treesitter
           git clone --depth 1 https://github.com/nvim-neotest/nvim-nio ~/.local/share/nvim/site/pack/vendor/start/nvim-nio
-          nvim --headless -c 'lua require("nvim-treesitter").install({ "javascript", "typescript" }, { summary = true }):pwait(5 * 60 * 1000); vim.cmd("TSLog"); vim.cmd.quitall()'
+          nvim --headless -c 'lua require("nvim-treesitter").install({ "javascript", "typescript" }, { summary = true }):wait(5 * 60 * 1000); vim.cmd("TSLog"); vim.cmd.quitall()'
       - name: Run tests
         run: |
           nvim --version
