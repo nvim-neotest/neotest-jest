@@ -386,7 +386,7 @@ function adapter.discover_positions(path)
   local positions = lib.treesitter.parse_positions(path, query, {
     nested_tests = false,
     ---@diagnostic disable-next-line: assign-type-mismatch
-    build_position = 'require("neotest-jest").build_position',
+    build_position = adapter.build_position,
   })
 
   if adapter.jest_test_discovery then
