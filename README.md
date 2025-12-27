@@ -1,6 +1,7 @@
 # neotest-jest
 
-[![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/workflow.yaml)
+[![build](https://github.com/haydenmeade/neotest-jest/actions/workflows/tests.yaml/badge.svg)](https://github.com/haydenmeade/neotest-jest/actions/workflows/tests.yaml)
+[![license](https://img.shields.io/github/license/nvim-neotest/neotest-jest?style=flat-square)](https://img.shields.io/github/license/nvim-neotest/neotest-jest?style=flat-square)
 
 This plugin provides a [jest](https://github.com/jestjs/jest) adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
 Requires at least Neotest version 4.0.0 which in turn requires at least neovim version 0.9.0.
