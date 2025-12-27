@@ -1,7 +1,7 @@
 # neotest-jest
 
 [![build](https://img.shields.io/github/actions/workflow/status/nvim-neotest/neotest-jest/tests.yaml?style=flat-square)](https://github.com/nvim-neotest/neotest-jest/actions/workflows/tests.yaml)
-[![license](https://img.shields.io/github/license/nvim-neotest/neotest-jest?style=flat-square)](https://img.shields.io/github/license/nvim-neotest/neotest-jest?style=flat-square)
+[![license](https://img.shields.io/github/license/nvim-neotest/neotest-jest?style=flat-square&color=blue)](/LICENSE.md)
 
 This plugin provides a [jest](https://github.com/jestjs/jest) adapter for the [Neotest](https://github.com/rcarriga/neotest) framework.
 Requires at least Neotest version 4.0.0 which in turn requires at least neovim version 0.9.0.
