@@ -461,6 +461,9 @@ local function parsed_json_to_results(data, output_file, consoleOut)
 
   for _, testResult in pairs(data.testResults) do
     local testFn = testResult.name
+    -- NORMALIZE PATH FOR WINDOWS
+    testFn = testFn:gsub("\\", "/")
+
     for _, assertionResult in pairs(testResult.assertionResults) do
       local status, name = assertionResult.status, assertionResult.title
 
